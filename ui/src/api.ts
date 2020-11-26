@@ -107,7 +107,6 @@ export async function listQueues(): Promise<ListQueuesResponse> {
     method: "get",
     url: `${BASE_URL}/queues`,
   });
-  console.log("debug: listQueues response", resp.data);
   return resp.data;
 }
 

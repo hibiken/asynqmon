@@ -13,6 +13,8 @@ import TableSortLabel from "@material-ui/core/TableSortLabel";
 import IconButton from "@material-ui/core/IconButton";
 import PauseCircleFilledIcon from "@material-ui/icons/PauseCircleFilled";
 import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
+import DeleteIcon from "@material-ui/icons/Delete";
+import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import { Queue } from "../api";
 import { queueDetailsPath } from "../paths";
 
@@ -37,6 +39,11 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
     background: theme.palette.common.white,
   },
+  actionIconsContainer: {
+    display: "flex",
+    justifyContent: "center",
+    width: "100px",
+  },
 }));
 
 interface QueueWithMetadata extends Queue {
@@ -60,6 +67,8 @@ enum SortBy {
   Processed,
   Succeeded,
   Failed,
+
+  None, // no sort support
 }
 
 enum SortDirection {
@@ -67,17 +76,40 @@ enum SortDirection {
   Desc = "desc",
 }
 
-const columnConfig = [
-  { label: "Queue", key: "queue", sortBy: SortBy.Queue },
-  { label: "Size", key: "size", sortBy: SortBy.Size },
-  { label: "Active", key: "active", sortBy: SortBy.Active },
-  { label: "Pending", key: "pending", sortBy: SortBy.Pending },
-  { label: "Scheduled", key: "scheduled", sortBy: SortBy.Scheduled },
-  { label: "Retry", key: "retry", sortBy: SortBy.Retry },
-  { label: "Dead", key: "dead", sortBy: SortBy.Dead },
-  { label: "Processed", key: "processed", sortBy: SortBy.Processed },
-  { label: "Succeeded", key: "Succeeded", sortBy: SortBy.Succeeded },
-  { label: "Failed", key: "failed", sortBy: SortBy.Failed },
+interface ColumnConfig {
+  label: string;
+  key: string;
+  sortBy: SortBy;
+  align: "left" | "right" | "center";
+}
+
+const colConfigs: ColumnConfig[] = [
+  { label: "Queue", key: "queue", sortBy: SortBy.Queue, align: "left" },
+  { label: "Size", key: "size", sortBy: SortBy.Size, align: "right" },
+  { label: "Active", key: "active", sortBy: SortBy.Active, align: "right" },
+  { label: "Pending", key: "pending", sortBy: SortBy.Pending, align: "right" },
+  {
+    label: "Scheduled",
+    key: "scheduled",
+    sortBy: SortBy.Scheduled,
+    align: "right",
+  },
+  { label: "Retry", key: "retry", sortBy: SortBy.Retry, align: "right" },
+  { label: "Dead", key: "dead", sortBy: SortBy.Dead, align: "right" },
+  {
+    label: "Processed",
+    key: "processed",
+    sortBy: SortBy.Processed,
+    align: "right",
+  },
+  {
+    label: "Succeeded",
+    key: "Succeeded",
+    sortBy: SortBy.Succeeded,
+    align: "right",
+  },
+  { label: "Failed", key: "failed", sortBy: SortBy.Failed, align: "right" },
+  { label: "Actions", key: "actions", sortBy: SortBy.None, align: "center" },
 ];
 
 // sortQueues takes a array of queues and return a sorted array.
@@ -95,6 +127,7 @@ export default function QueuesOverviewTable(props: Props) {
   const classes = useStyles();
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.Queue);
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.Asc);
+  const [activeRowIndex, setActiveRowIndex] = useState<number>(-1);
   const total = getAggregateCounts(props.queues);
 
   const createSortClickHandler = (sortKey: SortBy) => (e: React.MouseEvent) => {
@@ -170,26 +203,34 @@ export default function QueuesOverviewTable(props: Props) {
       <Table className={classes.table} aria-label="queues overview table">
         <TableHead>
           <TableRow>
-            {columnConfig.map((cfg, i) => (
+            {colConfigs.map((cfg, i) => (
               <TableCell
                 key={cfg.key}
-                align={i === 0 ? "left" : "right"}
+                align={cfg.align}
                 className={clsx(i === 0 && classes.fixedCell)}
               >
-                <TableSortLabel
-                  active={sortBy === cfg.sortBy}
-                  direction={sortDir}
-                  onClick={createSortClickHandler(cfg.sortBy)}
-                >
-                  {cfg.label}
-                </TableSortLabel>
+                {cfg.sortBy !== SortBy.None ? (
+                  <TableSortLabel
+                    active={sortBy === cfg.sortBy}
+                    direction={sortDir}
+                    onClick={createSortClickHandler(cfg.sortBy)}
+                  >
+                    {cfg.label}
+                  </TableSortLabel>
+                ) : (
+                  <div>{cfg.label}</div>
+                )}
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortQueues(props.queues, cmpFunc).map((q) => (
-            <TableRow key={q.queue}>
+          {sortQueues(props.queues, cmpFunc).map((q, i) => (
+            <TableRow
+              key={q.queue}
+              onMouseEnter={() => setActiveRowIndex(i)}
+              onMouseLeave={() => setActiveRowIndex(-1)}
+            >
               <TableCell
                 component="th"
                 scope="row"
@@ -248,25 +289,40 @@ export default function QueuesOverviewTable(props: Props) {
               </TableCell>
               <TableCell align="right">{q.processed - q.failed}</TableCell>
               <TableCell align="right">{q.failed}</TableCell>
-              {/* <TableCell align="right">
-                {q.paused ? (
-                  <IconButton
-                    color="secondary"
-                    onClick={() => props.onResumeClick(q.queue)}
-                    disabled={q.pauseRequestPending}
-                  >
-                    <PlayCircleFilledIcon />
-                  </IconButton>
-                ) : (
-                  <IconButton
-                    color="primary"
-                    onClick={() => props.onPauseClick(q.queue)}
-                    disabled={q.pauseRequestPending}
-                  >
-                    <PauseCircleFilledIcon />
-                  </IconButton>
-                )}
-              </TableCell> */}
+              <TableCell align="center">
+                <div className={classes.actionIconsContainer}>
+                  {activeRowIndex === i ? (
+                    <React.Fragment>
+                      {q.paused ? (
+                        <IconButton
+                          color="secondary"
+                          onClick={() => props.onResumeClick(q.queue)}
+                          disabled={q.pauseRequestPending}
+                        >
+                          <PlayCircleFilledIcon />
+                        </IconButton>
+                      ) : (
+                        <IconButton
+                          color="primary"
+                          onClick={() => props.onPauseClick(q.queue)}
+                          disabled={q.pauseRequestPending}
+                        >
+                          <PauseCircleFilledIcon />
+                        </IconButton>
+                      )}
+                      <IconButton
+                        onClick={() => console.log("TODO: delete this queue")}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </React.Fragment>
+                  ) : (
+                    <IconButton>
+                      <MoreHorizIcon />
+                    </IconButton>
+                  )}
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
