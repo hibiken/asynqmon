@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
   actionIconsContainer: {
     display: "flex",
     justifyContent: "center",
-    width: "100px",
+    minWidth: "100px",
   },
 }));
 
@@ -64,9 +64,6 @@ enum SortBy {
   Scheduled,
   Retry,
   Dead,
-  Processed,
-  Succeeded,
-  Failed,
 
   None, // no sort support
 }
@@ -96,19 +93,6 @@ const colConfigs: ColumnConfig[] = [
   },
   { label: "Retry", key: "retry", sortBy: SortBy.Retry, align: "right" },
   { label: "Dead", key: "dead", sortBy: SortBy.Dead, align: "right" },
-  {
-    label: "Processed",
-    key: "processed",
-    sortBy: SortBy.Processed,
-    align: "right",
-  },
-  {
-    label: "Succeeded",
-    key: "Succeeded",
-    sortBy: SortBy.Succeeded,
-    align: "right",
-  },
-  { label: "Failed", key: "failed", sortBy: SortBy.Failed, align: "right" },
   { label: "Actions", key: "actions", sortBy: SortBy.None, align: "center" },
 ];
 
@@ -172,20 +156,6 @@ export default function QueuesOverviewTable(props: Props) {
       case SortBy.Dead:
         if (q1.dead === q2.dead) return 0;
         isQ1Smaller = q1.dead < q2.dead;
-        break;
-      case SortBy.Processed:
-        if (q1.processed === q2.processed) return 0;
-        isQ1Smaller = q1.processed < q2.processed;
-        break;
-      case SortBy.Succeeded:
-        const q1Succeeded = q1.processed - q1.failed;
-        const q2Succeeded = q2.processed - q2.failed;
-        if (q1Succeeded === q2Succeeded) return 0;
-        isQ1Smaller = q1Succeeded < q2Succeeded;
-        break;
-      case SortBy.Failed:
-        if (q1.failed === q2.failed) return 0;
-        isQ1Smaller = q1.failed < q2.failed;
         break;
       default:
         // eslint-disable-next-line no-throw-literal
@@ -284,11 +254,6 @@ export default function QueuesOverviewTable(props: Props) {
                   {q.dead}
                 </Link>
               </TableCell>
-              <TableCell align="right" className={classes.boldCell}>
-                {q.processed}
-              </TableCell>
-              <TableCell align="right">{q.processed - q.failed}</TableCell>
-              <TableCell align="right">{q.failed}</TableCell>
               <TableCell align="center">
                 <div className={classes.actionIconsContainer}>
                   {activeRowIndex === i ? (
@@ -349,15 +314,6 @@ export default function QueuesOverviewTable(props: Props) {
             <TableCell className={classes.footerCell} align="right">
               {total.dead}
             </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.processed}
-            </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.succeeded}
-            </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.failed}
-            </TableCell>
           </TableRow>
         </TableFooter>
       </Table>
@@ -372,9 +328,6 @@ interface AggregateCounts {
   scheduled: number;
   retry: number;
   dead: number;
-  processed: number;
-  succeeded: number;
-  failed: number;
 }
 
 function getAggregateCounts(queues: Queue[]): AggregateCounts {
@@ -385,9 +338,6 @@ function getAggregateCounts(queues: Queue[]): AggregateCounts {
     scheduled: 0,
     retry: 0,
     dead: 0,
-    processed: 0,
-    succeeded: 0,
-    failed: 0,
   };
   queues.forEach((q) => {
     total.size += q.size;
@@ -396,9 +346,6 @@ function getAggregateCounts(queues: Queue[]): AggregateCounts {
     total.scheduled += q.scheduled;
     total.retry += q.retry;
     total.dead += q.dead;
-    total.processed += q.processed;
-    total.succeeded += q.processed - q.failed;
-    total.failed += q.failed;
   });
   return total;
 }
