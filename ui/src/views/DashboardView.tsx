@@ -46,6 +46,9 @@ const useStyles = makeStyles((theme) => ({
   tooltipSection: {
     marginBottom: "4px",
   },
+  tableContainer: {
+    marginBottom: theme.spacing(2),
+  },
 }));
 
 function mapStateToProps(state: AppState) {
@@ -161,7 +164,7 @@ function DashboardView(props: Props) {
           </Paper>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={12} className={classes.tableContainer}>
           <Paper className={classes.paper} variant="outlined">
             {/* TODO: Add loading indicator  */}
             <QueuesOverviewTable
