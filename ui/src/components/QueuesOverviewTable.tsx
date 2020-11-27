@@ -2,6 +2,12 @@ import React, { useState } from "react";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
+import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -112,6 +118,7 @@ export default function QueuesOverviewTable(props: Props) {
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.Queue);
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.Asc);
   const [activeRowIndex, setActiveRowIndex] = useState<number>(-1);
+  const [queueToDelete, setQueueToDelete] = useState<Queue | null>(null);
   const total = getAggregateCounts(props.queues);
 
   const createSortClickHandler = (sortKey: SortBy) => (e: React.MouseEvent) => {
@@ -168,156 +175,190 @@ export default function QueuesOverviewTable(props: Props) {
     }
   };
 
+  const handleDialogClose = () => {
+    setQueueToDelete(null);
+  };
+
   return (
-    <TableContainer>
-      <Table className={classes.table} aria-label="queues overview table">
-        <TableHead>
-          <TableRow>
-            {colConfigs.map((cfg, i) => (
-              <TableCell
-                key={cfg.key}
-                align={cfg.align}
-                className={clsx(i === 0 && classes.fixedCell)}
-              >
-                {cfg.sortBy !== SortBy.None ? (
-                  <TableSortLabel
-                    active={sortBy === cfg.sortBy}
-                    direction={sortDir}
-                    onClick={createSortClickHandler(cfg.sortBy)}
-                  >
-                    {cfg.label}
-                  </TableSortLabel>
-                ) : (
-                  <div>{cfg.label}</div>
-                )}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sortQueues(props.queues, cmpFunc).map((q, i) => (
-            <TableRow
-              key={q.queue}
-              onMouseEnter={() => setActiveRowIndex(i)}
-              onMouseLeave={() => setActiveRowIndex(-1)}
-            >
-              <TableCell
-                component="th"
-                scope="row"
-                className={clsx(classes.boldCell, classes.fixedCell)}
-              >
-                <Link to={queueDetailsPath(q.queue)}>
-                  {q.queue}
-                  {q.paused ? " (paused)" : ""}
-                </Link>
-              </TableCell>
-              <TableCell align="right" className={classes.boldCell}>
-                {q.size}
-              </TableCell>
-              <TableCell align="right">
-                <Link
-                  to={queueDetailsPath(q.queue, "active")}
-                  className={classes.linkCell}
+    <React.Fragment>
+      <TableContainer>
+        <Table className={classes.table} aria-label="queues overview table">
+          <TableHead>
+            <TableRow>
+              {colConfigs.map((cfg, i) => (
+                <TableCell
+                  key={cfg.key}
+                  align={cfg.align}
+                  className={clsx(i === 0 && classes.fixedCell)}
                 >
-                  {q.active}
-                </Link>
-              </TableCell>
-              <TableCell align="right">
-                <Link
-                  to={queueDetailsPath(q.queue, "pending")}
-                  className={classes.linkCell}
-                >
-                  {q.pending}
-                </Link>
-              </TableCell>
-              <TableCell align="right">
-                <Link
-                  to={queueDetailsPath(q.queue, "scheduled")}
-                  className={classes.linkCell}
-                >
-                  {q.scheduled}
-                </Link>
-              </TableCell>
-              <TableCell align="right">
-                <Link
-                  to={queueDetailsPath(q.queue, "retry")}
-                  className={classes.linkCell}
-                >
-                  {q.retry}
-                </Link>
-              </TableCell>
-              <TableCell align="right">
-                <Link
-                  to={queueDetailsPath(q.queue, "dead")}
-                  className={classes.linkCell}
-                >
-                  {q.dead}
-                </Link>
-              </TableCell>
-              <TableCell align="center">
-                <div className={classes.actionIconsContainer}>
-                  {activeRowIndex === i ? (
-                    <React.Fragment>
-                      {q.paused ? (
-                        <IconButton
-                          color="secondary"
-                          onClick={() => props.onResumeClick(q.queue)}
-                          disabled={q.pauseRequestPending}
-                        >
-                          <PlayCircleFilledIcon />
-                        </IconButton>
-                      ) : (
-                        <IconButton
-                          color="primary"
-                          onClick={() => props.onPauseClick(q.queue)}
-                          disabled={q.pauseRequestPending}
-                        >
-                          <PauseCircleFilledIcon />
-                        </IconButton>
-                      )}
-                      <IconButton
-                        onClick={() => console.log("TODO: delete this queue")}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </React.Fragment>
+                  {cfg.sortBy !== SortBy.None ? (
+                    <TableSortLabel
+                      active={sortBy === cfg.sortBy}
+                      direction={sortDir}
+                      onClick={createSortClickHandler(cfg.sortBy)}
+                    >
+                      {cfg.label}
+                    </TableSortLabel>
                   ) : (
-                    <IconButton>
-                      <MoreHorizIcon />
-                    </IconButton>
+                    <div>{cfg.label}</div>
                   )}
-                </div>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortQueues(props.queues, cmpFunc).map((q, i) => (
+              <TableRow
+                key={q.queue}
+                onMouseEnter={() => setActiveRowIndex(i)}
+                onMouseLeave={() => setActiveRowIndex(-1)}
+              >
+                <TableCell
+                  component="th"
+                  scope="row"
+                  className={clsx(classes.boldCell, classes.fixedCell)}
+                >
+                  <Link to={queueDetailsPath(q.queue)}>
+                    {q.queue}
+                    {q.paused ? " (paused)" : ""}
+                  </Link>
+                </TableCell>
+                <TableCell align="right" className={classes.boldCell}>
+                  {q.size}
+                </TableCell>
+                <TableCell align="right">
+                  <Link
+                    to={queueDetailsPath(q.queue, "active")}
+                    className={classes.linkCell}
+                  >
+                    {q.active}
+                  </Link>
+                </TableCell>
+                <TableCell align="right">
+                  <Link
+                    to={queueDetailsPath(q.queue, "pending")}
+                    className={classes.linkCell}
+                  >
+                    {q.pending}
+                  </Link>
+                </TableCell>
+                <TableCell align="right">
+                  <Link
+                    to={queueDetailsPath(q.queue, "scheduled")}
+                    className={classes.linkCell}
+                  >
+                    {q.scheduled}
+                  </Link>
+                </TableCell>
+                <TableCell align="right">
+                  <Link
+                    to={queueDetailsPath(q.queue, "retry")}
+                    className={classes.linkCell}
+                  >
+                    {q.retry}
+                  </Link>
+                </TableCell>
+                <TableCell align="right">
+                  <Link
+                    to={queueDetailsPath(q.queue, "dead")}
+                    className={classes.linkCell}
+                  >
+                    {q.dead}
+                  </Link>
+                </TableCell>
+                <TableCell align="center">
+                  <div className={classes.actionIconsContainer}>
+                    {activeRowIndex === i ? (
+                      <React.Fragment>
+                        {q.paused ? (
+                          <IconButton
+                            color="secondary"
+                            onClick={() => props.onResumeClick(q.queue)}
+                            disabled={q.pauseRequestPending}
+                          >
+                            <PlayCircleFilledIcon />
+                          </IconButton>
+                        ) : (
+                          <IconButton
+                            color="primary"
+                            onClick={() => props.onPauseClick(q.queue)}
+                            disabled={q.pauseRequestPending}
+                          >
+                            <PauseCircleFilledIcon />
+                          </IconButton>
+                        )}
+                        <IconButton onClick={() => setQueueToDelete(q)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </React.Fragment>
+                    ) : (
+                      <IconButton>
+                        <MoreHorizIcon />
+                      </IconButton>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell
+                className={clsx(classes.fixedCell, classes.footerCell)}
+              >
+                Total
+              </TableCell>
+              <TableCell className={classes.footerCell} align="right">
+                {total.size}
+              </TableCell>
+              <TableCell className={classes.footerCell} align="right">
+                {total.active}
+              </TableCell>
+              <TableCell className={classes.footerCell} align="right">
+                {total.pending}
+              </TableCell>
+              <TableCell className={classes.footerCell} align="right">
+                {total.scheduled}
+              </TableCell>
+              <TableCell className={classes.footerCell} align="right">
+                {total.retry}
+              </TableCell>
+              <TableCell className={classes.footerCell} align="right">
+                {total.dead}
               </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell className={clsx(classes.fixedCell, classes.footerCell)}>
-              Total
-            </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.size}
-            </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.active}
-            </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.pending}
-            </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.scheduled}
-            </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.retry}
-            </TableCell>
-            <TableCell className={classes.footerCell} align="right">
-              {total.dead}
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </TableContainer>
+          </TableFooter>
+        </Table>
+      </TableContainer>
+      <Dialog
+        open={queueToDelete !== null}
+        onClose={handleDialogClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        {queueToDelete !== null && (
+          <>
+            <DialogTitle id="alert-dialog-title">
+              Are you sure you want to delete "{queueToDelete.queue}"?
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                All of the tasks in the queue will be deleted. You can't undo
+                this action.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDialogClose} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleDialogClose} color="primary" autoFocus>
+                Delete
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
+    </React.Fragment>
   );
 }
 
