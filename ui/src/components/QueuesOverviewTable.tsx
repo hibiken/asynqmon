@@ -2,12 +2,6 @@ import React, { useState } from "react";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -21,6 +15,7 @@ import PauseCircleFilledIcon from "@material-ui/icons/PauseCircleFilled";
 import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
 import DeleteIcon from "@material-ui/icons/Delete";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
+import DeleteQueueConfirmationDialog from "./DeleteQueueConfirmationDialog";
 import { Queue } from "../api";
 import { queueDetailsPath } from "../paths";
 
@@ -53,13 +48,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface QueueWithMetadata extends Queue {
-  pauseRequestPending: boolean; // indicates pause/resume request is pending for the queue.
+  requestPending: boolean; // indicates pause/resume/delete request is pending for the queue.
 }
 
 interface Props {
   queues: QueueWithMetadata[];
   onPauseClick: (qname: string) => Promise<void>;
   onResumeClick: (qname: string) => Promise<void>;
+  onDeleteClick: (qname: string) => Promise<void>;
 }
 
 enum SortBy {
@@ -118,7 +114,9 @@ export default function QueuesOverviewTable(props: Props) {
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.Queue);
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.Asc);
   const [activeRowIndex, setActiveRowIndex] = useState<number>(-1);
-  const [queueToDelete, setQueueToDelete] = useState<Queue | null>(null);
+  const [queueToDelete, setQueueToDelete] = useState<QueueWithMetadata | null>(
+    null
+  );
   const total = getAggregateCounts(props.queues);
 
   const createSortClickHandler = (sortKey: SortBy) => (e: React.MouseEvent) => {
@@ -274,7 +272,7 @@ export default function QueuesOverviewTable(props: Props) {
                           <IconButton
                             color="secondary"
                             onClick={() => props.onResumeClick(q.queue)}
-                            disabled={q.pauseRequestPending}
+                            disabled={q.requestPending}
                           >
                             <PlayCircleFilledIcon />
                           </IconButton>
@@ -282,7 +280,7 @@ export default function QueuesOverviewTable(props: Props) {
                           <IconButton
                             color="primary"
                             onClick={() => props.onPauseClick(q.queue)}
-                            disabled={q.pauseRequestPending}
+                            disabled={q.requestPending}
                           >
                             <PauseCircleFilledIcon />
                           </IconButton>
@@ -330,34 +328,10 @@ export default function QueuesOverviewTable(props: Props) {
           </TableFooter>
         </Table>
       </TableContainer>
-      <Dialog
-        open={queueToDelete !== null}
+      <DeleteQueueConfirmationDialog
         onClose={handleDialogClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        {queueToDelete !== null && (
-          <>
-            <DialogTitle id="alert-dialog-title">
-              Are you sure you want to delete "{queueToDelete.queue}"?
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                All of the tasks in the queue will be deleted. You can't undo
-                this action.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleDialogClose} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={handleDialogClose} color="primary" autoFocus>
-                Delete
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+        queue={queueToDelete}
+      />
     </React.Fragment>
   );
 }

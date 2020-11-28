@@ -1,4 +1,5 @@
 import {
+  deleteQueue,
   getQueue,
   GetQueueResponse,
   listQueues,
@@ -14,6 +15,9 @@ export const LIST_QUEUES_SUCCESS = "LIST_QUEUES_SUCCESS";
 export const GET_QUEUE_BEGIN = "GET_QUEUE_BEGIN";
 export const GET_QUEUE_SUCCESS = "GET_QUEUE_SUCCESS";
 export const GET_QUEUE_ERROR = "GET_QUEUE_ERROR";
+export const DELETE_QUEUE_BEGIN = "DELETE_QUEUE_BEGIN";
+export const DELETE_QUEUE_SUCCESS = "DELETE_QUEUE_SUCCESS";
+export const DELETE_QUEUE_ERROR = "DELETE_QUEUE_ERROR";
 export const PAUSE_QUEUE_BEGIN = "PAUSE_QUEUE_BEGIN";
 export const PAUSE_QUEUE_SUCCESS = "PAUSE_QUEUE_SUCCESS";
 export const PAUSE_QUEUE_ERROR = "PAUSE_QUEUE_ERROR";
@@ -43,6 +47,22 @@ interface GetQueueSuccessAction {
 
 interface GetQueueErrorAction {
   type: typeof GET_QUEUE_ERROR;
+  queue: string; // name of the queue
+  error: string; // error description
+}
+
+interface DeleteQueueBeginAction {
+  type: typeof DELETE_QUEUE_BEGIN;
+  queue: string; // name of the queue
+}
+
+interface DeleteQueueSuccessAction {
+  type: typeof DELETE_QUEUE_SUCCESS;
+  queue: string; // name of the queue
+}
+
+interface DeleteQueueErrorAction {
+  type: typeof DELETE_QUEUE_ERROR;
   queue: string; // name of the queue
   error: string; // error description
 }
@@ -86,6 +106,9 @@ export type QueuesActionTypes =
   | GetQueueBeginAction
   | GetQueueSuccessAction
   | GetQueueErrorAction
+  | DeleteQueueBeginAction
+  | DeleteQueueSuccessAction
+  | DeleteQueueErrorAction
   | PauseQueueBeginAction
   | PauseQueueSuccessAction
   | PauseQueueErrorAction
@@ -115,11 +138,36 @@ export function getQueueAsync(qname: string) {
         queue: qname,
         payload: response,
       });
-    } catch {
+    } catch (error) {
+      console.error(error);
       dispatch({
         type: GET_QUEUE_ERROR,
         queue: qname,
         error: `Could not retrieve queue data for queue: ${qname}`,
+      });
+    }
+  };
+}
+
+export function deleteQueueAsync(qname: string) {
+  return async (dispatch: Dispatch<QueuesActionTypes>) => {
+    dispatch({
+      type: DELETE_QUEUE_BEGIN,
+      queue: qname,
+    });
+    try {
+      await deleteQueue(qname);
+      // FIXME: this action doesn't get dispatched when server stalls
+      dispatch({
+        type: DELETE_QUEUE_SUCCESS,
+        queue: qname,
+      });
+    } catch (error) {
+      console.error(error);
+      dispatch({
+        type: DELETE_QUEUE_ERROR,
+        queue: qname,
+        error: `Could not delete queue: ${qname}`,
       });
     }
   };

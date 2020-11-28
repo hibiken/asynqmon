@@ -118,6 +118,13 @@ export async function getQueue(qname: string): Promise<GetQueueResponse> {
   return resp.data;
 }
 
+export async function deleteQueue(qname: string): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}`,
+  });
+}
+
 export async function pauseQueue(qname: string): Promise<void> {
   await axios({
     method: "post",

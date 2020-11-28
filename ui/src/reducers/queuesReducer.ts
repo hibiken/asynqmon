@@ -9,6 +9,9 @@ import {
   RESUME_QUEUE_ERROR,
   RESUME_QUEUE_SUCCESS,
   GET_QUEUE_SUCCESS,
+  DELETE_QUEUE_BEGIN,
+  DELETE_QUEUE_ERROR,
+  DELETE_QUEUE_SUCCESS,
 } from "../actions/queuesActions";
 import {
   LIST_ACTIVE_TASKS_SUCCESS,
@@ -29,7 +32,7 @@ export interface QueueInfo {
   name: string; // name of the queue.
   currentStats: Queue;
   history: DailyStat[];
-  pauseRequestPending: boolean; // indicates pause/resume action is pending on this queue
+  requestPending: boolean; // indicates pause/resume/delete action is pending on this queue
 }
 
 const initialState: QueuesState = { data: [], loading: false };
@@ -51,7 +54,7 @@ function queuesReducer(
           name: q.queue,
           currentStats: q,
           history: [],
-          pauseRequestPending: false,
+          requestPending: false,
         })),
       };
 
@@ -62,18 +65,26 @@ function queuesReducer(
           name: action.queue,
           currentStats: action.payload.current,
           history: action.payload.history,
-          pauseRequestPending: false,
+          requestPending: false,
         });
       return { ...state, data: newData };
 
+    case DELETE_QUEUE_BEGIN:
     case PAUSE_QUEUE_BEGIN:
     case RESUME_QUEUE_BEGIN: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
         }
-        return { ...queueInfo, pauseRequestPending: true };
+        return { ...queueInfo, requestPending: true };
       });
+      return { ...state, data: newData };
+    }
+
+    case DELETE_QUEUE_SUCCESS: {
+      const newData = state.data.filter(
+        (queueInfo) => queueInfo.name !== action.queue
+      );
       return { ...state, data: newData };
     }
 
@@ -84,7 +95,7 @@ function queuesReducer(
         }
         return {
           ...queueInfo,
-          pauseRequestPending: false,
+          requestPending: false,
           currentStats: { ...queueInfo.currentStats, paused: true },
         };
       });
@@ -98,13 +109,14 @@ function queuesReducer(
         }
         return {
           ...queueInfo,
-          pauseRequestPending: false,
+          requestPending: false,
           currentStats: { ...queueInfo.currentStats, paused: false },
         };
       });
       return { ...state, data: newData };
     }
 
+    case DELETE_QUEUE_ERROR:
     case PAUSE_QUEUE_ERROR:
     case RESUME_QUEUE_ERROR: {
       const newData = state.data.map((queueInfo) => {
@@ -113,7 +125,7 @@ function queuesReducer(
         }
         return {
           ...queueInfo,
-          pauseRequestPending: false,
+          requestPending: false,
         };
       });
       return { ...state, data: newData };
@@ -130,7 +142,7 @@ function queuesReducer(
           name: action.queue,
           currentStats: action.payload.stats,
           history: [],
-          pauseRequestPending: false,
+          requestPending: false,
         });
       return { ...state, data: newData };
     }

@@ -10,6 +10,7 @@ import {
   listQueuesAsync,
   pauseQueueAsync,
   resumeQueueAsync,
+  deleteQueueAsync,
 } from "../actions/queuesActions";
 import { AppState } from "../store";
 import QueueSizeChart from "../components/QueueSizeChart";
@@ -56,7 +57,7 @@ function mapStateToProps(state: AppState) {
     loading: state.queues.loading,
     queues: state.queues.data.map((q) => ({
       ...q.currentStats,
-      pauseRequestPending: q.pauseRequestPending,
+      requestPending: q.requestPending,
     })),
     pollInterval: state.settings.pollInterval,
   };
@@ -66,6 +67,7 @@ const mapDispatchToProps = {
   listQueuesAsync,
   pauseQueueAsync,
   resumeQueueAsync,
+  deleteQueueAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -171,6 +173,7 @@ function DashboardView(props: Props) {
               queues={queues}
               onPauseClick={props.pauseQueueAsync}
               onResumeClick={props.resumeQueueAsync}
+              onDeleteClick={props.deleteQueueAsync}
             />
           </Paper>
         </Grid>

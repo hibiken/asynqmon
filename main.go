@@ -91,7 +91,10 @@ func main() {
 	fs := &staticFileServer{staticPath: "ui/build", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(fs)
 
-	handler := cors.Default().Handler(router)
+	c := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "DELETE"},
+	})
+	handler := c.Handler(router)
 
 	srv := &http.Server{
 		Handler:      handler,
