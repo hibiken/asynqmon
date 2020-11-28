@@ -58,6 +58,26 @@ func newGetQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
+func newDeleteQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname := vars["qname"]
+		if err := inspector.DeleteQueue(qname, false); err != nil {
+			if _, ok := err.(*asynq.ErrQueueNotFound); ok {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
+			if _, ok := err.(*asynq.ErrQueueNotEmpty); ok {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 func newPauseQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)

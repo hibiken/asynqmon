@@ -71,6 +71,8 @@ func main() {
 		newListQueuesHandlerFunc(inspector)).Methods("GET")
 	api.HandleFunc("/queues/{qname}",
 		newGetQueueHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}",
+		newDeleteQueueHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/pause",
 		newPauseQueueHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/resume",
