@@ -18,6 +18,7 @@ import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import DeleteQueueConfirmationDialog from "./DeleteQueueConfirmationDialog";
 import { Queue } from "../api";
 import { queueDetailsPath } from "../paths";
+import { SortDirection, ColumnConfig } from "../types/table";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -70,19 +71,7 @@ enum SortBy {
   None, // no sort support
 }
 
-enum SortDirection {
-  Asc = "asc",
-  Desc = "desc",
-}
-
-interface ColumnConfig {
-  label: string;
-  key: string;
-  sortBy: SortBy;
-  align: "left" | "right" | "center";
-}
-
-const colConfigs: ColumnConfig[] = [
+const colConfigs: ColumnConfig<SortBy>[] = [
   { label: "Queue", key: "queue", sortBy: SortBy.Queue, align: "left" },
   { label: "Size", key: "size", sortBy: SortBy.Size, align: "right" },
   { label: "Active", key: "active", sortBy: SortBy.Active, align: "right" },
