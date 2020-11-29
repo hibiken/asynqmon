@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
@@ -29,6 +29,7 @@ import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import { durationBefore } from "../timeutil";
+import { usePolling } from "../hooks";
 
 const useStyles = makeStyles({
   table: {
@@ -75,14 +76,12 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
     setPage(0);
   };
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     const pageOpts = { page: page + 1, size: pageSize };
     listScheduledTasksAsync(queue, pageOpts);
-    const interval = setInterval(() => {
-      listScheduledTasksAsync(queue, pageOpts);
-    }, pollInterval * 1000);
-    return () => clearInterval(interval);
-  }, [pollInterval, listScheduledTasksAsync, queue, page, pageSize]);
+  }, [page, pageSize, queue, listScheduledTasksAsync]);
+
+  usePolling(fetchData, pollInterval);
 
   if (props.tasks.length === 0) {
     return (

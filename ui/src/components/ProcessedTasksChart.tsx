@@ -25,7 +25,7 @@ function ProcessedTasksChart(props: Props) {
   const theme = useTheme<Theme>();
   return (
     <ResponsiveContainer>
-      <BarChart data={props.data} maxBarSize={100}>
+      <BarChart data={props.data} maxBarSize={120}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="queue" />
         <YAxis />

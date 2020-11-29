@@ -133,11 +133,14 @@ export type TasksActionTypes =
   | ListDeadTasksSuccessAction
   | ListDeadTasksErrorAction;
 
-export function listActiveTasksAsync(qname: string) {
+export function listActiveTasksAsync(
+  qname: string,
+  pageOpts?: PaginationOptions
+) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: LIST_ACTIVE_TASKS_BEGIN, queue: qname });
     try {
-      const response = await listActiveTasks(qname);
+      const response = await listActiveTasks(qname, pageOpts);
       dispatch({
         type: LIST_ACTIVE_TASKS_SUCCESS,
         queue: qname,

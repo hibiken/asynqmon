@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
@@ -29,6 +29,7 @@ import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import { timeAgo } from "../timeutil";
+import { usePolling } from "../hooks";
 
 const useStyles = makeStyles({
   table: {
@@ -83,14 +84,12 @@ function DeadTasksTable(props: Props & ReduxProps) {
     setPage(0);
   };
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     const pageOpts = { page: page + 1, size: pageSize };
     listDeadTasksAsync(queue, pageOpts);
-    const interval = setInterval(() => {
-      listDeadTasksAsync(queue, pageOpts);
-    }, pollInterval * 1000);
-    return () => clearInterval(interval);
-  }, [pollInterval, listDeadTasksAsync, queue, page, pageSize]);
+  }, [page, pageSize, queue, listDeadTasksAsync]);
+
+  usePolling(fetchData, pollInterval);
 
   if (props.tasks.length === 0) {
     return (

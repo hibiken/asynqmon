@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import Container from "@material-ui/core/Container";
 import { makeStyles } from "@material-ui/core/styles";
@@ -18,6 +18,7 @@ import ProcessedTasksChart from "../components/ProcessedTasksChart";
 import QueuesOverviewTable from "../components/QueuesOverviewTable";
 import Tooltip from "../components/Tooltip";
 import { getCurrentUTCDate } from "../timeutil";
+import { usePolling } from "../hooks";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -78,11 +79,7 @@ function DashboardView(props: Props) {
   const { pollInterval, listQueuesAsync, queues } = props;
   const classes = useStyles();
 
-  useEffect(() => {
-    listQueuesAsync();
-    const interval = setInterval(listQueuesAsync, pollInterval * 1000);
-    return () => clearInterval(interval);
-  }, [pollInterval, listQueuesAsync]);
+  usePolling(listQueuesAsync, pollInterval);
 
   const processedStats = queues.map((q) => ({
     queue: q.queue,

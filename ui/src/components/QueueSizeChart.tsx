@@ -26,7 +26,7 @@ interface TaskBreakdown {
 function QueueSizeChart(props: Props) {
   return (
     <ResponsiveContainer>
-      <BarChart data={props.data}>
+      <BarChart data={props.data} maxBarSize={120}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="queue" />
         <YAxis />
