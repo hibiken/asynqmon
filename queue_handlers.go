@@ -8,6 +8,11 @@ import (
 	"github.com/hibiken/asynq"
 )
 
+// ****************************************************************************
+// This file defines:
+//   - http.Handler(s) for queue related endpoints
+// ****************************************************************************
+
 func newListQueuesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()

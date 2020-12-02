@@ -9,6 +9,11 @@ import (
 	"github.com/hibiken/asynq"
 )
 
+// ****************************************************************************
+// This file defines:
+//   - http.Handler(s) for task related endpoints
+// ****************************************************************************
+
 func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -28,7 +33,7 @@ func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 		payload := make(map[string]interface{})
 		if len(tasks) == 0 {
 			// avoid nil for the tasks field in json output.
-			payload["tasks"] = make([]*asynq.ActiveTask, 0)
+			payload["tasks"] = make([]*ActiveTask, 0)
 		} else {
 			payload["tasks"] = toActiveTasks(tasks)
 		}
@@ -56,7 +61,7 @@ func newListPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc
 		payload := make(map[string]interface{})
 		if len(tasks) == 0 {
 			// avoid nil for the tasks field in json output.
-			payload["tasks"] = make([]*asynq.PendingTask, 0)
+			payload["tasks"] = make([]*PendingTask, 0)
 		} else {
 			payload["tasks"] = toPendingTasks(tasks)
 		}
@@ -84,7 +89,7 @@ func newListScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFu
 		payload := make(map[string]interface{})
 		if len(tasks) == 0 {
 			// avoid nil for the tasks field in json output.
-			payload["tasks"] = make([]*asynq.ScheduledTask, 0)
+			payload["tasks"] = make([]*ScheduledTask, 0)
 		} else {
 			payload["tasks"] = toScheduledTasks(tasks)
 		}
@@ -112,7 +117,7 @@ func newListRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 		payload := make(map[string]interface{})
 		if len(tasks) == 0 {
 			// avoid nil for the tasks field in json output.
-			payload["tasks"] = make([]*asynq.RetryTask, 0)
+			payload["tasks"] = make([]*RetryTask, 0)
 		} else {
 			payload["tasks"] = toRetryTasks(tasks)
 		}
@@ -140,7 +145,7 @@ func newListDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 		payload := make(map[string]interface{})
 		if len(tasks) == 0 {
 			// avoid nil for the tasks field in json output.
-			payload["tasks"] = make([]*asynq.DeadTask, 0)
+			payload["tasks"] = make([]*DeadTask, 0)
 		} else {
 			payload["tasks"] = toDeadTasks(tasks)
 		}

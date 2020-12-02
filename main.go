@@ -87,6 +87,8 @@ func main() {
 		newListRetryTasksHandlerFunc(inspector)).Methods("GET")
 	api.HandleFunc("/queues/{qname}/dead_tasks",
 		newListDeadTasksHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/scheduler_entries",
+		newListSchedulerEntriesHandlerFunc(inspector)).Methods("GET")
 
 	fs := &staticFileServer{staticPath: "ui/build", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(fs)

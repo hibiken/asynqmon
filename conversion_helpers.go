@@ -6,6 +6,12 @@ import (
 	"github.com/hibiken/asynq"
 )
 
+// ****************************************************************************
+// This file defines:
+//   - internal types with JSON struct tags
+//   - conversion function from an external type to an internal type
+// ****************************************************************************
+
 type QueueStateSnapshot struct {
 	// Name of the queue.
 	Queue string `json:"queue"`
@@ -203,6 +209,40 @@ func toDeadTasks(in []*asynq.DeadTask) []*DeadTask {
 	out := make([]*DeadTask, len(in))
 	for i, t := range in {
 		out[i] = toDeadTask(t)
+	}
+	return out
+}
+
+type SchedulerEntry struct {
+	ID            string        `json:"id"`
+	Spec          string        `json:"spec"`
+	TaskType      string        `json:"task_type"`
+	TaskPayload   asynq.Payload `json:"task_payload"`
+	Opts          []string      `json:"options"`
+	NextEnqueueAt time.Time     `json:"next_enqueue_at"`
+	PrevEnqueueAt time.Time     `json:"prev_enqueue_at"`
+}
+
+func toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry {
+	opts := make([]string, 0) // create a non-nil, empty slice to avoid null in json output
+	for _, o := range e.Opts {
+		opts = append(opts, o.String())
+	}
+	return &SchedulerEntry{
+		ID:            e.ID,
+		Spec:          e.Spec,
+		TaskType:      e.Task.Type,
+		TaskPayload:   e.Task.Payload,
+		Opts:          opts,
+		NextEnqueueAt: e.Next,
+		PrevEnqueueAt: e.Prev,
+	}
+}
+
+func toSchedulerEntries(in []*asynq.SchedulerEntry) []*SchedulerEntry {
+	out := make([]*SchedulerEntry, len(in))
+	for i, e := range in {
+		out[i] = toSchedulerEntry(e)
 	}
 	return out
 }
