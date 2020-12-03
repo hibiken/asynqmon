@@ -37,6 +37,10 @@ export interface ListDeadTasksResponse {
   stats: Queue;
 }
 
+export interface ListSchedulerEntriesResponse {
+  entries: SchedulerEntry[];
+}
+
 export interface Queue {
   queue: string;
   paused: boolean;
@@ -95,6 +99,16 @@ export interface DeadTask extends BaseTask {
   retried: number;
   last_failed_at: string;
   error_message: string;
+}
+
+export interface SchedulerEntry {
+  id: string;
+  spec: string;
+  task_type: string;
+  task_payload: { [key: string]: any };
+  options: string[];
+  next_enqueue_at: string;
+  prev_enqueue_at: string;
 }
 
 export interface PaginationOptions extends Record<string, number | undefined> {
@@ -210,6 +224,14 @@ export async function listDeadTasks(
   const resp = await axios({
     method: "get",
     url,
+  });
+  return resp.data;
+}
+
+export async function listSchedulerEntries(): Promise<ListSchedulerEntriesResponse> {
+  const resp = await axios({
+    method: "get",
+    url: `${BASE_URL}/scheduler_entries`,
   });
   return resp.data;
 }

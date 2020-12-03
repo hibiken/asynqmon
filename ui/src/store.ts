@@ -2,11 +2,13 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import settingsReducer from "./reducers/settingsReducer";
 import queuesReducer from "./reducers/queuesReducer";
 import tasksReducer from "./reducers/tasksReducer";
+import schedulerEntriesReducer from "./reducers/schedulerEntriesReducer";
 
 const rootReducer = combineReducers({
   settings: settingsReducer,
   queues: queuesReducer,
   tasks: tasksReducer,
+  schedulerEntries: schedulerEntriesReducer,
 });
 
 // AppState is the top-level application state maintained by redux store.
