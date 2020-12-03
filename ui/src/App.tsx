@@ -14,7 +14,7 @@ import LayersIcon from "@material-ui/icons/Layers";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { paths } from "./paths";
 import ListItemLink from "./components/ListItemLink";
-import CronView from "./views/CronView";
+import SchedulersView from "./views/SchedulersView";
 import DashboardView from "./views/DashboardView";
 import TasksView from "./views/TasksView";
 import SettingsView from "./views/SettingsView";
@@ -147,20 +147,20 @@ function App() {
               <List>
                 <div>
                   <ListItemLink
-                    to="/"
+                    to={paths.HOME}
                     primary="Queues"
                     icon={<BarChartIcon />}
                   />
                   <ListItemLink
-                    to="/cron"
-                    primary="Cron"
+                    to={paths.SCHEDULERS}
+                    primary="Schedulers"
                     icon={<LayersIcon />}
                   />
                 </div>
               </List>
               <List>
                 <ListItemLink
-                  to="/settings"
+                  to={paths.SETTINGS}
                   primary="Settings"
                   icon={<SettingsIcon />}
                 />
@@ -173,8 +173,8 @@ function App() {
                 <Route exact path={paths.QUEUE_DETAILS}>
                   <TasksView />
                 </Route>
-                <Route exact path={paths.CRON}>
-                  <CronView />
+                <Route exact path={paths.SCHEDULERS}>
+                  <SchedulersView />
                 </Route>
                 <Route exact path={paths.SETTINGS}>
                   <SettingsView />

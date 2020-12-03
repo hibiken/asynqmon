@@ -29,7 +29,7 @@ export function durationBefore(timestamp: string): string {
     if (duration.totalSeconds < 1) {
       return "now";
     }
-    return stringifyDuration(duration);
+    return "in " + stringifyDuration(duration);
   } catch {
     return "-";
   }

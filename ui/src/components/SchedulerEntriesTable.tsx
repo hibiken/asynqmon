@@ -7,10 +7,14 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import Alert from "@material-ui/lab/Alert";
+import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
 import { SortDirection, ColumnConfig } from "../types/table";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
+import { SchedulerEntry } from "../api";
+import { timeAgo, durationBefore } from "../timeutil";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -58,7 +62,7 @@ const colConfigs: ColumnConfig<SortBy>[] = [
   },
   {
     label: "Payload",
-    key: "payload",
+    key: "task_payload",
     sortBy: SortBy.Payload,
     align: "left",
   },
@@ -82,79 +86,22 @@ const colConfigs: ColumnConfig<SortBy>[] = [
   },
 ];
 
-function createData(
-  id: string,
-  spec: string,
-  type: string,
-  payload: any,
-  options: string,
-  nextEnqueue: string,
-  prevEnqueue: string
-) {
-  return { id, spec, type, payload, options, nextEnqueue, prevEnqueue };
-}
-
-const rows = [
-  createData(
-    "da0e15bb-3649-45de-9c36-90b9db744b8a",
-    "*/5 * * * *",
-    "email:welcome",
-    { user_id: 42 },
-    "[Queue('email')]",
-    "In 29s",
-    "4m31s ago"
-  ),
-  createData(
-    "fi0e10bb-3649-45de-9c36-90b9db744b8a",
-    "* 1 * * *",
-    "email:daily_digest",
-    {},
-    "[Queue('email')]",
-    "In 23h",
-    "1h ago"
-  ),
-  createData(
-    "ca0e17bv-3649-45de-9c36-90b9db744b8a",
-    "@every 10m",
-    "search:reindex",
-    {},
-    "[Queue('index')]",
-    "In 2m",
-    "8m ago"
-  ),
-  createData(
-    "we4e15bb-3649-45de-9c36-90b9db744b8a",
-    "*/5 * * * *",
-    "janitor",
-    { user_id: 42 },
-    "[Queue('low')]",
-    "In 29s",
-    "4m31s ago"
-  ),
-];
-
-interface Entry {
-  id: string;
-  spec: string;
-  type: string;
-  payload: any;
-  options: string;
-  nextEnqueue: string;
-  prevEnqueue: string;
-}
-
 // sortEntries takes a array of entries and return a sorted array.
 // It returns a new array and leave the original array untouched.
 function sortEntries(
-  entries: Entry[],
-  cmpFn: (first: Entry, second: Entry) => number
-): Entry[] {
+  entries: SchedulerEntry[],
+  cmpFn: (first: SchedulerEntry, second: SchedulerEntry) => number
+): SchedulerEntry[] {
   let copy = [...entries];
   copy.sort(cmpFn);
   return copy;
 }
 
-export default function CronEntriesTable() {
+interface Props {
+  entries: SchedulerEntry[];
+}
+
+export default function SchedulerEntriesTable(props: Props) {
   const classes = useStyles();
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.EntryId);
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.Asc);
@@ -171,7 +118,7 @@ export default function CronEntriesTable() {
     }
   };
 
-  const cmpFunc = (e1: Entry, q2: Entry): number => {
+  const cmpFunc = (e1: SchedulerEntry, q2: SchedulerEntry): number => {
     let isE1Smaller: boolean;
     switch (sortBy) {
       case SortBy.EntryId:
@@ -183,24 +130,24 @@ export default function CronEntriesTable() {
         isE1Smaller = e1.spec < q2.spec;
         break;
       case SortBy.Type:
-        if (e1.type === q2.type) return 0;
-        isE1Smaller = e1.type < q2.type;
+        if (e1.task_type === q2.task_type) return 0;
+        isE1Smaller = e1.task_type < q2.task_type;
         break;
       case SortBy.Payload:
-        if (e1.payload === q2.payload) return 0;
-        isE1Smaller = e1.payload < q2.payload;
+        if (e1.task_payload === q2.task_payload) return 0;
+        isE1Smaller = e1.task_payload < q2.task_payload;
         break;
       case SortBy.Options:
         if (e1.options === q2.options) return 0;
         isE1Smaller = e1.options < q2.options;
         break;
       case SortBy.NextEnqueue:
-        if (e1.nextEnqueue === q2.nextEnqueue) return 0;
-        isE1Smaller = e1.nextEnqueue < q2.nextEnqueue;
+        if (e1.next_enqueue_at === q2.next_enqueue_at) return 0;
+        isE1Smaller = e1.next_enqueue_at < q2.next_enqueue_at;
         break;
       case SortBy.PrevEnqueue:
-        if (e1.prevEnqueue === q2.prevEnqueue) return 0;
-        isE1Smaller = e1.prevEnqueue < q2.prevEnqueue;
+        if (e1.prev_enqueue_at === q2.prev_enqueue_at) return 0;
+        isE1Smaller = e1.prev_enqueue_at < q2.prev_enqueue_at;
         break;
       default:
         // eslint-disable-next-line no-throw-literal
@@ -212,6 +159,15 @@ export default function CronEntriesTable() {
       return isE1Smaller ? 1 : -1;
     }
   };
+
+  if (props.entries.length === 0) {
+    return (
+      <Alert severity="info">
+        <AlertTitle>Info</AlertTitle>
+        No entries found at this time.
+      </Alert>
+    );
+  }
 
   return (
     <TableContainer>
@@ -236,41 +192,43 @@ export default function CronEntriesTable() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortEntries(rows, cmpFunc).map((row, idx) => {
-            const isLastRow = idx === rows.length - 1;
+          {sortEntries(props.entries, cmpFunc).map((entry, idx) => {
+            const isLastRow = idx === props.entries.length - 1;
             return (
-              <TableRow key={row.id}>
+              <TableRow key={entry.id}>
                 <TableCell
                   component="th"
                   scope="row"
                   className={clsx(isLastRow && classes.noBorder)}
                 >
-                  {row.id}
+                  {entry.id}
                 </TableCell>
                 <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {row.spec}
+                  {entry.spec}
                 </TableCell>
                 <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {row.type}
+                  {entry.task_type}
                 </TableCell>
                 <TableCell className={clsx(isLastRow && classes.noBorder)}>
                   <SyntaxHighlighter
                     language="json"
                     style={syntaxHighlightStyle}
                   >
-                    {JSON.stringify(row.payload)}
+                    {JSON.stringify(entry.task_payload)}
                   </SyntaxHighlighter>
                 </TableCell>
                 <TableCell className={clsx(isLastRow && classes.noBorder)}>
                   <SyntaxHighlighter language="go" style={syntaxHighlightStyle}>
-                    {row.options}
+                    {entry.options.length > 0
+                      ? entry.options.join(", ")
+                      : "No options"}
                   </SyntaxHighlighter>
                 </TableCell>
                 <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {row.nextEnqueue}
+                  {durationBefore(entry.next_enqueue_at)}
                 </TableCell>
                 <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {row.prevEnqueue}
+                  {timeAgo(entry.prev_enqueue_at)}
                 </TableCell>
               </TableRow>
             );
