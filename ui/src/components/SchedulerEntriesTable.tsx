@@ -118,36 +118,38 @@ export default function SchedulerEntriesTable(props: Props) {
     }
   };
 
-  const cmpFunc = (e1: SchedulerEntry, q2: SchedulerEntry): number => {
+  const cmpFunc = (e1: SchedulerEntry, e2: SchedulerEntry): number => {
     let isE1Smaller: boolean;
     switch (sortBy) {
       case SortBy.EntryId:
-        if (e1.id === q2.id) return 0;
-        isE1Smaller = e1.id < q2.id;
+        if (e1.id === e2.id) return 0;
+        isE1Smaller = e1.id < e2.id;
         break;
       case SortBy.Spec:
-        if (e1.spec === q2.spec) return 0;
-        isE1Smaller = e1.spec < q2.spec;
+        if (e1.spec === e2.spec) return 0;
+        isE1Smaller = e1.spec < e2.spec;
         break;
       case SortBy.Type:
-        if (e1.task_type === q2.task_type) return 0;
-        isE1Smaller = e1.task_type < q2.task_type;
+        if (e1.task_type === e2.task_type) return 0;
+        isE1Smaller = e1.task_type < e2.task_type;
         break;
       case SortBy.Payload:
-        if (e1.task_payload === q2.task_payload) return 0;
-        isE1Smaller = e1.task_payload < q2.task_payload;
+        if (e1.task_payload === e2.task_payload) return 0;
+        isE1Smaller = e1.task_payload < e2.task_payload;
         break;
       case SortBy.Options:
-        if (e1.options === q2.options) return 0;
-        isE1Smaller = e1.options < q2.options;
+        if (e1.options === e2.options) return 0;
+        isE1Smaller = e1.options < e2.options;
         break;
       case SortBy.NextEnqueue:
-        if (e1.next_enqueue_at === q2.next_enqueue_at) return 0;
-        isE1Smaller = e1.next_enqueue_at < q2.next_enqueue_at;
+        if (e1.next_enqueue_at === e2.next_enqueue_at) return 0;
+        isE1Smaller = e1.next_enqueue_at < e2.next_enqueue_at;
         break;
       case SortBy.PrevEnqueue:
-        if (e1.prev_enqueue_at === q2.prev_enqueue_at) return 0;
-        isE1Smaller = e1.prev_enqueue_at < q2.prev_enqueue_at;
+        const e1PrevEnqueueAt = e1.prev_enqueue_at || "";
+        const e2PrevEnqueueAt = e2.prev_enqueue_at || "";
+        if (e1PrevEnqueueAt === e2PrevEnqueueAt) return 0;
+        isE1Smaller = e1PrevEnqueueAt < e2PrevEnqueueAt;
         break;
       default:
         // eslint-disable-next-line no-throw-literal
@@ -228,7 +230,9 @@ export default function SchedulerEntriesTable(props: Props) {
                   {durationBefore(entry.next_enqueue_at)}
                 </TableCell>
                 <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {timeAgo(entry.prev_enqueue_at)}
+                  {entry.prev_enqueue_at
+                    ? timeAgo(entry.prev_enqueue_at)
+                    : "N/A"}
                 </TableCell>
               </TableRow>
             );

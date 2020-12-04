@@ -219,8 +219,9 @@ type SchedulerEntry struct {
 	TaskType      string        `json:"task_type"`
 	TaskPayload   asynq.Payload `json:"task_payload"`
 	Opts          []string      `json:"options"`
-	NextEnqueueAt time.Time     `json:"next_enqueue_at"`
-	PrevEnqueueAt time.Time     `json:"prev_enqueue_at"`
+	NextEnqueueAt string        `json:"next_enqueue_at"`
+	// This field is omitted if there were no previous enqueue events.
+	PrevEnqueueAt string `json:"prev_enqueue_at,omitempty"`
 }
 
 func toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry {
@@ -228,14 +229,18 @@ func toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry {
 	for _, o := range e.Opts {
 		opts = append(opts, o.String())
 	}
+	prev := ""
+	if !e.Prev.IsZero() {
+		prev = e.Prev.Format(time.RFC3339)
+	}
 	return &SchedulerEntry{
 		ID:            e.ID,
 		Spec:          e.Spec,
 		TaskType:      e.Task.Type,
 		TaskPayload:   e.Task.Payload,
 		Opts:          opts,
-		NextEnqueueAt: e.Next,
-		PrevEnqueueAt: e.Prev,
+		NextEnqueueAt: e.Next.Format(time.RFC3339),
+		PrevEnqueueAt: prev,
 	}
 }
 

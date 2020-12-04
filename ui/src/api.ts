@@ -108,7 +108,9 @@ export interface SchedulerEntry {
   task_payload: { [key: string]: any };
   options: string[];
   next_enqueue_at: string;
-  prev_enqueue_at: string;
+  // prev_enqueue_at will be omitted
+  // if there were no previous enqueue events.
+  prev_enqueue_at?: string;
 }
 
 export interface PaginationOptions extends Record<string, number | undefined> {
