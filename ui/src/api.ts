@@ -170,6 +170,16 @@ export async function listActiveTasks(
   return resp.data;
 }
 
+export async function cancelActiveTask(
+  qname: string,
+  taskId: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/active_tasks/${taskId}/cancel`,
+  });
+}
+
 export async function listPendingTasks(
   qname: string,
   pageOpts?: PaginationOptions

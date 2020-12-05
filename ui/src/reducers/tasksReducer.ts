@@ -15,6 +15,9 @@ import {
   LIST_DEAD_TASKS_BEGIN,
   LIST_DEAD_TASKS_SUCCESS,
   LIST_DEAD_TASKS_ERROR,
+  CANCEL_ACTIVE_TASK_BEGIN,
+  CANCEL_ACTIVE_TASK_SUCCESS,
+  CANCEL_ACTIVE_TASK_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -24,11 +27,21 @@ import {
   ScheduledTask,
 } from "../api";
 
+interface ActiveTaskExtended extends ActiveTask {
+  // Indicates that a request has been sent for this
+  // task and awaiting for a response.
+  requestPending: boolean;
+
+  // Incidates that a cancelation signal has been
+  // published for this task.
+  canceling: boolean;
+}
+
 interface TasksState {
   activeTasks: {
     loading: boolean;
     error: string;
-    data: ActiveTask[];
+    data: ActiveTaskExtended[];
   };
   pendingTasks: {
     loading: boolean;
@@ -101,7 +114,11 @@ function tasksReducer(
         activeTasks: {
           loading: false,
           error: "",
-          data: action.payload.tasks,
+          data: action.payload.tasks.map((task) => ({
+            ...task,
+            canceling: false,
+            requestPending: false,
+          })),
         },
       };
 
@@ -232,6 +249,53 @@ function tasksReducer(
           ...state.deadTasks,
           loading: false,
           error: action.error,
+        },
+      };
+
+    case CANCEL_ACTIVE_TASK_BEGIN: {
+      const newData = state.activeTasks.data.map((task) => {
+        if (task.id !== action.taskId) {
+          return task;
+        }
+        return { ...task, requestPending: true };
+      });
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          data: newData,
+        },
+      };
+    }
+
+    case CANCEL_ACTIVE_TASK_SUCCESS: {
+      const newData = state.activeTasks.data.map((task) => {
+        if (task.id !== action.taskId) {
+          return task;
+        }
+        return { ...task, requestPending: false, canceling: true };
+      });
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          data: newData,
+        },
+      };
+    }
+
+    case CANCEL_ACTIVE_TASK_ERROR:
+      const newData = state.activeTasks.data.map((task) => {
+        if (task.id !== action.taskId) {
+          return task;
+        }
+        return { ...task, requestPending: false };
+      });
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          data: newData,
         },
       };
 

@@ -1,4 +1,5 @@
 import {
+  cancelActiveTask,
   listActiveTasks,
   ListActiveTasksResponse,
   listDeadTasks,
@@ -29,6 +30,9 @@ export const LIST_RETRY_TASKS_ERROR = "LIST_RETRY_TASKS_ERROR";
 export const LIST_DEAD_TASKS_BEGIN = "LIST_DEAD_TASKS_BEGIN";
 export const LIST_DEAD_TASKS_SUCCESS = "LIST_DEAD_TASKS_SUCCESS";
 export const LIST_DEAD_TASKS_ERROR = "LIST_DEAD_TASKS_ERROR";
+export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
+export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
+export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
 
 interface ListActiveTasksBeginAction {
   type: typeof LIST_ACTIVE_TASKS_BEGIN;
@@ -115,6 +119,25 @@ interface ListDeadTasksErrorAction {
   error: string; // error description
 }
 
+interface CancelActiveTaskBeginAction {
+  type: typeof CANCEL_ACTIVE_TASK_BEGIN;
+  queue: string;
+  taskId: string;
+}
+
+interface CancelActiveTaskSuccessAction {
+  type: typeof CANCEL_ACTIVE_TASK_SUCCESS;
+  queue: string;
+  taskId: string;
+}
+
+interface CancelActiveTaskErrorAction {
+  type: typeof CANCEL_ACTIVE_TASK_ERROR;
+  queue: string;
+  taskId: string;
+  error: string;
+}
+
 // Union of all tasks related action types.
 export type TasksActionTypes =
   | ListActiveTasksBeginAction
@@ -131,7 +154,10 @@ export type TasksActionTypes =
   | ListRetryTasksErrorAction
   | ListDeadTasksBeginAction
   | ListDeadTasksSuccessAction
-  | ListDeadTasksErrorAction;
+  | ListDeadTasksErrorAction
+  | CancelActiveTaskBeginAction
+  | CancelActiveTaskSuccessAction
+  | CancelActiveTaskErrorAction;
 
 export function listActiveTasksAsync(
   qname: string,
@@ -243,6 +269,23 @@ export function listDeadTasksAsync(
         type: LIST_DEAD_TASKS_ERROR,
         queue: qname,
         error: `Could not retreive dead tasks data for queue: ${qname}`,
+      });
+    }
+  };
+}
+
+export function cancelActiveTaskAsync(queue: string, taskId: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: CANCEL_ACTIVE_TASK_BEGIN, queue, taskId });
+    try {
+      await cancelActiveTask(queue, taskId);
+      dispatch({ type: CANCEL_ACTIVE_TASK_SUCCESS, queue, taskId });
+    } catch {
+      dispatch({
+        type: CANCEL_ACTIVE_TASK_ERROR,
+        error: `Could not cancel task: ${taskId}`,
+        queue,
+        taskId,
       });
     }
   };
