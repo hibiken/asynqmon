@@ -42,6 +42,17 @@ func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 	}
 }
 
+func newCancelActiveTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := mux.Vars(r)["task_id"]
+		if err := inspector.CancelActiveTask(id); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 func newListPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
