@@ -27,7 +27,7 @@ import {
   ScheduledTask,
 } from "../api";
 
-interface ActiveTaskExtended extends ActiveTask {
+export interface ActiveTaskExtended extends ActiveTask {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;

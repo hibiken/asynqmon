@@ -21,14 +21,17 @@ import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
-import { listActiveTasksAsync } from "../actions/tasksActions";
+import {
+  listActiveTasksAsync,
+  cancelActiveTaskAsync,
+} from "../actions/tasksActions";
 import { AppState } from "../store";
-import { ActiveTask } from "../api";
 import TablePaginationActions, {
   rowsPerPageOptions,
   defaultPageSize,
 } from "./TablePaginationActions";
 import { usePolling } from "../hooks";
+import { ActiveTaskExtended } from "../reducers/tasksReducer";
 
 const useStyles = makeStyles({
   table: {
@@ -44,7 +47,7 @@ function mapStateToProps(state: AppState) {
   };
 }
 
-const mapDispatchToProps = { listActiveTasksAsync };
+const mapDispatchToProps = { listActiveTasksAsync, cancelActiveTaskAsync };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -90,11 +93,11 @@ function ActiveTasksTable(props: Props & ReduxProps) {
     );
   }
 
-  const columns = [
-    { label: "" },
-    { label: "ID" },
-    { label: "Type" },
-    { label: "Actions" },
+  const columns: { label: string; align: "left" | "center" | "right" }[] = [
+    { label: "", align: "left" },
+    { label: "ID", align: "left" },
+    { label: "Type", align: "left" },
+    { label: "Actions", align: "center" },
   ];
 
   return (
@@ -108,14 +111,22 @@ function ActiveTasksTable(props: Props & ReduxProps) {
         <TableHead>
           <TableRow>
             {columns.map((col) => (
-              <TableCell key={col.label}>{col.label}</TableCell>
+              <TableCell key={col.label} align={col.align}>
+                {col.label}
+              </TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
           {/* TODO: loading and empty state */}
           {props.tasks.map((task) => (
-            <Row key={task.id} task={task} />
+            <Row
+              key={task.id}
+              task={task}
+              onCancelClick={() => {
+                props.cancelActiveTaskAsync(queue, task.id);
+              }}
+            />
           ))}
         </TableBody>
         <TableFooter>
@@ -149,7 +160,7 @@ const useRowStyles = makeStyles({
   },
 });
 
-function Row(props: { task: ActiveTask }) {
+function Row(props: { task: ActiveTaskExtended; onCancelClick: () => void }) {
   const { task } = props;
   const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();
@@ -169,8 +180,14 @@ function Row(props: { task: ActiveTask }) {
           {task.id}
         </TableCell>
         <TableCell>{task.type}</TableCell>
-        <TableCell>
-          <Button>Cancel</Button>
+        <TableCell align="center">
+          <Button
+            color="primary"
+            onClick={props.onCancelClick}
+            disabled={task.requestPending || task.canceling}
+          >
+            {task.canceling ? "Canceling..." : "Cancel"}
+          </Button>
         </TableCell>
       </TableRow>
       <TableRow>
