@@ -67,30 +67,26 @@ func main() {
 	router := mux.NewRouter()
 
 	api := router.PathPrefix("/api").Subrouter()
-	api.HandleFunc("/queues",
-		newListQueuesHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/queues/{qname}",
-		newGetQueueHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/queues/{qname}",
-		newDeleteQueueHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/pause",
-		newPauseQueueHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/resume",
-		newResumeQueueHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/active_tasks",
-		newListActiveTasksHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/active_tasks/{task_id}/cancel",
-		newCancelActiveTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/pending_tasks",
-		newListPendingTasksHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks",
-		newListScheduledTasksHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/retry_tasks",
-		newListRetryTasksHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/dead_tasks",
-		newListDeadTasksHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/scheduler_entries",
-		newListSchedulerEntriesHandlerFunc(inspector)).Methods("GET")
+	// Queue endpoints.
+	api.HandleFunc("/queues", newListQueuesHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}", newGetQueueHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}", newDeleteQueueHandlerFunc(inspector)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/pause", newPauseQueueHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/resume", newResumeQueueHandlerFunc(inspector)).Methods("POST")
+
+	// Task endpoints.
+	api.HandleFunc("/queues/{qname}/active_tasks", newListActiveTasksHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/active_tasks/{task_id}/cancel", newCancelActiveTaskHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/pending_tasks", newListPendingTasksHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks", newListScheduledTasksHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks/{task_key}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/retry_tasks", newListRetryTasksHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/retry_tasks/{task_key}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/dead_tasks", newListDeadTasksHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/dead_tasks/{task_key}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
+
+	// Scheduler Entry endpoints.
+	api.HandleFunc("/scheduler_entries", newListSchedulerEntriesHandlerFunc(inspector)).Methods("GET")
 
 	fs := &staticFileServer{staticPath: "ui/build", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(fs)

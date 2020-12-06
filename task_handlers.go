@@ -165,6 +165,19 @@ func newListDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
+func newDeleteTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname, key := vars["qname"], vars["task_key"]
+		if err := inspector.DeleteTaskByKey(qname, key); err != nil {
+			// TODO: Handle task not found error and return 404
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 // getPageOptions read page size and number from the request url if set,
 // otherwise it returns the default value.
 func getPageOptions(r *http.Request) (pageSize, pageNum int) {
