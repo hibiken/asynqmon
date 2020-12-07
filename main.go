@@ -65,6 +65,7 @@ func main() {
 	defer inspector.Close()
 
 	router := mux.NewRouter()
+	router.Use(loggingMiddleware)
 
 	api := router.PathPrefix("/api").Subrouter()
 	// Queue endpoints.
