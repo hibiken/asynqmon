@@ -144,14 +144,14 @@ export async function deleteQueue(qname: string): Promise<void> {
 export async function pauseQueue(qname: string): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/pause`,
+    url: `${BASE_URL}/queues/${qname}:pause`,
   });
 }
 
 export async function resumeQueue(qname: string): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/resume`,
+    url: `${BASE_URL}/queues/${qname}:resume`,
   });
 }
 
@@ -176,7 +176,7 @@ export async function cancelActiveTask(
 ): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/active_tasks/${taskId}/cancel`,
+    url: `${BASE_URL}/queues/${qname}/active_tasks/${taskId}:cancel`,
   });
 }
 
