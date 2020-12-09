@@ -243,6 +243,16 @@ export async function listDeadTasks(
   return resp.data;
 }
 
+export async function deleteScheduledTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks/${taskKey}`,
+  });
+}
+
 export async function deleteRetryTask(
   qname: string,
   taskKey: string
@@ -250,6 +260,16 @@ export async function deleteRetryTask(
   await axios({
     method: "delete",
     url: `${BASE_URL}/queues/${qname}/retry_tasks/${taskKey}`,
+  });
+}
+
+export async function deleteDeadTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/dead_tasks/${taskKey}`,
   });
 }
 

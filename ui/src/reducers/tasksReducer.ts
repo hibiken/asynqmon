@@ -21,6 +21,12 @@ import {
   DELETE_RETRY_TASK_BEGIN,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_RETRY_TASK_ERROR,
+  DELETE_SCHEDULED_TASK_BEGIN,
+  DELETE_SCHEDULED_TASK_SUCCESS,
+  DELETE_SCHEDULED_TASK_ERROR,
+  DELETE_DEAD_TASK_BEGIN,
+  DELETE_DEAD_TASK_SUCCESS,
+  DELETE_DEAD_TASK_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -40,7 +46,19 @@ export interface ActiveTaskExtended extends ActiveTask {
   canceling: boolean;
 }
 
+export interface ScheduledTaskExtended extends ScheduledTask {
+  // Indicates that a request has been sent for this
+  // task and awaiting for a response.
+  requestPending: boolean;
+}
+
 export interface RetryTaskExtended extends RetryTask {
+  // Indicates that a request has been sent for this
+  // task and awaiting for a response.
+  requestPending: boolean;
+}
+
+export interface DeadTaskExtended extends DeadTask {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;
@@ -60,7 +78,7 @@ interface TasksState {
   scheduledTasks: {
     loading: boolean;
     error: string;
-    data: ScheduledTask[];
+    data: ScheduledTaskExtended[];
   };
   retryTasks: {
     loading: boolean;
@@ -70,7 +88,7 @@ interface TasksState {
   deadTasks: {
     loading: boolean;
     error: string;
-    data: DeadTask[];
+    data: DeadTaskExtended[];
   };
 }
 
@@ -187,7 +205,10 @@ function tasksReducer(
         scheduledTasks: {
           loading: false,
           error: "",
-          data: action.payload.tasks,
+          data: action.payload.tasks.map((task) => ({
+            ...task,
+            requestPending: false,
+          })),
         },
       };
 
@@ -250,7 +271,10 @@ function tasksReducer(
         deadTasks: {
           loading: false,
           error: "",
-          data: action.payload.tasks,
+          data: action.payload.tasks.map((task) => ({
+            ...task,
+            requestPending: false,
+          })),
         },
       };
 
@@ -311,6 +335,45 @@ function tasksReducer(
         },
       };
 
+    case DELETE_SCHEDULED_TASK_BEGIN:
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          data: state.scheduledTasks.data.map((task) => {
+            if (task.key !== action.taskKey) {
+              return task;
+            }
+            return { ...task, requestPending: true };
+          }),
+        },
+      };
+
+    case DELETE_SCHEDULED_TASK_SUCCESS:
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          data: state.scheduledTasks.data.filter(
+            (task) => task.key !== action.taskKey
+          ),
+        },
+      };
+
+    case DELETE_SCHEDULED_TASK_ERROR:
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          data: state.scheduledTasks.data.map((task) => {
+            if (task.key !== action.taskKey) {
+              return task;
+            }
+            return { ...task, requestPending: false };
+          }),
+        },
+      };
+
     case DELETE_RETRY_TASK_BEGIN:
       return {
         ...state,
@@ -342,6 +405,45 @@ function tasksReducer(
         retryTasks: {
           ...state.retryTasks,
           data: state.retryTasks.data.map((task) => {
+            if (task.key !== action.taskKey) {
+              return task;
+            }
+            return { ...task, requestPending: false };
+          }),
+        },
+      };
+
+    case DELETE_DEAD_TASK_BEGIN:
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          data: state.deadTasks.data.map((task) => {
+            if (task.key !== action.taskKey) {
+              return task;
+            }
+            return { ...task, requestPending: true };
+          }),
+        },
+      };
+
+    case DELETE_DEAD_TASK_SUCCESS:
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          data: state.deadTasks.data.filter(
+            (task) => task.key !== action.taskKey
+          ),
+        },
+      };
+
+    case DELETE_DEAD_TASK_ERROR:
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          data: state.deadTasks.data.map((task) => {
             if (task.key !== action.taskKey) {
               return task;
             }

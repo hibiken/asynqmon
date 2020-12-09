@@ -21,15 +21,18 @@ import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
-import { listScheduledTasksAsync } from "../actions/tasksActions";
+import {
+  listScheduledTasksAsync,
+  deleteScheduledTaskAsync,
+} from "../actions/tasksActions";
 import { AppState } from "../store";
-import { ScheduledTask } from "../api";
 import TablePaginationActions, {
   defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import { durationBefore } from "../timeutil";
 import { usePolling } from "../hooks";
+import { ScheduledTaskExtended } from "../reducers/tasksReducer";
 
 const useStyles = makeStyles({
   table: {
@@ -45,7 +48,10 @@ function mapStateToProps(state: AppState) {
   };
 }
 
-const mapDispatchToProps = { listScheduledTasksAsync };
+const mapDispatchToProps = {
+  listScheduledTasksAsync,
+  deleteScheduledTaskAsync,
+};
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -117,7 +123,13 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
         </TableHead>
         <TableBody>
           {props.tasks.map((task) => (
-            <Row key={task.id} task={task} />
+            <Row
+              key={task.id}
+              task={task}
+              onDeleteClick={() => {
+                props.deleteScheduledTaskAsync(queue, task.key);
+              }}
+            />
           ))}
         </TableBody>
         <TableFooter>
@@ -151,7 +163,12 @@ const useRowStyles = makeStyles({
   },
 });
 
-function Row(props: { task: ScheduledTask }) {
+interface RowProps {
+  task: ScheduledTaskExtended;
+  onDeleteClick: () => void;
+}
+
+function Row(props: RowProps) {
   const { task } = props;
   const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();
@@ -173,7 +190,9 @@ function Row(props: { task: ScheduledTask }) {
         <TableCell>{task.type}</TableCell>
         <TableCell>{durationBefore(task.next_process_at)}</TableCell>
         <TableCell>
-          <Button>Cancel</Button>
+          <Button onClick={props.onDeleteClick} disabled={task.requestPending}>
+            Delete
+          </Button>
         </TableCell>
       </TableRow>
       <TableRow>

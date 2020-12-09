@@ -1,6 +1,8 @@
 import {
   cancelActiveTask,
+  deleteDeadTask,
   deleteRetryTask,
+  deleteScheduledTask,
   listActiveTasks,
   ListActiveTasksResponse,
   listDeadTasks,
@@ -34,9 +36,15 @@ export const LIST_DEAD_TASKS_ERROR = "LIST_DEAD_TASKS_ERROR";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
+export const DELETE_SCHEDULED_TASK_BEGIN = "DELETE_SCHEDULED_TASK_BEGIN";
+export const DELETE_SCHEDULED_TASK_SUCCESS = "DELETE_SCHEDULED_TASK_SUCCESS";
+export const DELETE_SCHEDULED_TASK_ERROR = "DELETE_SCHEDULED_TASK_ERROR";
 export const DELETE_RETRY_TASK_BEGIN = "DELETE_RETRY_TASK_BEGIN";
 export const DELETE_RETRY_TASK_SUCCESS = "DELETE_RETRY_TASK_SUCCESS";
 export const DELETE_RETRY_TASK_ERROR = "DELETE_RETRY_TASK_ERROR";
+export const DELETE_DEAD_TASK_BEGIN = "DELETE_DEAD_TASK_BEGIN";
+export const DELETE_DEAD_TASK_SUCCESS = "DELETE_DEAD_TASK_SUCCESS";
+export const DELETE_DEAD_TASK_ERROR = "DELETE_DEAD_TASK_ERROR";
 
 interface ListActiveTasksBeginAction {
   type: typeof LIST_ACTIVE_TASKS_BEGIN;
@@ -142,6 +150,25 @@ interface CancelActiveTaskErrorAction {
   error: string;
 }
 
+interface DeleteScheduledTaskBeginAction {
+  type: typeof DELETE_SCHEDULED_TASK_BEGIN;
+  queue: string;
+  taskKey: string;
+}
+
+interface DeleteScheduledTaskSuccessAction {
+  type: typeof DELETE_SCHEDULED_TASK_SUCCESS;
+  queue: string;
+  taskKey: string;
+}
+
+interface DeleteScheduledTaskErrorAction {
+  type: typeof DELETE_SCHEDULED_TASK_ERROR;
+  queue: string;
+  taskKey: string;
+  error: string;
+}
+
 interface DeleteRetryTaskBeginAction {
   type: typeof DELETE_RETRY_TASK_BEGIN;
   queue: string;
@@ -160,6 +187,26 @@ interface DeleteRetryTaskErrorAction {
   taskKey: string;
   error: string;
 }
+
+interface DeleteDeadTaskBeginAction {
+  type: typeof DELETE_DEAD_TASK_BEGIN;
+  queue: string;
+  taskKey: string;
+}
+
+interface DeleteDeadTaskSuccessAction {
+  type: typeof DELETE_DEAD_TASK_SUCCESS;
+  queue: string;
+  taskKey: string;
+}
+
+interface DeleteDeadTaskErrorAction {
+  type: typeof DELETE_DEAD_TASK_ERROR;
+  queue: string;
+  taskKey: string;
+  error: string;
+}
+
 // Union of all tasks related action types.
 export type TasksActionTypes =
   | ListActiveTasksBeginAction
@@ -180,9 +227,15 @@ export type TasksActionTypes =
   | CancelActiveTaskBeginAction
   | CancelActiveTaskSuccessAction
   | CancelActiveTaskErrorAction
+  | DeleteScheduledTaskBeginAction
+  | DeleteScheduledTaskSuccessAction
+  | DeleteScheduledTaskErrorAction
   | DeleteRetryTaskBeginAction
   | DeleteRetryTaskSuccessAction
-  | DeleteRetryTaskErrorAction;
+  | DeleteRetryTaskErrorAction
+  | DeleteDeadTaskBeginAction
+  | DeleteDeadTaskSuccessAction
+  | DeleteDeadTaskErrorAction;
 
 export function listActiveTasksAsync(
   qname: string,
@@ -316,6 +369,24 @@ export function cancelActiveTaskAsync(queue: string, taskId: string) {
   };
 }
 
+export function deleteScheduledTaskAsync(queue: string, taskKey: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_SCHEDULED_TASK_BEGIN, queue, taskKey });
+    try {
+      await deleteScheduledTask(queue, taskKey);
+      dispatch({ type: DELETE_SCHEDULED_TASK_SUCCESS, queue, taskKey });
+    } catch (error) {
+      console.error("deleteScheduledTaskAsync: ", error);
+      dispatch({
+        type: DELETE_SCHEDULED_TASK_ERROR,
+        error: `Could not delete task: ${taskKey}`,
+        queue,
+        taskKey,
+      });
+    }
+  };
+}
+
 export function deleteRetryTaskAsync(queue: string, taskKey: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: DELETE_RETRY_TASK_BEGIN, queue, taskKey });
@@ -326,6 +397,24 @@ export function deleteRetryTaskAsync(queue: string, taskKey: string) {
       console.error("deleteRetryTaskAsync: ", error);
       dispatch({
         type: DELETE_RETRY_TASK_ERROR,
+        error: `Could not delete task: ${taskKey}`,
+        queue,
+        taskKey,
+      });
+    }
+  };
+}
+
+export function deleteDeadTaskAsync(queue: string, taskKey: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_DEAD_TASK_BEGIN, queue, taskKey });
+    try {
+      await deleteDeadTask(queue, taskKey);
+      dispatch({ type: DELETE_DEAD_TASK_SUCCESS, queue, taskKey });
+    } catch (error) {
+      console.error("deleteDeadTaskAsync: ", error);
+      dispatch({
+        type: DELETE_DEAD_TASK_ERROR,
         error: `Could not delete task: ${taskKey}`,
         queue,
         taskKey,

@@ -163,7 +163,12 @@ const useRowStyles = makeStyles({
   },
 });
 
-function Row(props: { task: RetryTaskExtended; onDeleteClick: () => void }) {
+interface RowProps {
+  task: RetryTaskExtended;
+  onDeleteClick: () => void;
+}
+
+function Row(props: RowProps) {
   const { task } = props;
   const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();

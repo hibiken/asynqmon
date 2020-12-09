@@ -22,14 +22,17 @@ import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
 import { AppState } from "../store";
-import { listDeadTasksAsync } from "../actions/tasksActions";
-import { DeadTask } from "../api";
+import {
+  listDeadTasksAsync,
+  deleteDeadTaskAsync,
+} from "../actions/tasksActions";
 import TablePaginationActions, {
   defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import { timeAgo } from "../timeutil";
 import { usePolling } from "../hooks";
+import { DeadTaskExtended } from "../reducers/tasksReducer";
 
 const useStyles = makeStyles({
   table: {
@@ -53,7 +56,7 @@ function mapStateToProps(state: AppState) {
   };
 }
 
-const mapDispatchToProps = { listDeadTasksAsync };
+const mapDispatchToProps = { listDeadTasksAsync, deleteDeadTaskAsync };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -126,7 +129,13 @@ function DeadTasksTable(props: Props & ReduxProps) {
         </TableHead>
         <TableBody>
           {props.tasks.map((task) => (
-            <Row key={task.id} task={task} />
+            <Row
+              key={task.id}
+              task={task}
+              onDeleteClick={() => {
+                props.deleteDeadTaskAsync(queue, task.key);
+              }}
+            />
           ))}
         </TableBody>
         <TableFooter>
@@ -152,7 +161,12 @@ function DeadTasksTable(props: Props & ReduxProps) {
   );
 }
 
-function Row(props: { task: DeadTask }) {
+interface RowProps {
+  task: DeadTaskExtended;
+  onDeleteClick: () => void;
+}
+
+function Row(props: RowProps) {
   const { task } = props;
   const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();
@@ -175,7 +189,9 @@ function Row(props: { task: DeadTask }) {
         <TableCell>{timeAgo(task.last_failed_at)}</TableCell>
         <TableCell>{task.error_message}</TableCell>
         <TableCell>
-          <Button>Cancel</Button>
+          <Button onClick={props.onDeleteClick} disabled={task.requestPending}>
+            Delete
+          </Button>
         </TableCell>
       </TableRow>
       <TableRow>
