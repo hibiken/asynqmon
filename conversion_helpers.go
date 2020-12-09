@@ -125,6 +125,7 @@ func toPendingTasks(in []*asynq.PendingTask) []*PendingTask {
 
 type ScheduledTask struct {
 	*BaseTask
+	Key           string    `json:"key"`
 	NextProcessAt time.Time `json:"next_process_at"`
 }
 
@@ -137,6 +138,7 @@ func toScheduledTask(t *asynq.ScheduledTask) *ScheduledTask {
 	}
 	return &ScheduledTask{
 		BaseTask:      base,
+		Key:           t.Key(),
 		NextProcessAt: t.NextProcessAt,
 	}
 }
@@ -151,6 +153,7 @@ func toScheduledTasks(in []*asynq.ScheduledTask) []*ScheduledTask {
 
 type RetryTask struct {
 	*BaseTask
+	Key           string    `json:"key"`
 	NextProcessAt time.Time `json:"next_process_at"`
 	MaxRetry      int       `json:"max_retry"`
 	Retried       int       `json:"retried"`
@@ -166,6 +169,7 @@ func toRetryTask(t *asynq.RetryTask) *RetryTask {
 	}
 	return &RetryTask{
 		BaseTask:      base,
+		Key:           t.Key(),
 		NextProcessAt: t.NextProcessAt,
 		MaxRetry:      t.MaxRetry,
 		Retried:       t.Retried,
@@ -183,6 +187,7 @@ func toRetryTasks(in []*asynq.RetryTask) []*RetryTask {
 
 type DeadTask struct {
 	*BaseTask
+	Key          string    `json:"key"`
 	MaxRetry     int       `json:"max_retry"`
 	Retried      int       `json:"retried"`
 	ErrorMsg     string    `json:"error_message"`
@@ -198,6 +203,7 @@ func toDeadTask(t *asynq.DeadTask) *DeadTask {
 	}
 	return &DeadTask{
 		BaseTask:     base,
+		Key:          t.Key(),
 		MaxRetry:     t.MaxRetry,
 		Retried:      t.Retried,
 		ErrorMsg:     t.ErrorMsg,

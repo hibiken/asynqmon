@@ -14,6 +14,7 @@ import {
   DELETE_QUEUE_SUCCESS,
 } from "../actions/queuesActions";
 import {
+  DELETE_RETRY_TASK_SUCCESS,
   LIST_ACTIVE_TASKS_SUCCESS,
   LIST_DEAD_TASKS_SUCCESS,
   LIST_PENDING_TASKS_SUCCESS,
@@ -144,6 +145,22 @@ function queuesReducer(
           history: [],
           requestPending: false,
         });
+      return { ...state, data: newData };
+    }
+
+    case DELETE_RETRY_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            retry: queueInfo.currentStats.retry - 1,
+          },
+        };
+      });
       return { ...state, data: newData };
     }
 

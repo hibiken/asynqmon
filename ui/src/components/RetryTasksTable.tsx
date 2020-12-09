@@ -21,15 +21,18 @@ import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
-import { listRetryTasksAsync } from "../actions/tasksActions";
+import {
+  listRetryTasksAsync,
+  deleteRetryTaskAsync,
+} from "../actions/tasksActions";
 import { AppState } from "../store";
-import { RetryTask } from "../api";
 import TablePaginationActions, {
   defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import { durationBefore } from "../timeutil";
 import { usePolling } from "../hooks";
+import { RetryTaskExtended } from "../reducers/tasksReducer";
 
 const useStyles = makeStyles({
   table: {
@@ -45,7 +48,7 @@ function mapStateToProps(state: AppState) {
   };
 }
 
-const mapDispatchToProps = { listRetryTasksAsync };
+const mapDispatchToProps = { listRetryTasksAsync, deleteRetryTaskAsync };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -120,7 +123,13 @@ function RetryTasksTable(props: Props & ReduxProps) {
         </TableHead>
         <TableBody>
           {props.tasks.map((task) => (
-            <Row key={task.id} task={task} />
+            <Row
+              key={task.id}
+              task={task}
+              onDeleteClick={() => {
+                props.deleteRetryTaskAsync(task.queue, task.key);
+              }}
+            />
           ))}
         </TableBody>
         <TableFooter>
@@ -154,7 +163,7 @@ const useRowStyles = makeStyles({
   },
 });
 
-function Row(props: { task: RetryTask }) {
+function Row(props: { task: RetryTaskExtended; onDeleteClick: () => void }) {
   const { task } = props;
   const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();
@@ -179,7 +188,9 @@ function Row(props: { task: RetryTask }) {
         <TableCell>{task.retried}</TableCell>
         <TableCell>{task.max_retry}</TableCell>
         <TableCell>
-          <Button>Cancel</Button>
+          <Button disabled={task.requestPending} onClick={props.onDeleteClick}>
+            Delete
+          </Button>
         </TableCell>
       </TableRow>
       <TableRow>

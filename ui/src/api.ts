@@ -79,12 +79,14 @@ export interface PendingTask extends BaseTask {
 
 export interface ScheduledTask extends BaseTask {
   id: string;
+  key: string;
   queue: string;
   next_process_at: string;
 }
 
 export interface RetryTask extends BaseTask {
   id: string;
+  key: string;
   queue: string;
   next_process_at: string;
   max_retry: number;
@@ -94,6 +96,7 @@ export interface RetryTask extends BaseTask {
 
 export interface DeadTask extends BaseTask {
   id: string;
+  key: string;
   queue: string;
   max_retry: number;
   retried: number;
@@ -238,6 +241,16 @@ export async function listDeadTasks(
     url,
   });
   return resp.data;
+}
+
+export async function deleteRetryTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks/${taskKey}`,
+  });
 }
 
 export async function listSchedulerEntries(): Promise<ListSchedulerEntriesResponse> {

@@ -18,6 +18,9 @@ import {
   CANCEL_ACTIVE_TASK_BEGIN,
   CANCEL_ACTIVE_TASK_SUCCESS,
   CANCEL_ACTIVE_TASK_ERROR,
+  DELETE_RETRY_TASK_BEGIN,
+  DELETE_RETRY_TASK_SUCCESS,
+  DELETE_RETRY_TASK_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -35,6 +38,12 @@ export interface ActiveTaskExtended extends ActiveTask {
   // Incidates that a cancelation signal has been
   // published for this task.
   canceling: boolean;
+}
+
+export interface RetryTaskExtended extends RetryTask {
+  // Indicates that a request has been sent for this
+  // task and awaiting for a response.
+  requestPending: boolean;
 }
 
 interface TasksState {
@@ -56,7 +65,7 @@ interface TasksState {
   retryTasks: {
     loading: boolean;
     error: string;
-    data: RetryTask[];
+    data: RetryTaskExtended[];
   };
   deadTasks: {
     loading: boolean;
@@ -208,7 +217,10 @@ function tasksReducer(
         retryTasks: {
           loading: false,
           error: "",
-          data: action.payload.tasks,
+          data: action.payload.tasks.map((task) => ({
+            ...task,
+            requestPending: false,
+          })),
         },
       };
 
@@ -296,6 +308,45 @@ function tasksReducer(
         activeTasks: {
           ...state.activeTasks,
           data: newData,
+        },
+      };
+
+    case DELETE_RETRY_TASK_BEGIN:
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          data: state.retryTasks.data.map((task) => {
+            if (task.key !== action.taskKey) {
+              return task;
+            }
+            return { ...task, requestPending: true };
+          }),
+        },
+      };
+
+    case DELETE_RETRY_TASK_SUCCESS:
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          data: state.retryTasks.data.filter(
+            (task) => task.key !== action.taskKey
+          ),
+        },
+      };
+
+    case DELETE_RETRY_TASK_ERROR:
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          data: state.retryTasks.data.map((task) => {
+            if (task.key !== action.taskKey) {
+              return task;
+            }
+            return { ...task, requestPending: false };
+          }),
         },
       };
 
