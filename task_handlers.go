@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -38,7 +39,10 @@ func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 			payload["tasks"] = toActiveTasks(tasks)
 		}
 		payload["stats"] = toQueueStateSnapshot(stats)
-		json.NewEncoder(w).Encode(payload)
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -77,7 +81,10 @@ func newListPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc
 			payload["tasks"] = toPendingTasks(tasks)
 		}
 		payload["stats"] = toQueueStateSnapshot(stats)
-		json.NewEncoder(w).Encode(payload)
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -105,7 +112,10 @@ func newListScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFu
 			payload["tasks"] = toScheduledTasks(tasks)
 		}
 		payload["stats"] = toQueueStateSnapshot(stats)
-		json.NewEncoder(w).Encode(payload)
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -133,7 +143,10 @@ func newListRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			payload["tasks"] = toRetryTasks(tasks)
 		}
 		payload["stats"] = toQueueStateSnapshot(stats)
-		json.NewEncoder(w).Encode(payload)
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -161,7 +174,10 @@ func newListDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			payload["tasks"] = toDeadTasks(tasks)
 		}
 		payload["stats"] = toQueueStateSnapshot(stats)
-		json.NewEncoder(w).Encode(payload)
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -208,6 +224,56 @@ func newDeleteAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFu
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// request body used for all batch delete tasks endpoints.
+type batchDeleteTasksRequest struct {
+	taskKeys []string `json:"task_keys"`
+}
+
+// Note: Redis does not have any rollback mechanism, so it's possible
+// to have partial success when doing a batch operation.
+// For this reason this response contains a list of succeeded keys
+// and a list of failed keys.
+type batchDeleteTasksResponse struct {
+	// task keys that were successfully deleted.
+	deletedKeys []string `json:"deleted_keys"`
+
+	// task keys that were not deleted.
+	failedKeys []string `json:"failed_keys"`
+}
+
+// Maximum request body size in bytes.
+// Allow up to 1MB in size.
+const maxRequestBodySize = 1000000
+
+func newBatchDeleteDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+
+		var req batchDeleteTasksRequest
+		if err := dec.Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		qname := mux.Vars(r)["qname"]
+		var resp batchDeleteTasksResponse
+		for _, key := range req.taskKeys {
+			if err := inspector.DeleteTaskByKey(qname, key); err != nil {
+				log.Printf("error: could not delete task with key %q: %v", key, err)
+				resp.failedKeys = append(resp.failedKeys, key)
+			} else {
+				resp.deletedKeys = append(resp.deletedKeys, key)
+			}
+		}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

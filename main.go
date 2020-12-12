@@ -88,6 +88,7 @@ func main() {
 	api.HandleFunc("/queues/{qname}/dead_tasks", newListDeadTasksHandlerFunc(inspector)).Methods("GET")
 	api.HandleFunc("/queues/{qname}/dead_tasks/{task_key}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/dead_tasks:delete_all", newDeleteAllDeadTasksHandlerFunc(inspector)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/dead_tasks:batch_delete", newBatchDeleteDeadTasksHandlerFunc(inspector)).Methods("POST")
 
 	// Scheduler Entry endpoints.
 	api.HandleFunc("/scheduler_entries", newListSchedulerEntriesHandlerFunc(inspector)).Methods("GET")
