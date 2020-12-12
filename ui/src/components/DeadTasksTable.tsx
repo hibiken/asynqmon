@@ -5,6 +5,8 @@ import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+import Checkbox from "@material-ui/core/Checkbox";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
@@ -17,6 +19,7 @@ import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
 import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
+import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
@@ -37,6 +40,12 @@ import { DeadTaskExtended } from "../reducers/tasksReducer";
 const useStyles = makeStyles({
   table: {
     minWidth: 650,
+  },
+  actionsContainer: {
+    padding: "4px",
+  },
+  moreIcon: {
+    marginRight: "8px",
   },
 });
 
@@ -72,6 +81,7 @@ function DeadTasksTable(props: Props & ReduxProps) {
   const classes = useStyles();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
+  const [selected, setSelected] = useState<string[]>([]);
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -85,6 +95,15 @@ function DeadTasksTable(props: Props & ReduxProps) {
   ) => {
     setPageSize(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      const newSelected = props.tasks.map((t) => t.id);
+      setSelected(newSelected);
+    } else {
+      setSelected([]);
+    }
   };
 
   const fetchData = useCallback(() => {
@@ -112,67 +131,116 @@ function DeadTasksTable(props: Props & ReduxProps) {
     { label: "Actions" },
   ];
 
+  const rowCount = props.tasks.length;
+  const numSelected = selected.length;
   return (
-    <TableContainer component={Paper}>
-      <Table
-        stickyHeader={true}
-        className={classes.table}
-        aria-label="dead tasks table"
-        size="small"
-      >
-        <TableHead>
-          <TableRow>
-            {columns.map((col) => (
-              <TableCell key={col.label}>{col.label}</TableCell>
+    <div>
+      <div className={classes.actionsContainer}>
+        <IconButton aria-label="actions" className={classes.moreIcon}>
+          <MoreHorizIcon />
+        </IconButton>
+        {numSelected > 0 && (
+          <ButtonGroup
+            variant="text"
+            color="primary"
+            aria-label="text primary button group"
+          >
+            <Button>Run</Button>
+            <Button>Kill</Button>
+            <Button>Delete</Button>
+          </ButtonGroup>
+        )}
+      </div>
+      <TableContainer component={Paper}>
+        <Table
+          stickyHeader={true}
+          className={classes.table}
+          aria-label="dead tasks table"
+          size="small"
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell padding="checkbox">
+                <Checkbox
+                  indeterminate={numSelected > 0 && numSelected < rowCount}
+                  checked={rowCount > 0 && numSelected === rowCount}
+                  onChange={handleSelectAllClick}
+                  inputProps={{ "aria-label": "select all dead tasks" }}
+                />
+              </TableCell>
+              {columns.map((col) => (
+                <TableCell key={col.label}>{col.label}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {props.tasks.map((task) => (
+              <Row
+                key={task.id}
+                task={task}
+                isSelected={selected.includes(task.id)}
+                onSelectChange={(checked: boolean) => {
+                  if (checked) {
+                    setSelected(selected.concat(task.id));
+                  } else {
+                    setSelected(selected.filter((id) => id !== task.id));
+                  }
+                }}
+                onDeleteClick={() => {
+                  props.deleteDeadTaskAsync(queue, task.key);
+                }}
+              />
             ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {props.tasks.map((task) => (
-            <Row
-              key={task.id}
-              task={task}
-              onDeleteClick={() => {
-                props.deleteDeadTaskAsync(queue, task.key);
-              }}
-            />
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TablePagination
-              rowsPerPageOptions={rowsPerPageOptions}
-              colSpan={columns.length}
-              count={props.totalTaskCount}
-              rowsPerPage={pageSize}
-              page={page}
-              SelectProps={{
-                inputProps: { "aria-label": "rows per page" },
-                native: true,
-              }}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
-              ActionsComponent={TablePaginationActions}
-            />
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </TableContainer>
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={rowsPerPageOptions}
+                colSpan={columns.length + 1 /* checkbox col */}
+                count={props.totalTaskCount}
+                rowsPerPage={pageSize}
+                page={page}
+                SelectProps={{
+                  inputProps: { "aria-label": "rows per page" },
+                  native: true,
+                }}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+                ActionsComponent={TablePaginationActions}
+              />
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </TableContainer>
+    </div>
   );
 }
 
 interface RowProps {
   task: DeadTaskExtended;
+  isSelected: boolean;
+  onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;
 }
 
 function Row(props: RowProps) {
   const { task } = props;
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const classes = useRowStyles();
+
+  const labelId = `dead-tasks-table-checkbox-${task.id}`;
   return (
     <React.Fragment>
       <TableRow key={task.id} className={classes.root}>
+        <TableCell padding="checkbox">
+          <Checkbox
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              props.onSelectChange(event.target.checked)
+            }
+            checked={props.isSelected}
+            inputProps={{ "aria-labelledby": labelId }}
+          />
+        </TableCell>
         <TableCell>
           <IconButton
             aria-label="expand row"
@@ -195,7 +263,7 @@ function Row(props: RowProps) {
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="h6" gutterBottom component="div">
