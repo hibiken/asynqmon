@@ -28,6 +28,7 @@ import { AppState } from "../store";
 import {
   listDeadTasksAsync,
   deleteDeadTaskAsync,
+  batchDeleteDeadTasksAsync,
 } from "../actions/tasksActions";
 import TablePaginationActions, {
   defaultPageSize,
@@ -61,11 +62,16 @@ function mapStateToProps(state: AppState) {
   return {
     loading: state.tasks.deadTasks.loading,
     tasks: state.tasks.deadTasks.data,
+    batchActionPending: state.tasks.deadTasks.batchActionPending,
     pollInterval: state.settings.pollInterval,
   };
 }
 
-const mapDispatchToProps = { listDeadTasksAsync, deleteDeadTaskAsync };
+const mapDispatchToProps = {
+  listDeadTasksAsync,
+  deleteDeadTaskAsync,
+  batchDeleteDeadTasksAsync,
+};
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -81,7 +87,7 @@ function DeadTasksTable(props: Props & ReduxProps) {
   const classes = useStyles();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -99,10 +105,10 @@ function DeadTasksTable(props: Props & ReduxProps) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = props.tasks.map((t) => t.id);
-      setSelected(newSelected);
+      const newSelected = props.tasks.map((t) => t.key);
+      setSelectedKeys(newSelected);
     } else {
-      setSelected([]);
+      setSelectedKeys([]);
     }
   };
 
@@ -132,7 +138,7 @@ function DeadTasksTable(props: Props & ReduxProps) {
   ];
 
   const rowCount = props.tasks.length;
-  const numSelected = selected.length;
+  const numSelected = selectedKeys.length;
   return (
     <div>
       <div className={classes.actionsContainer}>
@@ -147,7 +153,16 @@ function DeadTasksTable(props: Props & ReduxProps) {
           >
             <Button>Run</Button>
             <Button>Kill</Button>
-            <Button>Delete</Button>
+            <Button
+              disabled={props.batchActionPending}
+              onClick={() =>
+                props
+                  .batchDeleteDeadTasksAsync(queue, selectedKeys)
+                  .then(() => setSelectedKeys([]))
+              }
+            >
+              Delete
+            </Button>
           </ButtonGroup>
         )}
       </div>
@@ -176,14 +191,16 @@ function DeadTasksTable(props: Props & ReduxProps) {
           <TableBody>
             {props.tasks.map((task) => (
               <Row
-                key={task.id}
+                key={task.key}
                 task={task}
-                isSelected={selected.includes(task.id)}
+                isSelected={selectedKeys.includes(task.key)}
                 onSelectChange={(checked: boolean) => {
                   if (checked) {
-                    setSelected(selected.concat(task.id));
+                    setSelectedKeys(selectedKeys.concat(task.key));
                   } else {
-                    setSelected(selected.filter((id) => id !== task.id));
+                    setSelectedKeys(
+                      selectedKeys.filter((key) => key !== task.key)
+                    );
                   }
                 }}
                 onDeleteClick={() => {

@@ -27,6 +27,9 @@ import {
   DELETE_DEAD_TASK_BEGIN,
   DELETE_DEAD_TASK_SUCCESS,
   DELETE_DEAD_TASK_ERROR,
+  BATCH_DELETE_DEAD_TASKS_BEGIN,
+  BATCH_DELETE_DEAD_TASKS_SUCCESS,
+  BATCH_DELETE_DEAD_TASKS_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -87,6 +90,7 @@ interface TasksState {
   };
   deadTasks: {
     loading: boolean;
+    batchActionPending: boolean;
     error: string;
     data: DeadTaskExtended[];
   };
@@ -115,6 +119,7 @@ const initialState: TasksState = {
   },
   deadTasks: {
     loading: false,
+    batchActionPending: false,
     error: "",
     data: [],
   },
@@ -269,6 +274,7 @@ function tasksReducer(
       return {
         ...state,
         deadTasks: {
+          ...state.deadTasks,
           loading: false,
           error: "",
           data: action.payload.tasks.map((task) => ({
@@ -449,6 +455,38 @@ function tasksReducer(
             }
             return { ...task, requestPending: false };
           }),
+        },
+      };
+
+    case BATCH_DELETE_DEAD_TASKS_BEGIN:
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          batchActionPending: true,
+        },
+      };
+
+    case BATCH_DELETE_DEAD_TASKS_SUCCESS: {
+      const newData = state.deadTasks.data.filter(
+        (task) => !action.payload.deleted_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_DELETE_DEAD_TASKS_ERROR:
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          batchActionPending: false,
         },
       };
 

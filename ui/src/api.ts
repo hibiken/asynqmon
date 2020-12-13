@@ -41,6 +41,11 @@ export interface ListSchedulerEntriesResponse {
   entries: SchedulerEntry[];
 }
 
+export interface BatchDeleteTasksResponse {
+  deleted_keys: string[];
+  failed_keys: string[];
+}
+
 export interface Queue {
   queue: string;
   paused: boolean;
@@ -271,6 +276,21 @@ export async function deleteDeadTask(
     method: "delete",
     url: `${BASE_URL}/queues/${qname}/dead_tasks/${taskKey}`,
   });
+}
+
+export async function batchDeleteDeadTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchDeleteTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/dead_tasks:batch_delete`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  console.log("debug: response:", resp);
+  return resp.data;
 }
 
 export async function listSchedulerEntries(): Promise<ListSchedulerEntriesResponse> {

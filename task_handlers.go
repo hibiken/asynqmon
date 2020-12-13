@@ -229,7 +229,7 @@ func newDeleteAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFu
 
 // request body used for all batch delete tasks endpoints.
 type batchDeleteTasksRequest struct {
-	taskKeys []string `json:"task_keys"`
+	TaskKeys []string `json:"task_keys"`
 }
 
 // Note: Redis does not have any rollback mechanism, so it's possible
@@ -238,10 +238,10 @@ type batchDeleteTasksRequest struct {
 // and a list of failed keys.
 type batchDeleteTasksResponse struct {
 	// task keys that were successfully deleted.
-	deletedKeys []string `json:"deleted_keys"`
+	DeletedKeys []string `json:"deleted_keys"`
 
 	// task keys that were not deleted.
-	failedKeys []string `json:"failed_keys"`
+	FailedKeys []string `json:"failed_keys"`
 }
 
 // Maximum request body size in bytes.
@@ -261,13 +261,17 @@ func newBatchDeleteDeadTasksHandlerFunc(inspector *asynq.Inspector) http.Handler
 		}
 
 		qname := mux.Vars(r)["qname"]
-		var resp batchDeleteTasksResponse
-		for _, key := range req.taskKeys {
+		resp := batchDeleteTasksResponse{
+			// avoid null in the json response
+			DeletedKeys: make([]string, 0),
+			FailedKeys:  make([]string, 0),
+		}
+		for _, key := range req.TaskKeys {
 			if err := inspector.DeleteTaskByKey(qname, key); err != nil {
 				log.Printf("error: could not delete task with key %q: %v", key, err)
-				resp.failedKeys = append(resp.failedKeys, key)
+				resp.FailedKeys = append(resp.FailedKeys, key)
 			} else {
-				resp.deletedKeys = append(resp.deletedKeys, key)
+				resp.DeletedKeys = append(resp.DeletedKeys, key)
 			}
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {

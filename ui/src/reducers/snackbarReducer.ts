@@ -3,6 +3,7 @@ import {
   SnackbarActionTypes,
 } from "../actions/snackbarActions";
 import {
+  BATCH_DELETE_DEAD_TASKS_SUCCESS,
   DELETE_DEAD_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
@@ -52,6 +53,14 @@ function snackbarReducer(
         // TODO: show only task id
         message: `Dead task ${action.taskKey} deleted`,
       };
+
+    case BATCH_DELETE_DEAD_TASKS_SUCCESS: {
+      const n = action.payload.deleted_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} Dead ${n === 1 ? "task" : "tasks"} deleted`,
+      };
+    }
 
     default:
       return state;
