@@ -16,6 +16,7 @@ import {
   listScheduledTasks,
   ListScheduledTasksResponse,
   PaginationOptions,
+  runDeadTask,
 } from "../api";
 import { Dispatch } from "redux";
 
@@ -38,6 +39,9 @@ export const LIST_DEAD_TASKS_ERROR = "LIST_DEAD_TASKS_ERROR";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
+export const RUN_DEAD_TASK_BEGIN = "RUN_DEAD_TASK_BEGIN";
+export const RUN_DEAD_TASK_SUCCESS = "RUN_DEAD_TASK_SUCCESS";
+export const RUN_DEAD_TASK_ERROR = "RUN_DEAD_TASK_ERROR";
 export const DELETE_SCHEDULED_TASK_BEGIN = "DELETE_SCHEDULED_TASK_BEGIN";
 export const DELETE_SCHEDULED_TASK_SUCCESS = "DELETE_SCHEDULED_TASK_SUCCESS";
 export const DELETE_SCHEDULED_TASK_ERROR = "DELETE_SCHEDULED_TASK_ERROR";
@@ -156,6 +160,25 @@ interface CancelActiveTaskErrorAction {
   error: string;
 }
 
+interface RunDeadTaskBeginAction {
+  type: typeof RUN_DEAD_TASK_BEGIN;
+  queue: string;
+  taskKey: string;
+}
+
+interface RunDeadTaskSuccessAction {
+  type: typeof RUN_DEAD_TASK_SUCCESS;
+  queue: string;
+  taskKey: string;
+}
+
+interface RunDeadTaskErrorAction {
+  type: typeof RUN_DEAD_TASK_ERROR;
+  queue: string;
+  taskKey: string;
+  error: string;
+}
+
 interface DeleteScheduledTaskBeginAction {
   type: typeof DELETE_SCHEDULED_TASK_BEGIN;
   queue: string;
@@ -252,6 +275,9 @@ export type TasksActionTypes =
   | CancelActiveTaskBeginAction
   | CancelActiveTaskSuccessAction
   | CancelActiveTaskErrorAction
+  | RunDeadTaskBeginAction
+  | RunDeadTaskSuccessAction
+  | RunDeadTaskErrorAction
   | DeleteScheduledTaskBeginAction
   | DeleteScheduledTaskSuccessAction
   | DeleteScheduledTaskErrorAction
@@ -392,6 +418,24 @@ export function cancelActiveTaskAsync(queue: string, taskId: string) {
         error: `Could not cancel task: ${taskId}`,
         queue,
         taskId,
+      });
+    }
+  };
+}
+
+export function runDeadTaskAsync(queue: string, taskKey: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: RUN_DEAD_TASK_BEGIN, queue, taskKey });
+    try {
+      await runDeadTask(queue, taskKey);
+      dispatch({ type: RUN_DEAD_TASK_SUCCESS, queue, taskKey });
+    } catch (error) {
+      console.error("runDeadTaskAsync: ", error);
+      dispatch({
+        type: RUN_DEAD_TASK_ERROR,
+        error: `Could not run task: ${taskKey}`,
+        queue,
+        taskKey,
       });
     }
   };

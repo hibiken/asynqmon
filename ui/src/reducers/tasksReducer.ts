@@ -30,6 +30,9 @@ import {
   BATCH_DELETE_DEAD_TASKS_BEGIN,
   BATCH_DELETE_DEAD_TASKS_SUCCESS,
   BATCH_DELETE_DEAD_TASKS_ERROR,
+  RUN_DEAD_TASK_BEGIN,
+  RUN_DEAD_TASK_SUCCESS,
+  RUN_DEAD_TASK_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -419,6 +422,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_DEAD_TASK_BEGIN:
     case DELETE_DEAD_TASK_BEGIN:
       return {
         ...state,
@@ -433,6 +437,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_DEAD_TASK_SUCCESS:
     case DELETE_DEAD_TASK_SUCCESS:
       return {
         ...state,
@@ -444,6 +449,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_DEAD_TASK_ERROR:
     case DELETE_DEAD_TASK_ERROR:
       return {
         ...state,

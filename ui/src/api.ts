@@ -268,6 +268,16 @@ export async function deleteRetryTask(
   });
 }
 
+export async function runDeadTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/dead_tasks/${taskKey}:run`,
+  });
+}
+
 export async function deleteDeadTask(
   qname: string,
   taskKey: string

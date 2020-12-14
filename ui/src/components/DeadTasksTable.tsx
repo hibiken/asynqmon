@@ -27,6 +27,7 @@ import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/
 import { AppState } from "../store";
 import {
   listDeadTasksAsync,
+  runDeadTaskAsync,
   deleteDeadTaskAsync,
   batchDeleteDeadTasksAsync,
 } from "../actions/tasksActions";
@@ -69,6 +70,7 @@ function mapStateToProps(state: AppState) {
 
 const mapDispatchToProps = {
   listDeadTasksAsync,
+  runDeadTaskAsync,
   deleteDeadTaskAsync,
   batchDeleteDeadTasksAsync,
 };
@@ -203,6 +205,9 @@ function DeadTasksTable(props: Props & ReduxProps) {
                     );
                   }
                 }}
+                onRunClick={() => {
+                  props.runDeadTaskAsync(queue, task.key);
+                }}
                 onDeleteClick={() => {
                   props.deleteDeadTaskAsync(queue, task.key);
                 }}
@@ -237,6 +242,7 @@ interface RowProps {
   task: DeadTaskExtended;
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
+  onRunClick: () => void;
   onDeleteClick: () => void;
 }
 
@@ -274,6 +280,9 @@ function Row(props: RowProps) {
         <TableCell>{timeAgo(task.last_failed_at)}</TableCell>
         <TableCell>{task.error_message}</TableCell>
         <TableCell>
+          <Button onClick={props.onRunClick} disabled={task.requestPending}>
+            Run
+          </Button>
           <Button onClick={props.onDeleteClick} disabled={task.requestPending}>
             Delete
           </Button>

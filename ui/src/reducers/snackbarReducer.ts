@@ -7,6 +7,7 @@ import {
   DELETE_DEAD_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
+  RUN_DEAD_TASK_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
 
@@ -31,6 +32,13 @@ function snackbarReducer(
         // smoother transition animation.
         ...state,
         isOpen: false,
+      };
+
+    case RUN_DEAD_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        // TODO: show only task id
+        message: `Dead task ${action.taskKey} is now pending`,
       };
 
     case DELETE_SCHEDULED_TASK_SUCCESS:

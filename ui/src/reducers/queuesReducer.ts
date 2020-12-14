@@ -23,6 +23,7 @@ import {
   LIST_PENDING_TASKS_SUCCESS,
   LIST_RETRY_TASKS_SUCCESS,
   LIST_SCHEDULED_TASKS_SUCCESS,
+  RUN_DEAD_TASK_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
 import { DailyStat, Queue } from "../api";
@@ -148,6 +149,23 @@ function queuesReducer(
           history: [],
           requestPending: false,
         });
+      return { ...state, data: newData };
+    }
+
+    case RUN_DEAD_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending: queueInfo.currentStats.pending + 1,
+            dead: queueInfo.currentStats.dead - 1,
+          },
+        };
+      });
       return { ...state, data: newData };
     }
 
