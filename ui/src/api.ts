@@ -46,6 +46,11 @@ export interface BatchDeleteTasksResponse {
   failed_keys: string[];
 }
 
+export interface BatchRunTasksResponse {
+  pending_keys: string[];
+  error_keys: string[];
+}
+
 export interface Queue {
   queue: string;
   paused: boolean;
@@ -299,7 +304,20 @@ export async function batchDeleteDeadTasks(
       task_keys: taskKeys,
     },
   });
-  console.log("debug: response:", resp);
+  return resp.data;
+}
+
+export async function batchRunDeadTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchRunTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/dead_tasks:batch_run`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
   return resp.data;
 }
 

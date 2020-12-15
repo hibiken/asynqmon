@@ -26,10 +26,11 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
 import { AppState } from "../store";
 import {
+  batchDeleteDeadTasksAsync,
+  batchRunDeadTasksAsync,
+  deleteDeadTaskAsync,
   listDeadTasksAsync,
   runDeadTaskAsync,
-  deleteDeadTaskAsync,
-  batchDeleteDeadTasksAsync,
 } from "../actions/tasksActions";
 import TablePaginationActions, {
   defaultPageSize,
@@ -72,6 +73,7 @@ const mapDispatchToProps = {
   listDeadTasksAsync,
   runDeadTaskAsync,
   deleteDeadTaskAsync,
+  batchRunDeadTasksAsync,
   batchDeleteDeadTasksAsync,
 };
 
@@ -153,7 +155,16 @@ function DeadTasksTable(props: Props & ReduxProps) {
             color="primary"
             aria-label="text primary button group"
           >
-            <Button>Run</Button>
+            <Button
+              disabled={props.batchActionPending}
+              onClick={() =>
+                props
+                  .batchRunDeadTasksAsync(queue, selectedKeys)
+                  .then(() => setSelectedKeys([]))
+              }
+            >
+              Run
+            </Button>
             <Button>Kill</Button>
             <Button
               disabled={props.batchActionPending}

@@ -33,6 +33,9 @@ import {
   RUN_DEAD_TASK_BEGIN,
   RUN_DEAD_TASK_SUCCESS,
   RUN_DEAD_TASK_ERROR,
+  BATCH_RUN_DEAD_TASKS_BEGIN,
+  BATCH_RUN_DEAD_TASKS_ERROR,
+  BATCH_RUN_DEAD_TASKS_SUCCESS,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -464,6 +467,7 @@ function tasksReducer(
         },
       };
 
+    case BATCH_RUN_DEAD_TASKS_BEGIN:
     case BATCH_DELETE_DEAD_TASKS_BEGIN:
       return {
         ...state,
@@ -472,6 +476,20 @@ function tasksReducer(
           batchActionPending: true,
         },
       };
+
+    case BATCH_RUN_DEAD_TASKS_SUCCESS: {
+      const newData = state.deadTasks.data.filter(
+        (task) => !action.payload.pending_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
 
     case BATCH_DELETE_DEAD_TASKS_SUCCESS: {
       const newData = state.deadTasks.data.filter(
@@ -487,6 +505,7 @@ function tasksReducer(
       };
     }
 
+    case BATCH_RUN_DEAD_TASKS_ERROR:
     case BATCH_DELETE_DEAD_TASKS_ERROR:
       return {
         ...state,

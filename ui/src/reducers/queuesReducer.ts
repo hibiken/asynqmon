@@ -15,6 +15,7 @@ import {
 } from "../actions/queuesActions";
 import {
   BATCH_DELETE_DEAD_TASKS_SUCCESS,
+  BATCH_RUN_DEAD_TASKS_SUCCESS,
   DELETE_DEAD_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
@@ -211,6 +212,26 @@ function queuesReducer(
           currentStats: {
             ...queueInfo.currentStats,
             dead: queueInfo.currentStats.dead - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case BATCH_RUN_DEAD_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending:
+              queueInfo.currentStats.pending +
+              action.payload.pending_keys.length,
+            dead:
+              queueInfo.currentStats.dead - action.payload.pending_keys.length,
           },
         };
       });
