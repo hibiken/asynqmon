@@ -302,6 +302,50 @@ func newBatchDeleteDeadTasksHandlerFunc(inspector *asynq.Inspector) http.Handler
 	}
 }
 
+type batchRunTasksRequest struct {
+	TaskKeys []string `json:"task_keys"`
+}
+
+type batchRunTasksResponse struct {
+	// task keys that were successfully moved to the pending state.
+	PendingKeys []string `json:"pending_keys"`
+	// task keys that were not able to move to the pending state.
+	ErrorKeys []string `json:"error_keys"`
+}
+
+func newBatchRunTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+
+		var req batchRunTasksRequest
+		if err := dec.Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		qname := mux.Vars(r)["qname"]
+		resp := batchRunTasksResponse{
+			// avoid null in the json response
+			PendingKeys: make([]string, 0),
+			ErrorKeys:   make([]string, 0),
+		}
+		for _, key := range req.TaskKeys {
+			if err := inspector.RunTaskByKey(qname, key); err != nil {
+				log.Printf("error: could not run task with key %q: %v", key, err)
+				resp.ErrorKeys = append(resp.ErrorKeys, key)
+			} else {
+				resp.PendingKeys = append(resp.PendingKeys, key)
+			}
+		}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // getPageOptions read page size and number from the request url if set,
 // otherwise it returns the default value.
 func getPageOptions(r *http.Request) (pageSize, pageNum int) {
