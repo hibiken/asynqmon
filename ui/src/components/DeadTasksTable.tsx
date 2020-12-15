@@ -14,6 +14,8 @@ import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
@@ -92,6 +94,7 @@ function DeadTasksTable(props: Props & ReduxProps) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -115,6 +118,12 @@ function DeadTasksTable(props: Props & ReduxProps) {
       setSelectedKeys([]);
     }
   };
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const handleMenuClose = () => setMenuAnchor(null);
 
   const fetchData = useCallback(() => {
     const pageOpts = { page: page + 1, size: pageSize };
@@ -146,9 +155,23 @@ function DeadTasksTable(props: Props & ReduxProps) {
   return (
     <div>
       <div className={classes.actionsContainer}>
-        <IconButton aria-label="actions" className={classes.moreIcon}>
+        <IconButton
+          aria-label="actions"
+          className={classes.moreIcon}
+          onClick={handleMenuClick}
+        >
           <MoreHorizIcon />
         </IconButton>
+        <Menu
+          id="action-menu"
+          keepMounted
+          anchorEl={menuAnchor}
+          open={Boolean(menuAnchor)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={handleMenuClose}>Run All</MenuItem>
+          <MenuItem onClick={handleMenuClose}>Delete All</MenuItem>
+        </Menu>
         {numSelected > 0 && (
           <ButtonGroup
             variant="text"
