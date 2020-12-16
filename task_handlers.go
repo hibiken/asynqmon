@@ -248,6 +248,17 @@ func newDeleteAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFu
 	}
 }
 
+func newRunAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qname := mux.Vars(r)["qname"]
+		if _, err := inspector.RunAllDeadTasks(qname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 // request body used for all batch delete tasks endpoints.
 type batchDeleteTasksRequest struct {
 	TaskKeys []string `json:"task_keys"`
