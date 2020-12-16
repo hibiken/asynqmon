@@ -31,6 +31,7 @@ import {
   batchDeleteDeadTasksAsync,
   batchRunDeadTasksAsync,
   deleteDeadTaskAsync,
+  deleteAllDeadTasksAsync,
   listDeadTasksAsync,
   runDeadTaskAsync,
 } from "../actions/tasksActions";
@@ -67,6 +68,7 @@ function mapStateToProps(state: AppState) {
     loading: state.tasks.deadTasks.loading,
     tasks: state.tasks.deadTasks.data,
     batchActionPending: state.tasks.deadTasks.batchActionPending,
+    deleteAllRequestPending: state.tasks.deadTasks.deleteAllRequestPending,
     pollInterval: state.settings.pollInterval,
   };
 }
@@ -75,6 +77,7 @@ const mapDispatchToProps = {
   listDeadTasksAsync,
   runDeadTaskAsync,
   deleteDeadTaskAsync,
+  deleteAllDeadTasksAsync,
   batchRunDeadTasksAsync,
   batchDeleteDeadTasksAsync,
 };
@@ -125,6 +128,11 @@ function DeadTasksTable(props: Props & ReduxProps) {
 
   const handleMenuClose = () => setMenuAnchor(null);
 
+  const handleDeleteAllClick = () => {
+    props.deleteAllDeadTasksAsync(queue);
+    setMenuAnchor(null);
+  };
+
   const fetchData = useCallback(() => {
     const pageOpts = { page: page + 1, size: pageSize };
     listDeadTasksAsync(queue, pageOpts);
@@ -170,7 +178,12 @@ function DeadTasksTable(props: Props & ReduxProps) {
           onClose={handleMenuClose}
         >
           <MenuItem onClick={handleMenuClose}>Run All</MenuItem>
-          <MenuItem onClick={handleMenuClose}>Delete All</MenuItem>
+          <MenuItem
+            onClick={handleDeleteAllClick}
+            disabled={props.deleteAllRequestPending}
+          >
+            Delete All
+          </MenuItem>
         </Menu>
         {numSelected > 0 && (
           <ButtonGroup
@@ -245,6 +258,7 @@ function DeadTasksTable(props: Props & ReduxProps) {
                 onDeleteClick={() => {
                   props.deleteDeadTaskAsync(queue, task.key);
                 }}
+                deleteAllRequestPending={props.deleteAllRequestPending}
               />
             ))}
           </TableBody>
@@ -278,6 +292,7 @@ interface RowProps {
   onSelectChange: (checked: boolean) => void;
   onRunClick: () => void;
   onDeleteClick: () => void;
+  deleteAllRequestPending: boolean;
 }
 
 function Row(props: RowProps) {
@@ -314,10 +329,16 @@ function Row(props: RowProps) {
         <TableCell>{timeAgo(task.last_failed_at)}</TableCell>
         <TableCell>{task.error_message}</TableCell>
         <TableCell>
-          <Button onClick={props.onRunClick} disabled={task.requestPending}>
+          <Button
+            onClick={props.onRunClick}
+            disabled={task.requestPending || props.deleteAllRequestPending}
+          >
             Run
           </Button>
-          <Button onClick={props.onDeleteClick} disabled={task.requestPending}>
+          <Button
+            onClick={props.onDeleteClick}
+            disabled={task.requestPending || props.deleteAllRequestPending}
+          >
             Delete
           </Button>
         </TableCell>

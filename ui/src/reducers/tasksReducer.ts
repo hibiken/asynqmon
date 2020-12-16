@@ -36,6 +36,9 @@ import {
   BATCH_RUN_DEAD_TASKS_BEGIN,
   BATCH_RUN_DEAD_TASKS_ERROR,
   BATCH_RUN_DEAD_TASKS_SUCCESS,
+  DELETE_ALL_DEAD_TASKS_BEGIN,
+  DELETE_ALL_DEAD_TASKS_SUCCESS,
+  DELETE_ALL_DEAD_TASKS_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -97,6 +100,7 @@ interface TasksState {
   deadTasks: {
     loading: boolean;
     batchActionPending: boolean;
+    deleteAllRequestPending: boolean;
     error: string;
     data: DeadTaskExtended[];
   };
@@ -126,6 +130,7 @@ const initialState: TasksState = {
   deadTasks: {
     loading: false,
     batchActionPending: false,
+    deleteAllRequestPending: false,
     error: "",
     data: [],
   },
@@ -464,6 +469,34 @@ function tasksReducer(
             }
             return { ...task, requestPending: false };
           }),
+        },
+      };
+
+    case DELETE_ALL_DEAD_TASKS_BEGIN:
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          deleteAllRequestPending: true,
+        },
+      };
+
+    case DELETE_ALL_DEAD_TASKS_SUCCESS:
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          deleteAllRequestPending: false,
+          data: [],
+        },
+      };
+
+    case DELETE_ALL_DEAD_TASKS_ERROR:
+      return {
+        ...state,
+        deadTasks: {
+          ...state.deadTasks,
+          deleteAllRequestPending: false,
         },
       };
 

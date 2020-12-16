@@ -307,6 +307,13 @@ export async function batchDeleteDeadTasks(
   return resp.data;
 }
 
+export async function deleteAllDeadTasks(qname: string): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/dead_tasks:delete_all`,
+  });
+}
+
 export async function batchRunDeadTasks(
   qname: string,
   taskKeys: string[]

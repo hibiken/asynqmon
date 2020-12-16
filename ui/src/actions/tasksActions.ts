@@ -4,6 +4,7 @@ import {
   batchRunDeadTasks,
   BatchRunTasksResponse,
   cancelActiveTask,
+  deleteAllDeadTasks,
   deleteDeadTask,
   deleteRetryTask,
   deleteScheduledTask,
@@ -60,6 +61,9 @@ export const BATCH_DELETE_DEAD_TASKS_BEGIN = "BATCH_DELETE_DEAD_TASKS_BEGIN";
 export const BATCH_DELETE_DEAD_TASKS_SUCCESS =
   "BATCH_DELETE_DEAD_TASKS_SUCCESS";
 export const BATCH_DELETE_DEAD_TASKS_ERROR = "BATCH_DELETE_DEAD_TASKS_ERROR";
+export const DELETE_ALL_DEAD_TASKS_BEGIN = "DELETE_ALL_DEAD_TASKS_BEGIN";
+export const DELETE_ALL_DEAD_TASKS_SUCCESS = "DELETE_ALL_DEAD_TASKS_SUCCESS";
+export const DELETE_ALL_DEAD_TASKS_ERROR = "DELETE_ALL_DEAD_TASKS_ERROR";
 
 interface ListActiveTasksBeginAction {
   type: typeof LIST_ACTIVE_TASKS_BEGIN;
@@ -279,6 +283,22 @@ interface BatchRunDeadTasksErrorAction {
   error: string;
 }
 
+interface DeleteAllDeadTasksBeginAction {
+  type: typeof DELETE_ALL_DEAD_TASKS_BEGIN;
+  queue: string;
+}
+
+interface DeleteAllDeadTasksSuccessAction {
+  type: typeof DELETE_ALL_DEAD_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface DeleteAllDeadTasksErrorAction {
+  type: typeof DELETE_ALL_DEAD_TASKS_ERROR;
+  queue: string;
+  error: string;
+}
+
 // Union of all tasks related action types.
 export type TasksActionTypes =
   | ListActiveTasksBeginAction
@@ -316,7 +336,10 @@ export type TasksActionTypes =
   | BatchDeleteDeadTasksErrorAction
   | BatchRunDeadTasksBeginAction
   | BatchRunDeadTasksSuccessAction
-  | BatchRunDeadTasksErrorAction;
+  | BatchRunDeadTasksErrorAction
+  | DeleteAllDeadTasksBeginAction
+  | DeleteAllDeadTasksSuccessAction
+  | DeleteAllDeadTasksErrorAction;
 
 export function listActiveTasksAsync(
   qname: string,
@@ -561,6 +584,23 @@ export function batchRunDeadTasksAsync(queue: string, taskKeys: string[]) {
         error: `Could not batch run tasks: ${taskKeys}`,
         queue,
         taskKeys,
+      });
+    }
+  };
+}
+
+export function deleteAllDeadTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_ALL_DEAD_TASKS_BEGIN, queue });
+    try {
+      await deleteAllDeadTasks(queue);
+      dispatch({ type: DELETE_ALL_DEAD_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("deleteAllDeadTasksAsync: ", error);
+      dispatch({
+        type: DELETE_ALL_DEAD_TASKS_ERROR,
+        error: `Could not delete all dead tasks`,
+        queue,
       });
     }
   };

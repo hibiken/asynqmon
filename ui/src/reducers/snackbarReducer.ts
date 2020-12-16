@@ -5,6 +5,7 @@ import {
 import {
   BATCH_DELETE_DEAD_TASKS_SUCCESS,
   BATCH_RUN_DEAD_TASKS_SUCCESS,
+  DELETE_ALL_DEAD_TASKS_SUCCESS,
   DELETE_DEAD_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
@@ -78,6 +79,12 @@ function snackbarReducer(
         message: `${n} Dead ${n === 1 ? "task" : "tasks"} deleted`,
       };
     }
+
+    case DELETE_ALL_DEAD_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: `All dead tasks delete`,
+      };
 
     default:
       return state;
