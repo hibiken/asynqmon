@@ -507,6 +507,15 @@ function tasksReducer(
         deadTasks: {
           ...state.deadTasks,
           batchActionPending: true,
+          data: state.deadTasks.data.map((task) => {
+            if (!action.taskKeys.includes(task.key)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: true,
+            };
+          }),
         },
       };
 
@@ -545,6 +554,15 @@ function tasksReducer(
         deadTasks: {
           ...state.deadTasks,
           batchActionPending: false,
+          data: state.deadTasks.data.map((task) => {
+            if (!action.taskKeys.includes(task.key)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: false,
+            };
+          }),
         },
       };
 
