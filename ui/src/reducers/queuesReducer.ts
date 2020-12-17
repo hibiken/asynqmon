@@ -25,6 +25,7 @@ import {
   LIST_PENDING_TASKS_SUCCESS,
   LIST_RETRY_TASKS_SUCCESS,
   LIST_SCHEDULED_TASKS_SUCCESS,
+  RUN_ALL_DEAD_TASKS_SUCCESS,
   RUN_DEAD_TASK_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
@@ -250,6 +251,24 @@ function queuesReducer(
             ...queueInfo.currentStats,
             dead:
               queueInfo.currentStats.dead - action.payload.deleted_keys.length,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case RUN_ALL_DEAD_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending:
+              queueInfo.currentStats.pending + queueInfo.currentStats.dead,
+            dead: 0,
           },
         };
       });

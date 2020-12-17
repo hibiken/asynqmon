@@ -328,6 +328,13 @@ export async function batchRunDeadTasks(
   return resp.data;
 }
 
+export async function runAllDeadTasks(qname: string): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/dead_tasks:run_all`,
+  });
+}
+
 export async function listSchedulerEntries(): Promise<ListSchedulerEntriesResponse> {
   const resp = await axios({
     method: "get",

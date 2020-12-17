@@ -34,6 +34,7 @@ import {
   deleteAllDeadTasksAsync,
   listDeadTasksAsync,
   runDeadTaskAsync,
+  runAllDeadTasksAsync,
 } from "../actions/tasksActions";
 import TablePaginationActions, {
   defaultPageSize,
@@ -68,7 +69,7 @@ function mapStateToProps(state: AppState) {
     loading: state.tasks.deadTasks.loading,
     tasks: state.tasks.deadTasks.data,
     batchActionPending: state.tasks.deadTasks.batchActionPending,
-    deleteAllRequestPending: state.tasks.deadTasks.deleteAllRequestPending,
+    allActionPending: state.tasks.deadTasks.allActionPending,
     pollInterval: state.settings.pollInterval,
   };
 }
@@ -76,6 +77,7 @@ function mapStateToProps(state: AppState) {
 const mapDispatchToProps = {
   listDeadTasksAsync,
   runDeadTaskAsync,
+  runAllDeadTasksAsync,
   deleteDeadTaskAsync,
   deleteAllDeadTasksAsync,
   batchRunDeadTasksAsync,
@@ -128,6 +130,11 @@ function DeadTasksTable(props: Props & ReduxProps) {
 
   const handleMenuClose = () => setMenuAnchor(null);
 
+  const handleRunAllClick = () => {
+    props.runAllDeadTasksAsync(queue);
+    setMenuAnchor(null);
+  };
+
   const handleDeleteAllClick = () => {
     props.deleteAllDeadTasksAsync(queue);
     setMenuAnchor(null);
@@ -177,10 +184,15 @@ function DeadTasksTable(props: Props & ReduxProps) {
           open={Boolean(menuAnchor)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={handleMenuClose}>Run All</MenuItem>
+          <MenuItem
+            onClick={handleRunAllClick}
+            disabled={props.allActionPending}
+          >
+            Run All
+          </MenuItem>
           <MenuItem
             onClick={handleDeleteAllClick}
-            disabled={props.deleteAllRequestPending}
+            disabled={props.allActionPending}
           >
             Delete All
           </MenuItem>
@@ -258,7 +270,7 @@ function DeadTasksTable(props: Props & ReduxProps) {
                 onDeleteClick={() => {
                   props.deleteDeadTaskAsync(queue, task.key);
                 }}
-                deleteAllRequestPending={props.deleteAllRequestPending}
+                allActionPending={props.allActionPending}
               />
             ))}
           </TableBody>
@@ -292,7 +304,7 @@ interface RowProps {
   onSelectChange: (checked: boolean) => void;
   onRunClick: () => void;
   onDeleteClick: () => void;
-  deleteAllRequestPending: boolean;
+  allActionPending: boolean;
 }
 
 function Row(props: RowProps) {
@@ -331,13 +343,13 @@ function Row(props: RowProps) {
         <TableCell>
           <Button
             onClick={props.onRunClick}
-            disabled={task.requestPending || props.deleteAllRequestPending}
+            disabled={task.requestPending || props.allActionPending}
           >
             Run
           </Button>
           <Button
             onClick={props.onDeleteClick}
-            disabled={task.requestPending || props.deleteAllRequestPending}
+            disabled={task.requestPending || props.allActionPending}
           >
             Delete
           </Button>

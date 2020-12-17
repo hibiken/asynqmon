@@ -9,6 +9,7 @@ import {
   DELETE_DEAD_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
+  RUN_ALL_DEAD_TASKS_SUCCESS,
   RUN_DEAD_TASK_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
@@ -80,10 +81,16 @@ function snackbarReducer(
       };
     }
 
+    case RUN_ALL_DEAD_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All dead tasks are now pending",
+      };
+
     case DELETE_ALL_DEAD_TASKS_SUCCESS:
       return {
         isOpen: true,
-        message: `All dead tasks delete`,
+        message: "All dead tasks delete",
       };
 
     default:

@@ -19,6 +19,7 @@ import {
   listScheduledTasks,
   ListScheduledTasksResponse,
   PaginationOptions,
+  runAllDeadTasks,
   runDeadTask,
 } from "../api";
 import { Dispatch } from "redux";
@@ -61,6 +62,9 @@ export const BATCH_DELETE_DEAD_TASKS_BEGIN = "BATCH_DELETE_DEAD_TASKS_BEGIN";
 export const BATCH_DELETE_DEAD_TASKS_SUCCESS =
   "BATCH_DELETE_DEAD_TASKS_SUCCESS";
 export const BATCH_DELETE_DEAD_TASKS_ERROR = "BATCH_DELETE_DEAD_TASKS_ERROR";
+export const RUN_ALL_DEAD_TASKS_BEGIN = "RUN_ALL_DEAD_TASKS_BEGIN";
+export const RUN_ALL_DEAD_TASKS_SUCCESS = "RUN_ALL_DEAD_TASKS_SUCCESS";
+export const RUN_ALL_DEAD_TASKS_ERROR = "RUN_ALL_DEAD_TASKS_ERROR";
 export const DELETE_ALL_DEAD_TASKS_BEGIN = "DELETE_ALL_DEAD_TASKS_BEGIN";
 export const DELETE_ALL_DEAD_TASKS_SUCCESS = "DELETE_ALL_DEAD_TASKS_SUCCESS";
 export const DELETE_ALL_DEAD_TASKS_ERROR = "DELETE_ALL_DEAD_TASKS_ERROR";
@@ -283,6 +287,22 @@ interface BatchRunDeadTasksErrorAction {
   error: string;
 }
 
+interface RunAllDeadTasksBeginAction {
+  type: typeof RUN_ALL_DEAD_TASKS_BEGIN;
+  queue: string;
+}
+
+interface RunAllDeadTasksSuccessAction {
+  type: typeof RUN_ALL_DEAD_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface RunAllDeadTasksErrorAction {
+  type: typeof RUN_ALL_DEAD_TASKS_ERROR;
+  queue: string;
+  error: string;
+}
+
 interface DeleteAllDeadTasksBeginAction {
   type: typeof DELETE_ALL_DEAD_TASKS_BEGIN;
   queue: string;
@@ -337,6 +357,9 @@ export type TasksActionTypes =
   | BatchRunDeadTasksBeginAction
   | BatchRunDeadTasksSuccessAction
   | BatchRunDeadTasksErrorAction
+  | RunAllDeadTasksBeginAction
+  | RunAllDeadTasksSuccessAction
+  | RunAllDeadTasksErrorAction
   | DeleteAllDeadTasksBeginAction
   | DeleteAllDeadTasksSuccessAction
   | DeleteAllDeadTasksErrorAction;
@@ -600,6 +623,23 @@ export function deleteAllDeadTasksAsync(queue: string) {
       dispatch({
         type: DELETE_ALL_DEAD_TASKS_ERROR,
         error: `Could not delete all dead tasks`,
+        queue,
+      });
+    }
+  };
+}
+
+export function runAllDeadTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: RUN_ALL_DEAD_TASKS_BEGIN, queue });
+    try {
+      await runAllDeadTasks(queue);
+      dispatch({ type: RUN_ALL_DEAD_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("runAllDeadTasksAsync: ", error);
+      dispatch({
+        type: RUN_ALL_DEAD_TASKS_ERROR,
+        error: `Could not run all dead tasks`,
         queue,
       });
     }

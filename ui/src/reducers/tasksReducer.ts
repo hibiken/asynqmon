@@ -39,6 +39,9 @@ import {
   DELETE_ALL_DEAD_TASKS_BEGIN,
   DELETE_ALL_DEAD_TASKS_SUCCESS,
   DELETE_ALL_DEAD_TASKS_ERROR,
+  RUN_ALL_DEAD_TASKS_BEGIN,
+  RUN_ALL_DEAD_TASKS_ERROR,
+  RUN_ALL_DEAD_TASKS_SUCCESS,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -100,7 +103,7 @@ interface TasksState {
   deadTasks: {
     loading: boolean;
     batchActionPending: boolean;
-    deleteAllRequestPending: boolean;
+    allActionPending: boolean;
     error: string;
     data: DeadTaskExtended[];
   };
@@ -130,7 +133,7 @@ const initialState: TasksState = {
   deadTasks: {
     loading: false,
     batchActionPending: false,
-    deleteAllRequestPending: false,
+    allActionPending: false,
     error: "",
     data: [],
   },
@@ -472,31 +475,34 @@ function tasksReducer(
         },
       };
 
+    case RUN_ALL_DEAD_TASKS_BEGIN:
     case DELETE_ALL_DEAD_TASKS_BEGIN:
       return {
         ...state,
         deadTasks: {
           ...state.deadTasks,
-          deleteAllRequestPending: true,
+          allActionPending: true,
         },
       };
 
+    case RUN_ALL_DEAD_TASKS_SUCCESS:
     case DELETE_ALL_DEAD_TASKS_SUCCESS:
       return {
         ...state,
         deadTasks: {
           ...state.deadTasks,
-          deleteAllRequestPending: false,
+          allActionPending: false,
           data: [],
         },
       };
 
+    case RUN_ALL_DEAD_TASKS_ERROR:
     case DELETE_ALL_DEAD_TASKS_ERROR:
       return {
         ...state,
         deadTasks: {
           ...state.deadTasks,
-          deleteAllRequestPending: false,
+          allActionPending: false,
         },
       };
 
