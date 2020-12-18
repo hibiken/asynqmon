@@ -92,11 +92,15 @@ interface TasksState {
   };
   scheduledTasks: {
     loading: boolean;
+    batchActionPending: boolean;
+    allActionPending: boolean;
     error: string;
     data: ScheduledTaskExtended[];
   };
   retryTasks: {
     loading: boolean;
+    batchActionPending: boolean;
+    allActionPending: boolean;
     error: string;
     data: RetryTaskExtended[];
   };
@@ -122,11 +126,15 @@ const initialState: TasksState = {
   },
   scheduledTasks: {
     loading: false,
+    batchActionPending: false,
+    allActionPending: false,
     error: "",
     data: [],
   },
   retryTasks: {
     loading: false,
+    batchActionPending: false,
+    allActionPending: false,
     error: "",
     data: [],
   },
@@ -222,6 +230,7 @@ function tasksReducer(
       return {
         ...state,
         scheduledTasks: {
+          ...state.scheduledTasks,
           loading: false,
           error: "",
           data: action.payload.tasks.map((task) => ({
@@ -255,6 +264,7 @@ function tasksReducer(
       return {
         ...state,
         retryTasks: {
+          ...state.retryTasks,
           loading: false,
           error: "",
           data: action.payload.tasks.map((task) => ({

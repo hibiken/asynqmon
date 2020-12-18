@@ -5,7 +5,6 @@ import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import Button from "@material-ui/core/Button";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Checkbox from "@material-ui/core/Checkbox";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
@@ -14,14 +13,11 @@ import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
 import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
-import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
@@ -40,6 +36,7 @@ import TablePaginationActions, {
   defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
+import TableActions from "./TableActions";
 import { timeAgo } from "../timeutil";
 import { usePolling } from "../hooks";
 import { DeadTaskExtended } from "../reducers/tasksReducer";
@@ -47,12 +44,6 @@ import { DeadTaskExtended } from "../reducers/tasksReducer";
 const useStyles = makeStyles({
   table: {
     minWidth: 650,
-  },
-  actionsContainer: {
-    padding: "4px",
-  },
-  moreIcon: {
-    marginRight: "8px",
   },
 });
 
@@ -99,7 +90,6 @@ function DeadTasksTable(props: Props & ReduxProps) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -124,20 +114,24 @@ function DeadTasksTable(props: Props & ReduxProps) {
     }
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setMenuAnchor(event.currentTarget);
-  };
-
-  const handleMenuClose = () => setMenuAnchor(null);
-
   const handleRunAllClick = () => {
     props.runAllDeadTasksAsync(queue);
-    setMenuAnchor(null);
   };
 
   const handleDeleteAllClick = () => {
     props.deleteAllDeadTasksAsync(queue);
-    setMenuAnchor(null);
+  };
+
+  const handleBatchRunClick = () => {
+    props
+      .batchDeleteDeadTasksAsync(queue, selectedKeys)
+      .then(() => setSelectedKeys([]));
+  };
+
+  const handleBatchDeleteClick = () => {
+    props
+      .batchRunDeadTasksAsync(queue, selectedKeys)
+      .then(() => setSelectedKeys([]));
   };
 
   const fetchData = useCallback(() => {
@@ -169,64 +163,15 @@ function DeadTasksTable(props: Props & ReduxProps) {
   const numSelected = selectedKeys.length;
   return (
     <div>
-      <div className={classes.actionsContainer}>
-        <IconButton
-          aria-label="actions"
-          className={classes.moreIcon}
-          onClick={handleMenuClick}
-        >
-          <MoreHorizIcon />
-        </IconButton>
-        <Menu
-          id="action-menu"
-          keepMounted
-          anchorEl={menuAnchor}
-          open={Boolean(menuAnchor)}
-          onClose={handleMenuClose}
-        >
-          <MenuItem
-            onClick={handleRunAllClick}
-            disabled={props.allActionPending}
-          >
-            Run All
-          </MenuItem>
-          <MenuItem
-            onClick={handleDeleteAllClick}
-            disabled={props.allActionPending}
-          >
-            Delete All
-          </MenuItem>
-        </Menu>
-        {numSelected > 0 && (
-          <ButtonGroup
-            variant="text"
-            color="primary"
-            aria-label="text primary button group"
-          >
-            <Button
-              disabled={props.batchActionPending}
-              onClick={() =>
-                props
-                  .batchRunDeadTasksAsync(queue, selectedKeys)
-                  .then(() => setSelectedKeys([]))
-              }
-            >
-              Run
-            </Button>
-            <Button>Kill</Button>
-            <Button
-              disabled={props.batchActionPending}
-              onClick={() =>
-                props
-                  .batchDeleteDeadTasksAsync(queue, selectedKeys)
-                  .then(() => setSelectedKeys([]))
-              }
-            >
-              Delete
-            </Button>
-          </ButtonGroup>
-        )}
-      </div>
+      <TableActions
+        allActionPending={props.allActionPending}
+        batchActionPending={props.batchActionPending}
+        showBatchActions={numSelected > 0}
+        onRunAllClick={handleRunAllClick}
+        onDeleteAllClick={handleDeleteAllClick}
+        onBatchRunClick={handleBatchRunClick}
+        onBatchDeleteClick={handleBatchDeleteClick}
+      />
       <TableContainer component={Paper}>
         <Table
           stickyHeader={true}

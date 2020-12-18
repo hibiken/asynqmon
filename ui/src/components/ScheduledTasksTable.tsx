@@ -31,6 +31,7 @@ import TablePaginationActions, {
   defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
+import TableActions from "./TableActions";
 import { durationBefore } from "../timeutil";
 import { usePolling } from "../hooks";
 import { ScheduledTaskExtended } from "../reducers/tasksReducer";
@@ -45,6 +46,8 @@ function mapStateToProps(state: AppState) {
   return {
     loading: state.tasks.scheduledTasks.loading,
     tasks: state.tasks.scheduledTasks.data,
+    batchActionPending: state.tasks.scheduledTasks.batchActionPending,
+    allActionPending: state.tasks.scheduledTasks.allActionPending,
     pollInterval: state.settings.pollInterval,
   };
 }
@@ -120,71 +123,82 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
   const rowCount = props.tasks.length;
   const numSelected = selectedKeys.length;
   return (
-    <TableContainer component={Paper}>
-      <Table
-        stickyHeader={true}
-        className={classes.table}
-        aria-label="scheduled tasks table"
-        size="small"
-      >
-        <TableHead>
-          <TableRow>
-            <TableCell padding="checkbox">
-              <Checkbox
-                indeterminate={numSelected > 0 && numSelected < rowCount}
-                checked={rowCount > 0 && numSelected === rowCount}
-                onChange={handleSelectAllClick}
-                inputProps={{
-                  "aria-label": "select all tasks shown in the table",
+    <div>
+      <TableActions
+        allActionPending={props.allActionPending}
+        batchActionPending={props.batchActionPending}
+        showBatchActions={numSelected > 0}
+        onRunAllClick={() => console.log("TODO")}
+        onDeleteAllClick={() => console.log("TODO")}
+        onBatchRunClick={() => console.log("TODO")}
+        onBatchDeleteClick={() => console.log("TODO")}
+      />
+      <TableContainer component={Paper}>
+        <Table
+          stickyHeader={true}
+          className={classes.table}
+          aria-label="scheduled tasks table"
+          size="small"
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell padding="checkbox">
+                <Checkbox
+                  indeterminate={numSelected > 0 && numSelected < rowCount}
+                  checked={rowCount > 0 && numSelected === rowCount}
+                  onChange={handleSelectAllClick}
+                  inputProps={{
+                    "aria-label": "select all tasks shown in the table",
+                  }}
+                />
+              </TableCell>
+              {columns.map((col) => (
+                <TableCell key={col.label}>{col.label}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {props.tasks.map((task) => (
+              <Row
+                key={task.id}
+                task={task}
+                isSelected={selectedKeys.includes(task.key)}
+                onSelectChange={(checked: boolean) => {
+                  if (checked) {
+                    setSelectedKeys(selectedKeys.concat(task.key));
+                  } else {
+                    setSelectedKeys(
+                      selectedKeys.filter((key) => key !== task.key)
+                    );
+                  }
+                }}
+                onDeleteClick={() => {
+                  props.deleteScheduledTaskAsync(queue, task.key);
                 }}
               />
-            </TableCell>
-            {columns.map((col) => (
-              <TableCell key={col.label}>{col.label}</TableCell>
             ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {props.tasks.map((task) => (
-            <Row
-              key={task.id}
-              task={task}
-              isSelected={selectedKeys.includes(task.key)}
-              onSelectChange={(checked: boolean) => {
-                if (checked) {
-                  setSelectedKeys(selectedKeys.concat(task.key));
-                } else {
-                  setSelectedKeys(
-                    selectedKeys.filter((key) => key !== task.key)
-                  );
-                }
-              }}
-              onDeleteClick={() => {
-                props.deleteScheduledTaskAsync(queue, task.key);
-              }}
-            />
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TablePagination
-              rowsPerPageOptions={rowsPerPageOptions}
-              colSpan={columns.length + 1}
-              count={props.totalTaskCount}
-              rowsPerPage={pageSize}
-              page={page}
-              SelectProps={{
-                inputProps: { "aria-label": "rows per page" },
-                native: true,
-              }}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
-              ActionsComponent={TablePaginationActions}
-            />
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </TableContainer>
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={rowsPerPageOptions}
+                colSpan={columns.length + 1}
+                count={props.totalTaskCount}
+                rowsPerPage={pageSize}
+                page={page}
+                SelectProps={{
+                  inputProps: { "aria-label": "rows per page" },
+                  native: true,
+                }}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+                ActionsComponent={TablePaginationActions}
+              />
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </TableContainer>
+    </div>
   );
 }
 
