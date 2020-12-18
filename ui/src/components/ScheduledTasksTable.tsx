@@ -12,6 +12,7 @@ import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
+import Checkbox from "@material-ui/core/Checkbox";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
@@ -67,6 +68,7 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
   const classes = useStyles();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -80,6 +82,15 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
   ) => {
     setPageSize(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      const newSelected = props.tasks.map((t) => t.key);
+      setSelectedKeys(newSelected);
+    } else {
+      setSelectedKeys([]);
+    }
   };
 
   const fetchData = useCallback(() => {
@@ -106,6 +117,8 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
     { label: "Actions" },
   ];
 
+  const rowCount = props.tasks.length;
+  const numSelected = selectedKeys.length;
   return (
     <TableContainer component={Paper}>
       <Table
@@ -116,6 +129,16 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
       >
         <TableHead>
           <TableRow>
+            <TableCell padding="checkbox">
+              <Checkbox
+                indeterminate={numSelected > 0 && numSelected < rowCount}
+                checked={rowCount > 0 && numSelected === rowCount}
+                onChange={handleSelectAllClick}
+                inputProps={{
+                  "aria-label": "select all tasks shown in the table",
+                }}
+              />
+            </TableCell>
             {columns.map((col) => (
               <TableCell key={col.label}>{col.label}</TableCell>
             ))}
@@ -126,6 +149,16 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
             <Row
               key={task.id}
               task={task}
+              isSelected={selectedKeys.includes(task.key)}
+              onSelectChange={(checked: boolean) => {
+                if (checked) {
+                  setSelectedKeys(selectedKeys.concat(task.key));
+                } else {
+                  setSelectedKeys(
+                    selectedKeys.filter((key) => key !== task.key)
+                  );
+                }
+              }}
               onDeleteClick={() => {
                 props.deleteScheduledTaskAsync(queue, task.key);
               }}
@@ -136,7 +169,7 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
           <TableRow>
             <TablePagination
               rowsPerPageOptions={rowsPerPageOptions}
-              colSpan={columns.length}
+              colSpan={columns.length + 1}
               count={props.totalTaskCount}
               rowsPerPage={pageSize}
               page={page}
@@ -165,6 +198,8 @@ const useRowStyles = makeStyles({
 
 interface RowProps {
   task: ScheduledTaskExtended;
+  isSelected: boolean;
+  onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;
 }
 
@@ -175,6 +210,14 @@ function Row(props: RowProps) {
   return (
     <React.Fragment>
       <TableRow key={task.id} className={classes.root}>
+        <TableCell padding="checkbox">
+          <Checkbox
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              props.onSelectChange(event.target.checked)
+            }
+            checked={props.isSelected}
+          />
+        </TableCell>
         <TableCell>
           <IconButton
             aria-label="expand row"
@@ -196,7 +239,7 @@ function Row(props: RowProps) {
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="h6" gutterBottom component="div">

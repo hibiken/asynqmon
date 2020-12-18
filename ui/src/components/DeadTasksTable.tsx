@@ -241,7 +241,9 @@ function DeadTasksTable(props: Props & ReduxProps) {
                   indeterminate={numSelected > 0 && numSelected < rowCount}
                   checked={rowCount > 0 && numSelected === rowCount}
                   onChange={handleSelectAllClick}
-                  inputProps={{ "aria-label": "select all dead tasks" }}
+                  inputProps={{
+                    "aria-label": "select all tasks shown in the table",
+                  }}
                 />
               </TableCell>
               {columns.map((col) => (
@@ -311,8 +313,6 @@ function Row(props: RowProps) {
   const { task } = props;
   const [open, setOpen] = useState(false);
   const classes = useRowStyles();
-
-  const labelId = `dead-tasks-table-checkbox-${task.id}`;
   return (
     <React.Fragment>
       <TableRow key={task.id} className={classes.root}>
@@ -322,7 +322,6 @@ function Row(props: RowProps) {
               props.onSelectChange(event.target.checked)
             }
             checked={props.isSelected}
-            inputProps={{ "aria-labelledby": labelId }}
           />
         </TableCell>
         <TableCell>
