@@ -280,7 +280,7 @@ type batchDeleteTasksResponse struct {
 // Allow up to 1MB in size.
 const maxRequestBodySize = 1000000
 
-func newBatchDeleteDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newBatchDeleteTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 		dec := json.NewDecoder(r.Body)
