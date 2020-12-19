@@ -20,10 +20,12 @@ interface Props {
   allActionPending: boolean;
   onRunAllClick: () => void;
   onDeleteAllClick: () => void;
+  onKillAllClick?: () => void;
   showBatchActions: boolean;
   batchActionPending: boolean;
   onBatchRunClick: () => void;
   onBatchDeleteClick: () => void;
+  onBatchKillClick?: () => void;
 }
 
 export default function TableActions(props: Props) {
@@ -61,6 +63,18 @@ export default function TableActions(props: Props) {
         >
           Run All
         </MenuItem>
+        {props.onKillAllClick && (
+          <MenuItem
+            onClick={() => {
+              if (!props.onKillAllClick) return;
+              props.onKillAllClick();
+              closeMenu();
+            }}
+            disabled={props.allActionPending}
+          >
+            Kill All
+          </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
             props.onDeleteAllClick();
@@ -83,7 +97,17 @@ export default function TableActions(props: Props) {
           >
             Run
           </Button>
-          <Button>Kill</Button>
+          {props.onBatchKillClick && (
+            <Button
+              disabled={props.batchActionPending}
+              onClick={() => {
+                if (!props.onBatchKillClick) return;
+                props.onBatchKillClick();
+              }}
+            >
+              Kill
+            </Button>
+          )}
           <Button
             disabled={props.batchActionPending}
             onClick={props.onBatchDeleteClick}

@@ -25,11 +25,14 @@ import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/
 import {
   batchDeleteScheduledTasksAsync,
   batchRunScheduledTasksAsync,
+  batchKillScheduledTasksAsync,
   deleteAllScheduledTasksAsync,
   runAllScheduledTasksAsync,
+  killAllScheduledTasksAsync,
   listScheduledTasksAsync,
   deleteScheduledTaskAsync,
   runScheduledTaskAsync,
+  killScheduledTaskAsync,
 } from "../actions/tasksActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
@@ -59,12 +62,15 @@ function mapStateToProps(state: AppState) {
 
 const mapDispatchToProps = {
   listScheduledTasksAsync,
-  deleteScheduledTaskAsync,
   batchDeleteScheduledTasksAsync,
   batchRunScheduledTasksAsync,
+  batchKillScheduledTasksAsync,
   deleteAllScheduledTasksAsync,
   runAllScheduledTasksAsync,
+  killAllScheduledTasksAsync,
+  deleteScheduledTaskAsync,
   runScheduledTaskAsync,
+  killScheduledTaskAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -114,15 +120,25 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
     props.deleteAllScheduledTasksAsync(queue);
   };
 
+  const handleKillAllClick = () => {
+    props.killAllScheduledTasksAsync(queue);
+  };
+
   const handleBatchRunClick = () => {
     props
-      .batchDeleteScheduledTasksAsync(queue, selectedKeys)
+      .batchRunScheduledTasksAsync(queue, selectedKeys)
       .then(() => setSelectedKeys([]));
   };
 
   const handleBatchDeleteClick = () => {
     props
-      .batchRunScheduledTasksAsync(queue, selectedKeys)
+      .batchDeleteScheduledTasksAsync(queue, selectedKeys)
+      .then(() => setSelectedKeys([]));
+  };
+
+  const handleBatchKillClick = () => {
+    props
+      .batchKillScheduledTasksAsync(queue, selectedKeys)
       .then(() => setSelectedKeys([]));
   };
 
@@ -159,9 +175,11 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
         batchActionPending={props.batchActionPending}
         showBatchActions={numSelected > 0}
         onRunAllClick={handleRunAllClick}
+        onKillAllClick={handleKillAllClick}
         onDeleteAllClick={handleDeleteAllClick}
         onBatchRunClick={handleBatchRunClick}
         onBatchDeleteClick={handleBatchDeleteClick}
+        onBatchKillClick={handleBatchKillClick}
       />
       <TableContainer component={Paper}>
         <Table
@@ -209,6 +227,9 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
                 onDeleteClick={() => {
                   props.deleteScheduledTaskAsync(queue, task.key);
                 }}
+                onKillClick={() => {
+                  props.killScheduledTaskAsync(queue, task.key);
+                }}
               />
             ))}
           </TableBody>
@@ -250,6 +271,7 @@ interface RowProps {
   onSelectChange: (checked: boolean) => void;
   onRunClick: () => void;
   onDeleteClick: () => void;
+  onKillClick: () => void;
   allActionPending: boolean;
 }
 
@@ -288,6 +310,12 @@ function Row(props: RowProps) {
             disabled={task.requestPending || props.allActionPending}
           >
             Run
+          </Button>
+          <Button
+            onClick={props.onKillClick}
+            disabled={task.requestPending || props.allActionPending}
+          >
+            Kill
           </Button>
           <Button
             onClick={props.onDeleteClick}

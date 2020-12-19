@@ -6,6 +6,8 @@ import {
   BATCH_DELETE_DEAD_TASKS_SUCCESS,
   BATCH_DELETE_RETRY_TASKS_SUCCESS,
   BATCH_DELETE_SCHEDULED_TASKS_SUCCESS,
+  BATCH_KILL_RETRY_TASKS_SUCCESS,
+  BATCH_KILL_SCHEDULED_TASKS_SUCCESS,
   BATCH_RUN_DEAD_TASKS_SUCCESS,
   BATCH_RUN_RETRY_TASKS_SUCCESS,
   BATCH_RUN_SCHEDULED_TASKS_SUCCESS,
@@ -15,6 +17,10 @@ import {
   DELETE_DEAD_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
+  KILL_ALL_RETRY_TASKS_SUCCESS,
+  KILL_ALL_SCHEDULED_TASKS_SUCCESS,
+  KILL_RETRY_TASK_SUCCESS,
+  KILL_SCHEDULED_TASK_SUCCESS,
   RUN_ALL_DEAD_TASKS_SUCCESS,
   RUN_ALL_RETRY_TASKS_SUCCESS,
   RUN_ALL_SCHEDULED_TASKS_SUCCESS,
@@ -68,6 +74,20 @@ function snackbarReducer(
         message: `Dead task ${action.taskKey} is now pending`,
       };
 
+    case KILL_SCHEDULED_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        // TODO: show only task id
+        message: `Scheduled task ${action.taskKey} is now dead`,
+      };
+
+    case KILL_RETRY_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        // TODO: show only task id
+        message: `Retry task ${action.taskKey} is now dead`,
+      };
+
     case DELETE_SCHEDULED_TASK_SUCCESS:
       return {
         isOpen: true,
@@ -85,6 +105,14 @@ function snackbarReducer(
       };
     }
 
+    case BATCH_KILL_SCHEDULED_TASKS_SUCCESS: {
+      const n = action.payload.dead_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} scheduled ${n === 1 ? "task is" : "tasks are"} now dead`,
+      };
+    }
+
     case BATCH_DELETE_SCHEDULED_TASKS_SUCCESS: {
       const n = action.payload.deleted_keys.length;
       return {
@@ -97,6 +125,12 @@ function snackbarReducer(
       return {
         isOpen: true,
         message: "All scheduled tasks are now pending",
+      };
+
+    case KILL_ALL_SCHEDULED_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All scheduled tasks are now dead",
       };
 
     case DELETE_ALL_SCHEDULED_TASKS_SUCCESS:
@@ -120,6 +154,14 @@ function snackbarReducer(
       };
     }
 
+    case BATCH_KILL_RETRY_TASKS_SUCCESS: {
+      const n = action.payload.dead_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} retry ${n === 1 ? "task is" : "tasks are"} now dead`,
+      };
+    }
+
     case BATCH_DELETE_RETRY_TASKS_SUCCESS: {
       const n = action.payload.deleted_keys.length;
       return {
@@ -132,6 +174,12 @@ function snackbarReducer(
       return {
         isOpen: true,
         message: "All retry tasks are now pending",
+      };
+
+    case KILL_ALL_RETRY_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All retry tasks are now dead",
       };
 
     case DELETE_ALL_RETRY_TASKS_SUCCESS:

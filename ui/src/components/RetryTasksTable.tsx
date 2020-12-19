@@ -25,11 +25,14 @@ import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/
 import {
   batchDeleteRetryTasksAsync,
   batchRunRetryTasksAsync,
+  batchKillRetryTasksAsync,
   deleteAllRetryTasksAsync,
   runAllRetryTasksAsync,
+  killAllRetryTasksAsync,
   listRetryTasksAsync,
   deleteRetryTaskAsync,
   runRetryTaskAsync,
+  killRetryTaskAsync,
 } from "../actions/tasksActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
@@ -60,11 +63,14 @@ function mapStateToProps(state: AppState) {
 const mapDispatchToProps = {
   batchDeleteRetryTasksAsync,
   batchRunRetryTasksAsync,
+  batchKillRetryTasksAsync,
   deleteAllRetryTasksAsync,
   runAllRetryTasksAsync,
+  killAllRetryTasksAsync,
   listRetryTasksAsync,
   deleteRetryTaskAsync,
   runRetryTaskAsync,
+  killRetryTaskAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -114,15 +120,25 @@ function RetryTasksTable(props: Props & ReduxProps) {
     props.deleteAllRetryTasksAsync(queue);
   };
 
+  const handleKillAllClick = () => {
+    props.killAllRetryTasksAsync(queue);
+  };
+
   const handleBatchRunClick = () => {
     props
-      .batchDeleteRetryTasksAsync(queue, selectedKeys)
+      .batchRunRetryTasksAsync(queue, selectedKeys)
       .then(() => setSelectedKeys([]));
   };
 
   const handleBatchDeleteClick = () => {
     props
-      .batchRunRetryTasksAsync(queue, selectedKeys)
+      .batchDeleteRetryTasksAsync(queue, selectedKeys)
+      .then(() => setSelectedKeys([]));
+  };
+
+  const handleBatchKillClick = () => {
+    props
+      .batchKillRetryTasksAsync(queue, selectedKeys)
       .then(() => setSelectedKeys([]));
   };
 
@@ -163,8 +179,10 @@ function RetryTasksTable(props: Props & ReduxProps) {
         showBatchActions={numSelected > 0}
         onRunAllClick={handleRunAllClick}
         onDeleteAllClick={handleDeleteAllClick}
+        onKillAllClick={handleKillAllClick}
         onBatchRunClick={handleBatchRunClick}
         onBatchDeleteClick={handleBatchDeleteClick}
+        onBatchKillClick={handleBatchKillClick}
       />
       <TableContainer component={Paper}>
         <Table
@@ -212,6 +230,9 @@ function RetryTasksTable(props: Props & ReduxProps) {
                 onDeleteClick={() => {
                   props.deleteRetryTaskAsync(task.queue, task.key);
                 }}
+                onKillClick={() => {
+                  props.killRetryTaskAsync(task.queue, task.key);
+                }}
               />
             ))}
           </TableBody>
@@ -253,6 +274,7 @@ interface RowProps {
   onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;
   onRunClick: () => void;
+  onKillClick: () => void;
   allActionPending: boolean;
 }
 
@@ -294,6 +316,12 @@ function Row(props: RowProps) {
             disabled={task.requestPending || props.allActionPending}
           >
             Run
+          </Button>
+          <Button
+            onClick={props.onKillClick}
+            disabled={task.requestPending || props.allActionPending}
+          >
+            Kill
           </Button>
           <Button
             disabled={task.requestPending}

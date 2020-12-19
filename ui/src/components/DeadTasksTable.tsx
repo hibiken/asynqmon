@@ -124,13 +124,13 @@ function DeadTasksTable(props: Props & ReduxProps) {
 
   const handleBatchRunClick = () => {
     props
-      .batchDeleteDeadTasksAsync(queue, selectedKeys)
+      .batchRunDeadTasksAsync(queue, selectedKeys)
       .then(() => setSelectedKeys([]));
   };
 
   const handleBatchDeleteClick = () => {
     props
-      .batchRunDeadTasksAsync(queue, selectedKeys)
+      .batchDeleteDeadTasksAsync(queue, selectedKeys)
       .then(() => setSelectedKeys([]));
   };
 

@@ -51,6 +51,11 @@ export interface BatchRunTasksResponse {
   error_keys: string[];
 }
 
+export interface BatchKillTasksResponse {
+  dead_keys: string[];
+  error_keys: string[];
+}
+
 export interface Queue {
   queue: string;
   paused: boolean;
@@ -263,6 +268,16 @@ export async function runScheduledTask(
   });
 }
 
+export async function killScheduledTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks/${taskKey}:kill`,
+  });
+}
+
 export async function deleteScheduledTask(
   qname: string,
   taskKey: string
@@ -315,6 +330,27 @@ export async function runAllScheduledTasks(qname: string): Promise<void> {
   });
 }
 
+export async function batchKillScheduledTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchKillTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:batch_kill`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  return resp.data;
+}
+
+export async function killAllScheduledTasks(qname: string): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:kill_all`,
+  });
+}
+
 export async function runRetryTask(
   qname: string,
   taskKey: string
@@ -322,6 +358,16 @@ export async function runRetryTask(
   await axios({
     method: "post",
     url: `${BASE_URL}/queues/${qname}/retry_tasks/${taskKey}:run`,
+  });
+}
+
+export async function killRetryTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks/${taskKey}:kill`,
   });
 }
 
@@ -374,6 +420,27 @@ export async function runAllRetryTasks(qname: string): Promise<void> {
   await axios({
     method: "post",
     url: `${BASE_URL}/queues/${qname}/retry_tasks:run_all`,
+  });
+}
+
+export async function batchKillRetryTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchKillTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks:batch_kill`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  return resp.data;
+}
+
+export async function killAllRetryTasks(qname: string): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks:kill_all`,
   });
 }
 

@@ -72,6 +72,24 @@ import {
   RUN_SCHEDULED_TASK_BEGIN,
   RUN_SCHEDULED_TASK_SUCCESS,
   RUN_SCHEDULED_TASK_ERROR,
+  KILL_SCHEDULED_TASK_BEGIN,
+  KILL_SCHEDULED_TASK_SUCCESS,
+  KILL_SCHEDULED_TASK_ERROR,
+  KILL_ALL_SCHEDULED_TASKS_BEGIN,
+  KILL_ALL_SCHEDULED_TASKS_SUCCESS,
+  KILL_ALL_SCHEDULED_TASKS_ERROR,
+  BATCH_KILL_SCHEDULED_TASKS_BEGIN,
+  BATCH_KILL_SCHEDULED_TASKS_ERROR,
+  BATCH_KILL_SCHEDULED_TASKS_SUCCESS,
+  KILL_RETRY_TASK_BEGIN,
+  KILL_RETRY_TASK_SUCCESS,
+  KILL_RETRY_TASK_ERROR,
+  KILL_ALL_RETRY_TASKS_BEGIN,
+  KILL_ALL_RETRY_TASKS_SUCCESS,
+  KILL_ALL_RETRY_TASKS_ERROR,
+  BATCH_KILL_RETRY_TASKS_SUCCESS,
+  BATCH_KILL_RETRY_TASKS_BEGIN,
+  BATCH_KILL_RETRY_TASKS_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -396,6 +414,7 @@ function tasksReducer(
       };
 
     case RUN_SCHEDULED_TASK_BEGIN:
+    case KILL_SCHEDULED_TASK_BEGIN:
     case DELETE_SCHEDULED_TASK_BEGIN:
       return {
         ...state,
@@ -411,6 +430,7 @@ function tasksReducer(
       };
 
     case RUN_SCHEDULED_TASK_SUCCESS:
+    case KILL_SCHEDULED_TASK_SUCCESS:
     case DELETE_SCHEDULED_TASK_SUCCESS:
       return {
         ...state,
@@ -423,6 +443,7 @@ function tasksReducer(
       };
 
     case RUN_SCHEDULED_TASK_ERROR:
+    case KILL_SCHEDULED_TASK_ERROR:
     case DELETE_SCHEDULED_TASK_ERROR:
       return {
         ...state,
@@ -438,6 +459,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_SCHEDULED_TASKS_BEGIN:
+    case KILL_ALL_SCHEDULED_TASKS_BEGIN:
     case DELETE_ALL_SCHEDULED_TASKS_BEGIN:
       return {
         ...state,
@@ -448,6 +470,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_SCHEDULED_TASKS_SUCCESS:
+    case KILL_ALL_SCHEDULED_TASKS_SUCCESS:
     case DELETE_ALL_SCHEDULED_TASKS_SUCCESS:
       return {
         ...state,
@@ -459,6 +482,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_SCHEDULED_TASKS_ERROR:
+    case KILL_ALL_SCHEDULED_TASKS_ERROR:
     case DELETE_ALL_SCHEDULED_TASKS_ERROR:
       return {
         ...state,
@@ -469,6 +493,7 @@ function tasksReducer(
       };
 
     case BATCH_RUN_SCHEDULED_TASKS_BEGIN:
+    case BATCH_KILL_SCHEDULED_TASKS_BEGIN:
     case BATCH_DELETE_SCHEDULED_TASKS_BEGIN:
       return {
         ...state,
@@ -501,6 +526,20 @@ function tasksReducer(
       };
     }
 
+    case BATCH_KILL_SCHEDULED_TASKS_SUCCESS: {
+      const newData = state.scheduledTasks.data.filter(
+        (task) => !action.payload.dead_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
     case BATCH_DELETE_SCHEDULED_TASKS_SUCCESS: {
       const newData = state.scheduledTasks.data.filter(
         (task) => !action.payload.deleted_keys.includes(task.key)
@@ -516,6 +555,7 @@ function tasksReducer(
     }
 
     case BATCH_RUN_SCHEDULED_TASKS_ERROR:
+    case BATCH_KILL_SCHEDULED_TASKS_ERROR:
     case BATCH_DELETE_SCHEDULED_TASKS_ERROR:
       return {
         ...state,
@@ -535,6 +575,7 @@ function tasksReducer(
       };
 
     case RUN_RETRY_TASK_BEGIN:
+    case KILL_RETRY_TASK_BEGIN:
     case DELETE_RETRY_TASK_BEGIN:
       return {
         ...state,
@@ -550,6 +591,7 @@ function tasksReducer(
       };
 
     case RUN_RETRY_TASK_SUCCESS:
+    case KILL_RETRY_TASK_SUCCESS:
     case DELETE_RETRY_TASK_SUCCESS:
       return {
         ...state,
@@ -562,6 +604,7 @@ function tasksReducer(
       };
 
     case RUN_RETRY_TASK_ERROR:
+    case KILL_RETRY_TASK_ERROR:
     case DELETE_RETRY_TASK_ERROR:
       return {
         ...state,
@@ -577,6 +620,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_RETRY_TASKS_BEGIN:
+    case KILL_ALL_RETRY_TASKS_BEGIN:
     case DELETE_ALL_RETRY_TASKS_BEGIN:
       return {
         ...state,
@@ -587,6 +631,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_RETRY_TASKS_SUCCESS:
+    case KILL_ALL_RETRY_TASKS_SUCCESS:
     case DELETE_ALL_RETRY_TASKS_SUCCESS:
       return {
         ...state,
@@ -598,6 +643,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_RETRY_TASKS_ERROR:
+    case KILL_ALL_RETRY_TASKS_ERROR:
     case DELETE_ALL_RETRY_TASKS_ERROR:
       return {
         ...state,
@@ -608,6 +654,7 @@ function tasksReducer(
       };
 
     case BATCH_RUN_RETRY_TASKS_BEGIN:
+    case BATCH_KILL_RETRY_TASKS_BEGIN:
     case BATCH_DELETE_RETRY_TASKS_BEGIN:
       return {
         ...state,
@@ -640,6 +687,20 @@ function tasksReducer(
       };
     }
 
+    case BATCH_KILL_RETRY_TASKS_SUCCESS: {
+      const newData = state.retryTasks.data.filter(
+        (task) => !action.payload.dead_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
     case BATCH_DELETE_RETRY_TASKS_SUCCESS: {
       const newData = state.retryTasks.data.filter(
         (task) => !action.payload.deleted_keys.includes(task.key)
@@ -655,6 +716,7 @@ function tasksReducer(
     }
 
     case BATCH_RUN_RETRY_TASKS_ERROR:
+    case BATCH_KILL_RETRY_TASKS_ERROR:
     case BATCH_DELETE_RETRY_TASKS_ERROR:
       return {
         ...state,
