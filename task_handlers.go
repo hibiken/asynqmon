@@ -248,6 +248,28 @@ func newDeleteAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFu
 	}
 }
 
+func newRunAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qname := mux.Vars(r)["qname"]
+		if _, err := inspector.RunAllScheduledTasks(qname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func newRunAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qname := mux.Vars(r)["qname"]
+		if _, err := inspector.RunAllRetryTasks(qname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 func newRunAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]

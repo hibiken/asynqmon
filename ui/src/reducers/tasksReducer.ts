@@ -42,6 +42,30 @@ import {
   RUN_ALL_DEAD_TASKS_BEGIN,
   RUN_ALL_DEAD_TASKS_ERROR,
   RUN_ALL_DEAD_TASKS_SUCCESS,
+  BATCH_DELETE_RETRY_TASKS_ERROR,
+  BATCH_RUN_RETRY_TASKS_ERROR,
+  BATCH_DELETE_RETRY_TASKS_SUCCESS,
+  BATCH_RUN_RETRY_TASKS_SUCCESS,
+  BATCH_DELETE_RETRY_TASKS_BEGIN,
+  BATCH_RUN_RETRY_TASKS_BEGIN,
+  DELETE_ALL_RETRY_TASKS_ERROR,
+  RUN_ALL_RETRY_TASKS_ERROR,
+  DELETE_ALL_RETRY_TASKS_SUCCESS,
+  RUN_ALL_RETRY_TASKS_SUCCESS,
+  DELETE_ALL_RETRY_TASKS_BEGIN,
+  RUN_ALL_RETRY_TASKS_BEGIN,
+  BATCH_DELETE_SCHEDULED_TASKS_ERROR,
+  BATCH_RUN_SCHEDULED_TASKS_ERROR,
+  BATCH_DELETE_SCHEDULED_TASKS_SUCCESS,
+  BATCH_RUN_SCHEDULED_TASKS_SUCCESS,
+  BATCH_DELETE_SCHEDULED_TASKS_BEGIN,
+  BATCH_RUN_SCHEDULED_TASKS_BEGIN,
+  DELETE_ALL_SCHEDULED_TASKS_ERROR,
+  RUN_ALL_SCHEDULED_TASKS_ERROR,
+  DELETE_ALL_SCHEDULED_TASKS_SUCCESS,
+  RUN_ALL_SCHEDULED_TASKS_SUCCESS,
+  DELETE_ALL_SCHEDULED_TASKS_BEGIN,
+  RUN_ALL_SCHEDULED_TASKS_BEGIN,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -404,6 +428,103 @@ function tasksReducer(
         },
       };
 
+    case RUN_ALL_SCHEDULED_TASKS_BEGIN:
+    case DELETE_ALL_SCHEDULED_TASKS_BEGIN:
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          allActionPending: true,
+        },
+      };
+
+    case RUN_ALL_SCHEDULED_TASKS_SUCCESS:
+    case DELETE_ALL_SCHEDULED_TASKS_SUCCESS:
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          allActionPending: false,
+          data: [],
+        },
+      };
+
+    case RUN_ALL_SCHEDULED_TASKS_ERROR:
+    case DELETE_ALL_SCHEDULED_TASKS_ERROR:
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          allActionPending: false,
+        },
+      };
+
+    case BATCH_RUN_SCHEDULED_TASKS_BEGIN:
+    case BATCH_DELETE_SCHEDULED_TASKS_BEGIN:
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          batchActionPending: true,
+          data: state.scheduledTasks.data.map((task) => {
+            if (!action.taskKeys.includes(task.key)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: true,
+            };
+          }),
+        },
+      };
+
+    case BATCH_RUN_SCHEDULED_TASKS_SUCCESS: {
+      const newData = state.scheduledTasks.data.filter(
+        (task) => !action.payload.pending_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_DELETE_SCHEDULED_TASKS_SUCCESS: {
+      const newData = state.scheduledTasks.data.filter(
+        (task) => !action.payload.deleted_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_RUN_SCHEDULED_TASKS_ERROR:
+    case BATCH_DELETE_SCHEDULED_TASKS_ERROR:
+      return {
+        ...state,
+        scheduledTasks: {
+          ...state.scheduledTasks,
+          batchActionPending: false,
+          data: state.scheduledTasks.data.map((task) => {
+            if (!action.taskKeys.includes(task.key)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: false,
+            };
+          }),
+        },
+      };
+
     case DELETE_RETRY_TASK_BEGIN:
       return {
         ...state,
@@ -439,6 +560,103 @@ function tasksReducer(
               return task;
             }
             return { ...task, requestPending: false };
+          }),
+        },
+      };
+
+    case RUN_ALL_RETRY_TASKS_BEGIN:
+    case DELETE_ALL_RETRY_TASKS_BEGIN:
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          allActionPending: true,
+        },
+      };
+
+    case RUN_ALL_RETRY_TASKS_SUCCESS:
+    case DELETE_ALL_RETRY_TASKS_SUCCESS:
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          allActionPending: false,
+          data: [],
+        },
+      };
+
+    case RUN_ALL_RETRY_TASKS_ERROR:
+    case DELETE_ALL_RETRY_TASKS_ERROR:
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          allActionPending: false,
+        },
+      };
+
+    case BATCH_RUN_RETRY_TASKS_BEGIN:
+    case BATCH_DELETE_RETRY_TASKS_BEGIN:
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          batchActionPending: true,
+          data: state.retryTasks.data.map((task) => {
+            if (!action.taskKeys.includes(task.key)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: true,
+            };
+          }),
+        },
+      };
+
+    case BATCH_RUN_RETRY_TASKS_SUCCESS: {
+      const newData = state.retryTasks.data.filter(
+        (task) => !action.payload.pending_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_DELETE_RETRY_TASKS_SUCCESS: {
+      const newData = state.retryTasks.data.filter(
+        (task) => !action.payload.deleted_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_RUN_RETRY_TASKS_ERROR:
+    case BATCH_DELETE_RETRY_TASKS_ERROR:
+      return {
+        ...state,
+        retryTasks: {
+          ...state.retryTasks,
+          batchActionPending: false,
+          data: state.retryTasks.data.map((task) => {
+            if (!action.taskKeys.includes(task.key)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: false,
+            };
           }),
         },
       };

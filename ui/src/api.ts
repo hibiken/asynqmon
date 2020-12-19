@@ -263,6 +263,48 @@ export async function deleteScheduledTask(
   });
 }
 
+export async function batchDeleteScheduledTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchDeleteTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:batch_delete`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  return resp.data;
+}
+
+export async function deleteAllScheduledTasks(qname: string): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:delete_all`,
+  });
+}
+
+export async function batchRunScheduledTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchRunTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:batch_run`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  return resp.data;
+}
+
+export async function runAllScheduledTasks(qname: string): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:run_all`,
+  });
+}
+
 export async function deleteRetryTask(
   qname: string,
   taskKey: string
@@ -270,6 +312,48 @@ export async function deleteRetryTask(
   await axios({
     method: "delete",
     url: `${BASE_URL}/queues/${qname}/retry_tasks/${taskKey}`,
+  });
+}
+
+export async function batchDeleteRetryTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchDeleteTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks:batch_delete`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  return resp.data;
+}
+
+export async function deleteAllRetryTasks(qname: string): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks:delete_all`,
+  });
+}
+
+export async function batchRunRetryTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchRunTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks:batch_run`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  return resp.data;
+}
+
+export async function runAllRetryTasks(qname: string): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks:run_all`,
   });
 }
 

@@ -1,10 +1,16 @@
 import {
   batchDeleteDeadTasks,
+  batchDeleteRetryTasks,
+  batchDeleteScheduledTasks,
   BatchDeleteTasksResponse,
   batchRunDeadTasks,
+  batchRunRetryTasks,
+  batchRunScheduledTasks,
   BatchRunTasksResponse,
   cancelActiveTask,
   deleteAllDeadTasks,
+  deleteAllRetryTasks,
+  deleteAllScheduledTasks,
   deleteDeadTask,
   deleteRetryTask,
   deleteScheduledTask,
@@ -20,6 +26,8 @@ import {
   ListScheduledTasksResponse,
   PaginationOptions,
   runAllDeadTasks,
+  runAllRetryTasks,
+  runAllScheduledTasks,
   runDeadTask,
 } from "../api";
 import { Dispatch } from "redux";
@@ -49,9 +57,44 @@ export const RUN_DEAD_TASK_ERROR = "RUN_DEAD_TASK_ERROR";
 export const DELETE_SCHEDULED_TASK_BEGIN = "DELETE_SCHEDULED_TASK_BEGIN";
 export const DELETE_SCHEDULED_TASK_SUCCESS = "DELETE_SCHEDULED_TASK_SUCCESS";
 export const DELETE_SCHEDULED_TASK_ERROR = "DELETE_SCHEDULED_TASK_ERROR";
+export const BATCH_RUN_SCHEDULED_TASKS_BEGIN =
+  "BATCH_RUN_SCHEDULED_TASKS_BEGIN";
+export const BATCH_RUN_SCHEDULED_TASKS_SUCCESS =
+  "BATCH_RUN_SCHEDULED_TASKS_SUCCESS";
+export const BATCH_RUN_SCHEDULED_TASKS_ERROR =
+  "BATCH_RUN_SCHEDULED_TASKS_ERROR";
+export const BATCH_DELETE_SCHEDULED_TASKS_BEGIN =
+  "BATCH_DELETE_SCHEDULED_TASKS_BEGIN";
+export const BATCH_DELETE_SCHEDULED_TASKS_SUCCESS =
+  "BATCH_DELETE_SCHEDULED_TASKS_SUCCESS";
+export const BATCH_DELETE_SCHEDULED_TASKS_ERROR =
+  "BATCH_DELETE_SCHEDULED_TASKS_ERROR";
+export const RUN_ALL_SCHEDULED_TASKS_BEGIN = "RUN_ALL_SCHEDULED_TASKS_BEGIN";
+export const RUN_ALL_SCHEDULED_TASKS_SUCCESS =
+  "RUN_ALL_SCHEDULED_TASKS_SUCCESS";
+export const RUN_ALL_SCHEDULED_TASKS_ERROR = "RUN_ALL_SCHEDULED_TASKS_ERROR";
+export const DELETE_ALL_SCHEDULED_TASKS_BEGIN =
+  "DELETE_ALL_SCHEDULED_TASKS_BEGIN";
+export const DELETE_ALL_SCHEDULED_TASKS_SUCCESS =
+  "DELETE_ALL_SCHEDULED_TASKS_SUCCESS";
+export const DELETE_ALL_SCHEDULED_TASKS_ERROR =
+  "DELETE_ALL_SCHEDULED_TASKS_ERROR";
 export const DELETE_RETRY_TASK_BEGIN = "DELETE_RETRY_TASK_BEGIN";
 export const DELETE_RETRY_TASK_SUCCESS = "DELETE_RETRY_TASK_SUCCESS";
 export const DELETE_RETRY_TASK_ERROR = "DELETE_RETRY_TASK_ERROR";
+export const BATCH_RUN_RETRY_TASKS_BEGIN = "BATCH_RUN_RETRY_TASKS_BEGIN";
+export const BATCH_RUN_RETRY_TASKS_SUCCESS = "BATCH_RUN_RETRY_TASKS_SUCCESS";
+export const BATCH_RUN_RETRY_TASKS_ERROR = "BATCH_RUN_RETRY_TASKS_ERROR";
+export const BATCH_DELETE_RETRY_TASKS_BEGIN = "BATCH_DELETE_RETRY_TASKS_BEGIN";
+export const BATCH_DELETE_RETRY_TASKS_SUCCESS =
+  "BATCH_DELETE_RETRY_TASKS_SUCCESS";
+export const BATCH_DELETE_RETRY_TASKS_ERROR = "BATCH_DELETE_RETRY_TASKS_ERROR";
+export const RUN_ALL_RETRY_TASKS_BEGIN = "RUN_ALL_RETRY_TASKS_BEGIN";
+export const RUN_ALL_RETRY_TASKS_SUCCESS = "RUN_ALL_RETRY_TASKS_SUCCESS";
+export const RUN_ALL_RETRY_TASKS_ERROR = "RUN_ALL_RETRY_TASKS_ERROR";
+export const DELETE_ALL_RETRY_TASKS_BEGIN = "DELETE_ALL_RETRY_TASKS_BEGIN";
+export const DELETE_ALL_RETRY_TASKS_SUCCESS = "DELETE_ALL_RETRY_TASKS_SUCCESS";
+export const DELETE_ALL_RETRY_TASKS_ERROR = "DELETE_ALL_RETRY_TASKS_ERROR";
 export const DELETE_DEAD_TASK_BEGIN = "DELETE_DEAD_TASK_BEGIN";
 export const DELETE_DEAD_TASK_SUCCESS = "DELETE_DEAD_TASK_SUCCESS";
 export const DELETE_DEAD_TASK_ERROR = "DELETE_DEAD_TASK_ERROR";
@@ -211,6 +254,76 @@ interface DeleteScheduledTaskErrorAction {
   error: string;
 }
 
+interface BatchDeleteScheduledTasksBeginAction {
+  type: typeof BATCH_DELETE_SCHEDULED_TASKS_BEGIN;
+  queue: string;
+  taskKeys: string[];
+}
+
+interface BatchDeleteScheduledTasksSuccessAction {
+  type: typeof BATCH_DELETE_SCHEDULED_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchDeleteTasksResponse;
+}
+
+interface BatchDeleteScheduledTasksErrorAction {
+  type: typeof BATCH_DELETE_SCHEDULED_TASKS_ERROR;
+  queue: string;
+  taskKeys: string[];
+  error: string;
+}
+
+interface BatchRunScheduledTasksBeginAction {
+  type: typeof BATCH_RUN_SCHEDULED_TASKS_BEGIN;
+  queue: string;
+  taskKeys: string[];
+}
+
+interface BatchRunScheduledTasksSuccessAction {
+  type: typeof BATCH_RUN_SCHEDULED_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchRunTasksResponse;
+}
+
+interface BatchRunScheduledTasksErrorAction {
+  type: typeof BATCH_RUN_SCHEDULED_TASKS_ERROR;
+  queue: string;
+  taskKeys: string[];
+  error: string;
+}
+
+interface RunAllScheduledTasksBeginAction {
+  type: typeof RUN_ALL_SCHEDULED_TASKS_BEGIN;
+  queue: string;
+}
+
+interface RunAllScheduledTasksSuccessAction {
+  type: typeof RUN_ALL_SCHEDULED_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface RunAllScheduledTasksErrorAction {
+  type: typeof RUN_ALL_SCHEDULED_TASKS_ERROR;
+  queue: string;
+  error: string;
+}
+
+interface DeleteAllScheduledTasksBeginAction {
+  type: typeof DELETE_ALL_SCHEDULED_TASKS_BEGIN;
+  queue: string;
+}
+
+interface DeleteAllScheduledTasksSuccessAction {
+  type: typeof DELETE_ALL_SCHEDULED_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface DeleteAllScheduledTasksErrorAction {
+  type: typeof DELETE_ALL_SCHEDULED_TASKS_ERROR;
+  queue: string;
+  error: string;
+}
+
 interface DeleteRetryTaskBeginAction {
   type: typeof DELETE_RETRY_TASK_BEGIN;
   queue: string;
@@ -227,6 +340,76 @@ interface DeleteRetryTaskErrorAction {
   type: typeof DELETE_RETRY_TASK_ERROR;
   queue: string;
   taskKey: string;
+  error: string;
+}
+
+interface BatchDeleteRetryTasksBeginAction {
+  type: typeof BATCH_DELETE_RETRY_TASKS_BEGIN;
+  queue: string;
+  taskKeys: string[];
+}
+
+interface BatchDeleteRetryTasksSuccessAction {
+  type: typeof BATCH_DELETE_RETRY_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchDeleteTasksResponse;
+}
+
+interface BatchDeleteRetryTasksErrorAction {
+  type: typeof BATCH_DELETE_RETRY_TASKS_ERROR;
+  queue: string;
+  taskKeys: string[];
+  error: string;
+}
+
+interface BatchRunRetryTasksBeginAction {
+  type: typeof BATCH_RUN_RETRY_TASKS_BEGIN;
+  queue: string;
+  taskKeys: string[];
+}
+
+interface BatchRunRetryTasksSuccessAction {
+  type: typeof BATCH_RUN_RETRY_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchRunTasksResponse;
+}
+
+interface BatchRunRetryTasksErrorAction {
+  type: typeof BATCH_RUN_RETRY_TASKS_ERROR;
+  queue: string;
+  taskKeys: string[];
+  error: string;
+}
+
+interface RunAllRetryTasksBeginAction {
+  type: typeof RUN_ALL_RETRY_TASKS_BEGIN;
+  queue: string;
+}
+
+interface RunAllRetryTasksSuccessAction {
+  type: typeof RUN_ALL_RETRY_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface RunAllRetryTasksErrorAction {
+  type: typeof RUN_ALL_RETRY_TASKS_ERROR;
+  queue: string;
+  error: string;
+}
+
+interface DeleteAllRetryTasksBeginAction {
+  type: typeof DELETE_ALL_RETRY_TASKS_BEGIN;
+  queue: string;
+}
+
+interface DeleteAllRetryTasksSuccessAction {
+  type: typeof DELETE_ALL_RETRY_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface DeleteAllRetryTasksErrorAction {
+  type: typeof DELETE_ALL_RETRY_TASKS_ERROR;
+  queue: string;
   error: string;
 }
 
@@ -345,9 +528,33 @@ export type TasksActionTypes =
   | DeleteScheduledTaskBeginAction
   | DeleteScheduledTaskSuccessAction
   | DeleteScheduledTaskErrorAction
+  | BatchDeleteScheduledTasksBeginAction
+  | BatchDeleteScheduledTasksSuccessAction
+  | BatchDeleteScheduledTasksErrorAction
+  | BatchRunScheduledTasksBeginAction
+  | BatchRunScheduledTasksSuccessAction
+  | BatchRunScheduledTasksErrorAction
+  | RunAllScheduledTasksBeginAction
+  | RunAllScheduledTasksSuccessAction
+  | RunAllScheduledTasksErrorAction
+  | DeleteAllScheduledTasksBeginAction
+  | DeleteAllScheduledTasksSuccessAction
+  | DeleteAllScheduledTasksErrorAction
   | DeleteRetryTaskBeginAction
   | DeleteRetryTaskSuccessAction
   | DeleteRetryTaskErrorAction
+  | BatchDeleteRetryTasksBeginAction
+  | BatchDeleteRetryTasksSuccessAction
+  | BatchDeleteRetryTasksErrorAction
+  | BatchRunRetryTasksBeginAction
+  | BatchRunRetryTasksSuccessAction
+  | BatchRunRetryTasksErrorAction
+  | RunAllRetryTasksBeginAction
+  | RunAllRetryTasksSuccessAction
+  | RunAllRetryTasksErrorAction
+  | DeleteAllRetryTasksBeginAction
+  | DeleteAllRetryTasksSuccessAction
+  | DeleteAllRetryTasksErrorAction
   | DeleteDeadTaskBeginAction
   | DeleteDeadTaskSuccessAction
   | DeleteDeadTaskErrorAction
@@ -532,6 +739,87 @@ export function deleteScheduledTaskAsync(queue: string, taskKey: string) {
   };
 }
 
+export function batchDeleteScheduledTasksAsync(
+  queue: string,
+  taskKeys: string[]
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: BATCH_DELETE_SCHEDULED_TASKS_BEGIN, queue, taskKeys });
+    try {
+      const response = await batchDeleteScheduledTasks(queue, taskKeys);
+      dispatch({
+        type: BATCH_DELETE_SCHEDULED_TASKS_SUCCESS,
+        queue: queue,
+        payload: response,
+      });
+    } catch (error) {
+      console.error("batchDeleteScheduledTasksAsync: ", error);
+      dispatch({
+        type: BATCH_DELETE_SCHEDULED_TASKS_ERROR,
+        error: `Could not batch delete tasks: ${taskKeys}`,
+        queue,
+        taskKeys,
+      });
+    }
+  };
+}
+
+export function batchRunScheduledTasksAsync(queue: string, taskKeys: string[]) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: BATCH_RUN_SCHEDULED_TASKS_BEGIN, queue, taskKeys });
+    try {
+      const response = await batchRunScheduledTasks(queue, taskKeys);
+      dispatch({
+        type: BATCH_RUN_SCHEDULED_TASKS_SUCCESS,
+        queue: queue,
+        payload: response,
+      });
+    } catch (error) {
+      console.error("batchRunScheduledTasksAsync: ", error);
+      dispatch({
+        type: BATCH_RUN_SCHEDULED_TASKS_ERROR,
+        error: `Could not batch run tasks: ${taskKeys}`,
+        queue,
+        taskKeys,
+      });
+    }
+  };
+}
+
+export function deleteAllScheduledTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_ALL_SCHEDULED_TASKS_BEGIN, queue });
+    try {
+      await deleteAllScheduledTasks(queue);
+      dispatch({ type: DELETE_ALL_SCHEDULED_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("deleteAllScheduledTasksAsync: ", error);
+      dispatch({
+        type: DELETE_ALL_SCHEDULED_TASKS_ERROR,
+        error: `Could not delete all scheduled tasks`,
+        queue,
+      });
+    }
+  };
+}
+
+export function runAllScheduledTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: RUN_ALL_SCHEDULED_TASKS_BEGIN, queue });
+    try {
+      await runAllScheduledTasks(queue);
+      dispatch({ type: RUN_ALL_SCHEDULED_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("runAllScheduledTasksAsync: ", error);
+      dispatch({
+        type: RUN_ALL_SCHEDULED_TASKS_ERROR,
+        error: `Could not run all scheduled tasks`,
+        queue,
+      });
+    }
+  };
+}
+
 export function deleteRetryTaskAsync(queue: string, taskKey: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: DELETE_RETRY_TASK_BEGIN, queue, taskKey });
@@ -545,6 +833,84 @@ export function deleteRetryTaskAsync(queue: string, taskKey: string) {
         error: `Could not delete task: ${taskKey}`,
         queue,
         taskKey,
+      });
+    }
+  };
+}
+
+export function batchDeleteRetryTasksAsync(queue: string, taskKeys: string[]) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: BATCH_DELETE_RETRY_TASKS_BEGIN, queue, taskKeys });
+    try {
+      const response = await batchDeleteRetryTasks(queue, taskKeys);
+      dispatch({
+        type: BATCH_DELETE_RETRY_TASKS_SUCCESS,
+        queue: queue,
+        payload: response,
+      });
+    } catch (error) {
+      console.error("batchDeleteRetryTasksAsync: ", error);
+      dispatch({
+        type: BATCH_DELETE_RETRY_TASKS_ERROR,
+        error: `Could not batch delete tasks: ${taskKeys}`,
+        queue,
+        taskKeys,
+      });
+    }
+  };
+}
+
+export function batchRunRetryTasksAsync(queue: string, taskKeys: string[]) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: BATCH_RUN_RETRY_TASKS_BEGIN, queue, taskKeys });
+    try {
+      const response = await batchRunRetryTasks(queue, taskKeys);
+      dispatch({
+        type: BATCH_RUN_RETRY_TASKS_SUCCESS,
+        queue: queue,
+        payload: response,
+      });
+    } catch (error) {
+      console.error("batchRunRetryTasksAsync: ", error);
+      dispatch({
+        type: BATCH_RUN_RETRY_TASKS_ERROR,
+        error: `Could not batch run tasks: ${taskKeys}`,
+        queue,
+        taskKeys,
+      });
+    }
+  };
+}
+
+export function deleteAllRetryTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_ALL_RETRY_TASKS_BEGIN, queue });
+    try {
+      await deleteAllRetryTasks(queue);
+      dispatch({ type: DELETE_ALL_RETRY_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("deleteAllRetryTasksAsync: ", error);
+      dispatch({
+        type: DELETE_ALL_RETRY_TASKS_ERROR,
+        error: `Could not delete all retry tasks`,
+        queue,
+      });
+    }
+  };
+}
+
+export function runAllRetryTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: RUN_ALL_RETRY_TASKS_BEGIN, queue });
+    try {
+      await runAllRetryTasks(queue);
+      dispatch({ type: RUN_ALL_RETRY_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("runAllRetryTasksAsync: ", error);
+      dispatch({
+        type: RUN_ALL_RETRY_TASKS_ERROR,
+        error: `Could not run all retry tasks`,
+        queue,
       });
     }
   };

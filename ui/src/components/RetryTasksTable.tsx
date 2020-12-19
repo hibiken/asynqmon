@@ -23,6 +23,10 @@ import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
 import {
+  batchDeleteRetryTasksAsync,
+  batchRunRetryTasksAsync,
+  deleteAllRetryTasksAsync,
+  runAllRetryTasksAsync,
   listRetryTasksAsync,
   deleteRetryTaskAsync,
 } from "../actions/tasksActions";
@@ -52,7 +56,14 @@ function mapStateToProps(state: AppState) {
   };
 }
 
-const mapDispatchToProps = { listRetryTasksAsync, deleteRetryTaskAsync };
+const mapDispatchToProps = {
+  batchDeleteRetryTasksAsync,
+  batchRunRetryTasksAsync,
+  deleteAllRetryTasksAsync,
+  runAllRetryTasksAsync,
+  listRetryTasksAsync,
+  deleteRetryTaskAsync,
+};
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -93,6 +104,26 @@ function RetryTasksTable(props: Props & ReduxProps) {
     }
   };
 
+  const handleRunAllClick = () => {
+    props.runAllRetryTasksAsync(queue);
+  };
+
+  const handleDeleteAllClick = () => {
+    props.deleteAllRetryTasksAsync(queue);
+  };
+
+  const handleBatchRunClick = () => {
+    props
+      .batchDeleteRetryTasksAsync(queue, selectedKeys)
+      .then(() => setSelectedKeys([]));
+  };
+
+  const handleBatchDeleteClick = () => {
+    props
+      .batchRunRetryTasksAsync(queue, selectedKeys)
+      .then(() => setSelectedKeys([]));
+  };
+
   const fetchData = useCallback(() => {
     const pageOpts = { page: page + 1, size: pageSize };
     listRetryTasksAsync(queue, pageOpts);
@@ -128,10 +159,10 @@ function RetryTasksTable(props: Props & ReduxProps) {
         allActionPending={props.allActionPending}
         batchActionPending={props.batchActionPending}
         showBatchActions={numSelected > 0}
-        onRunAllClick={() => console.log("TODO")}
-        onDeleteAllClick={() => console.log("TODO")}
-        onBatchRunClick={() => console.log("TODO")}
-        onBatchDeleteClick={() => console.log("TODO")}
+        onRunAllClick={handleRunAllClick}
+        onDeleteAllClick={handleDeleteAllClick}
+        onBatchRunClick={handleBatchRunClick}
+        onBatchDeleteClick={handleBatchDeleteClick}
       />
       <TableContainer component={Paper}>
         <Table

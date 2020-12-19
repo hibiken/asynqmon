@@ -4,12 +4,20 @@ import {
 } from "../actions/snackbarActions";
 import {
   BATCH_DELETE_DEAD_TASKS_SUCCESS,
+  BATCH_DELETE_RETRY_TASKS_SUCCESS,
+  BATCH_DELETE_SCHEDULED_TASKS_SUCCESS,
   BATCH_RUN_DEAD_TASKS_SUCCESS,
+  BATCH_RUN_RETRY_TASKS_SUCCESS,
+  BATCH_RUN_SCHEDULED_TASKS_SUCCESS,
   DELETE_ALL_DEAD_TASKS_SUCCESS,
+  DELETE_ALL_RETRY_TASKS_SUCCESS,
+  DELETE_ALL_SCHEDULED_TASKS_SUCCESS,
   DELETE_DEAD_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
   RUN_ALL_DEAD_TASKS_SUCCESS,
+  RUN_ALL_RETRY_TASKS_SUCCESS,
+  RUN_ALL_SCHEDULED_TASKS_SUCCESS,
   RUN_DEAD_TASK_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
@@ -51,11 +59,69 @@ function snackbarReducer(
         message: `Scheduled task ${action.taskKey} deleted`,
       };
 
+    case BATCH_RUN_SCHEDULED_TASKS_SUCCESS: {
+      const n = action.payload.pending_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} scheduled ${
+          n === 1 ? "task is" : "tasks are"
+        } now pending`,
+      };
+    }
+
+    case BATCH_DELETE_SCHEDULED_TASKS_SUCCESS: {
+      const n = action.payload.deleted_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} scheduled ${n === 1 ? "task" : "tasks"} deleted`,
+      };
+    }
+
+    case RUN_ALL_SCHEDULED_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All scheduled tasks are now pending",
+      };
+
+    case DELETE_ALL_SCHEDULED_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All scheduled tasks deleted",
+      };
+
     case DELETE_RETRY_TASK_SUCCESS:
       return {
         isOpen: true,
         // TODO: show only task id
         message: `Retry task ${action.taskKey} deleted`,
+      };
+
+    case BATCH_RUN_RETRY_TASKS_SUCCESS: {
+      const n = action.payload.pending_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} retry ${n === 1 ? "task is" : "tasks are"} now pending`,
+      };
+    }
+
+    case BATCH_DELETE_RETRY_TASKS_SUCCESS: {
+      const n = action.payload.deleted_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} retry ${n === 1 ? "task" : "tasks"} deleted`,
+      };
+    }
+
+    case RUN_ALL_RETRY_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All retry tasks are now pending",
+      };
+
+    case DELETE_ALL_RETRY_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All retry tasks deleted",
       };
 
     case DELETE_DEAD_TASK_SUCCESS:
@@ -69,7 +135,7 @@ function snackbarReducer(
       const n = action.payload.pending_keys.length;
       return {
         isOpen: true,
-        message: `${n} Dead ${n === 1 ? "task is" : "tasks are"} now pending`,
+        message: `${n} dead ${n === 1 ? "task is" : "tasks are"} now pending`,
       };
     }
 
@@ -77,7 +143,7 @@ function snackbarReducer(
       const n = action.payload.deleted_keys.length;
       return {
         isOpen: true,
-        message: `${n} Dead ${n === 1 ? "task" : "tasks"} deleted`,
+        message: `${n} dead ${n === 1 ? "task" : "tasks"} deleted`,
       };
     }
 
@@ -90,7 +156,7 @@ function snackbarReducer(
     case DELETE_ALL_DEAD_TASKS_SUCCESS:
       return {
         isOpen: true,
-        message: "All dead tasks delete",
+        message: "All dead tasks deleted",
       };
 
     default:
