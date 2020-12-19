@@ -215,6 +215,23 @@ func newRunTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
+func newKillTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname, key := vars["qname"], vars["task_key"]
+		if qname == "" || key == "" {
+			http.Error(w, "route parameters should not be empty", http.StatusBadRequest)
+			return
+		}
+		if err := inspector.KillTaskByKey(qname, key); err != nil {
+			// TODO: Handle task not found error and return 404
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 func newDeleteAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
@@ -274,6 +291,28 @@ func newRunAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.RunAllDeadTasks(qname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func newKillAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qname := mux.Vars(r)["qname"]
+		if _, err := inspector.KillAllScheduledTasks(qname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func newKillAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qname := mux.Vars(r)["qname"]
+		if _, err := inspector.KillAllRetryTasks(qname); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -370,6 +409,50 @@ func newBatchRunTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 				resp.ErrorKeys = append(resp.ErrorKeys, key)
 			} else {
 				resp.PendingKeys = append(resp.PendingKeys, key)
+			}
+		}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type batchKillTasksRequest struct {
+	TaskKeys []string `json:"task_keys"`
+}
+
+type batchKillTasksResponse struct {
+	// task keys that were successfully moved to the dead state.
+	DeadKeys []string `json:"dead_keys"`
+	// task keys that were not able to move to the dead state.
+	ErrorKeys []string `json:"error_keys"`
+}
+
+func newBatchKillTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+
+		var req batchKillTasksRequest
+		if err := dec.Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		qname := mux.Vars(r)["qname"]
+		resp := batchKillTasksResponse{
+			// avoid null in the json response
+			DeadKeys:  make([]string, 0),
+			ErrorKeys: make([]string, 0),
+		}
+		for _, key := range req.TaskKeys {
+			if err := inspector.KillTaskByKey(qname, key); err != nil {
+				log.Printf("error: could not kill task with key %q: %v", key, err)
+				resp.ErrorKeys = append(resp.ErrorKeys, key)
+			} else {
+				resp.DeadKeys = append(resp.DeadKeys, key)
 			}
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
