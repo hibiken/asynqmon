@@ -66,6 +66,12 @@ import {
   RUN_ALL_SCHEDULED_TASKS_SUCCESS,
   DELETE_ALL_SCHEDULED_TASKS_BEGIN,
   RUN_ALL_SCHEDULED_TASKS_BEGIN,
+  RUN_RETRY_TASK_BEGIN,
+  RUN_RETRY_TASK_SUCCESS,
+  RUN_RETRY_TASK_ERROR,
+  RUN_SCHEDULED_TASK_BEGIN,
+  RUN_SCHEDULED_TASK_SUCCESS,
+  RUN_SCHEDULED_TASK_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -389,6 +395,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_SCHEDULED_TASK_BEGIN:
     case DELETE_SCHEDULED_TASK_BEGIN:
       return {
         ...state,
@@ -403,6 +410,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_SCHEDULED_TASK_SUCCESS:
     case DELETE_SCHEDULED_TASK_SUCCESS:
       return {
         ...state,
@@ -414,6 +422,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_SCHEDULED_TASK_ERROR:
     case DELETE_SCHEDULED_TASK_ERROR:
       return {
         ...state,
@@ -525,6 +534,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_RETRY_TASK_BEGIN:
     case DELETE_RETRY_TASK_BEGIN:
       return {
         ...state,
@@ -539,6 +549,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_RETRY_TASK_SUCCESS:
     case DELETE_RETRY_TASK_SUCCESS:
       return {
         ...state,
@@ -550,6 +561,7 @@ function tasksReducer(
         },
       };
 
+    case RUN_RETRY_TASK_ERROR:
     case DELETE_RETRY_TASK_ERROR:
       return {
         ...state,

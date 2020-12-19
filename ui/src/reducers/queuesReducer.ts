@@ -35,6 +35,8 @@ import {
   RUN_ALL_RETRY_TASKS_SUCCESS,
   RUN_ALL_SCHEDULED_TASKS_SUCCESS,
   RUN_DEAD_TASK_SUCCESS,
+  RUN_RETRY_TASK_SUCCESS,
+  RUN_SCHEDULED_TASK_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
 import { DailyStat, Queue } from "../api";
@@ -160,6 +162,40 @@ function queuesReducer(
           history: [],
           requestPending: false,
         });
+      return { ...state, data: newData };
+    }
+
+    case RUN_SCHEDULED_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending: queueInfo.currentStats.pending + 1,
+            scheduled: queueInfo.currentStats.scheduled - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case RUN_RETRY_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending: queueInfo.currentStats.pending + 1,
+            retry: queueInfo.currentStats.retry - 1,
+          },
+        };
+      });
       return { ...state, data: newData };
     }
 

@@ -29,6 +29,7 @@ import {
   runAllRetryTasksAsync,
   listRetryTasksAsync,
   deleteRetryTaskAsync,
+  runRetryTaskAsync,
 } from "../actions/tasksActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
@@ -63,6 +64,7 @@ const mapDispatchToProps = {
   runAllRetryTasksAsync,
   listRetryTasksAsync,
   deleteRetryTaskAsync,
+  runRetryTaskAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -193,6 +195,7 @@ function RetryTasksTable(props: Props & ReduxProps) {
               <Row
                 key={task.id}
                 task={task}
+                allActionPending={props.allActionPending}
                 isSelected={selectedKeys.includes(task.key)}
                 onSelectChange={(checked: boolean) => {
                   if (checked) {
@@ -202,6 +205,9 @@ function RetryTasksTable(props: Props & ReduxProps) {
                       selectedKeys.filter((key) => key !== task.key)
                     );
                   }
+                }}
+                onRunClick={() => {
+                  props.runRetryTaskAsync(task.queue, task.key);
                 }}
                 onDeleteClick={() => {
                   props.deleteRetryTaskAsync(task.queue, task.key);
@@ -246,6 +252,8 @@ interface RowProps {
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;
+  onRunClick: () => void;
+  allActionPending: boolean;
 }
 
 function Row(props: RowProps) {
@@ -281,7 +289,16 @@ function Row(props: RowProps) {
         <TableCell>{task.retried}</TableCell>
         <TableCell>{task.max_retry}</TableCell>
         <TableCell>
-          <Button disabled={task.requestPending} onClick={props.onDeleteClick}>
+          <Button
+            onClick={props.onRunClick}
+            disabled={task.requestPending || props.allActionPending}
+          >
+            Run
+          </Button>
+          <Button
+            disabled={task.requestPending}
+            onClick={props.onDeleteClick || props.allActionPending}
+          >
             Delete
           </Button>
         </TableCell>

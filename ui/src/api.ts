@@ -253,6 +253,16 @@ export async function listDeadTasks(
   return resp.data;
 }
 
+export async function runScheduledTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks/${taskKey}:run`,
+  });
+}
+
 export async function deleteScheduledTask(
   qname: string,
   taskKey: string
@@ -302,6 +312,16 @@ export async function runAllScheduledTasks(qname: string): Promise<void> {
   await axios({
     method: "post",
     url: `${BASE_URL}/queues/${qname}/scheduled_tasks:run_all`,
+  });
+}
+
+export async function runRetryTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/retry_tasks/${taskKey}:run`,
   });
 }
 

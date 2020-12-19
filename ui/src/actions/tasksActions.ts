@@ -29,6 +29,8 @@ import {
   runAllRetryTasks,
   runAllScheduledTasks,
   runDeadTask,
+  runRetryTask,
+  runScheduledTask,
 } from "../api";
 import { Dispatch } from "redux";
 
@@ -51,6 +53,12 @@ export const LIST_DEAD_TASKS_ERROR = "LIST_DEAD_TASKS_ERROR";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
+export const RUN_SCHEDULED_TASK_BEGIN = "RUN_DEAD_TASK_BEGIN";
+export const RUN_SCHEDULED_TASK_SUCCESS = "RUN_DEAD_TASK_SUCCESS";
+export const RUN_SCHEDULED_TASK_ERROR = "RUN_DEAD_TASK_ERROR";
+export const RUN_RETRY_TASK_BEGIN = "RUN_RETRY_TASK_BEGIN";
+export const RUN_RETRY_TASK_SUCCESS = "RUN_RETRY_TASK_SUCCESS";
+export const RUN_RETRY_TASK_ERROR = "RUN_RETRY_TASK_ERROR";
 export const RUN_DEAD_TASK_BEGIN = "RUN_DEAD_TASK_BEGIN";
 export const RUN_DEAD_TASK_SUCCESS = "RUN_DEAD_TASK_SUCCESS";
 export const RUN_DEAD_TASK_ERROR = "RUN_DEAD_TASK_ERROR";
@@ -213,6 +221,43 @@ interface CancelActiveTaskErrorAction {
   type: typeof CANCEL_ACTIVE_TASK_ERROR;
   queue: string;
   taskId: string;
+  error: string;
+}
+interface RunScheduledTaskBeginAction {
+  type: typeof RUN_SCHEDULED_TASK_BEGIN;
+  queue: string;
+  taskKey: string;
+}
+
+interface RunScheduledTaskSuccessAction {
+  type: typeof RUN_SCHEDULED_TASK_SUCCESS;
+  queue: string;
+  taskKey: string;
+}
+
+interface RunScheduledTaskErrorAction {
+  type: typeof RUN_SCHEDULED_TASK_ERROR;
+  queue: string;
+  taskKey: string;
+  error: string;
+}
+
+interface RunRetryTaskBeginAction {
+  type: typeof RUN_RETRY_TASK_BEGIN;
+  queue: string;
+  taskKey: string;
+}
+
+interface RunRetryTaskSuccessAction {
+  type: typeof RUN_RETRY_TASK_SUCCESS;
+  queue: string;
+  taskKey: string;
+}
+
+interface RunRetryTaskErrorAction {
+  type: typeof RUN_RETRY_TASK_ERROR;
+  queue: string;
+  taskKey: string;
   error: string;
 }
 
@@ -522,6 +567,12 @@ export type TasksActionTypes =
   | CancelActiveTaskBeginAction
   | CancelActiveTaskSuccessAction
   | CancelActiveTaskErrorAction
+  | RunScheduledTaskBeginAction
+  | RunScheduledTaskSuccessAction
+  | RunScheduledTaskErrorAction
+  | RunRetryTaskBeginAction
+  | RunRetryTaskSuccessAction
+  | RunRetryTaskErrorAction
   | RunDeadTaskBeginAction
   | RunDeadTaskSuccessAction
   | RunDeadTaskErrorAction
@@ -698,6 +749,42 @@ export function cancelActiveTaskAsync(queue: string, taskId: string) {
         error: `Could not cancel task: ${taskId}`,
         queue,
         taskId,
+      });
+    }
+  };
+}
+
+export function runScheduledTaskAsync(queue: string, taskKey: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: RUN_SCHEDULED_TASK_BEGIN, queue, taskKey });
+    try {
+      await runScheduledTask(queue, taskKey);
+      dispatch({ type: RUN_SCHEDULED_TASK_SUCCESS, queue, taskKey });
+    } catch (error) {
+      console.error("runScheduledTaskAsync: ", error);
+      dispatch({
+        type: RUN_SCHEDULED_TASK_ERROR,
+        error: `Could not run task: ${taskKey}`,
+        queue,
+        taskKey,
+      });
+    }
+  };
+}
+
+export function runRetryTaskAsync(queue: string, taskKey: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: RUN_RETRY_TASK_BEGIN, queue, taskKey });
+    try {
+      await runRetryTask(queue, taskKey);
+      dispatch({ type: RUN_RETRY_TASK_SUCCESS, queue, taskKey });
+    } catch (error) {
+      console.error("runRetryTaskAsync: ", error);
+      dispatch({
+        type: RUN_RETRY_TASK_ERROR,
+        error: `Could not run task: ${taskKey}`,
+        queue,
+        taskKey,
       });
     }
   };

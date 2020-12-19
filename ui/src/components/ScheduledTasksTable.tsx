@@ -29,6 +29,7 @@ import {
   runAllScheduledTasksAsync,
   listScheduledTasksAsync,
   deleteScheduledTaskAsync,
+  runScheduledTaskAsync,
 } from "../actions/tasksActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
@@ -63,6 +64,7 @@ const mapDispatchToProps = {
   batchRunScheduledTasksAsync,
   deleteAllScheduledTasksAsync,
   runAllScheduledTasksAsync,
+  runScheduledTaskAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -190,6 +192,7 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
               <Row
                 key={task.id}
                 task={task}
+                allActionPending={props.allActionPending}
                 isSelected={selectedKeys.includes(task.key)}
                 onSelectChange={(checked: boolean) => {
                   if (checked) {
@@ -199,6 +202,9 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
                       selectedKeys.filter((key) => key !== task.key)
                     );
                   }
+                }}
+                onRunClick={() => {
+                  props.runScheduledTaskAsync(queue, task.key);
                 }}
                 onDeleteClick={() => {
                   props.deleteScheduledTaskAsync(queue, task.key);
@@ -242,7 +248,9 @@ interface RowProps {
   task: ScheduledTaskExtended;
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
+  onRunClick: () => void;
   onDeleteClick: () => void;
+  allActionPending: boolean;
 }
 
 function Row(props: RowProps) {
@@ -275,7 +283,16 @@ function Row(props: RowProps) {
         <TableCell>{task.type}</TableCell>
         <TableCell>{durationBefore(task.next_process_at)}</TableCell>
         <TableCell>
-          <Button onClick={props.onDeleteClick} disabled={task.requestPending}>
+          <Button
+            onClick={props.onRunClick}
+            disabled={task.requestPending || props.allActionPending}
+          >
+            Run
+          </Button>
+          <Button
+            onClick={props.onDeleteClick}
+            disabled={task.requestPending || props.allActionPending}
+          >
             Delete
           </Button>
         </TableCell>

@@ -19,6 +19,8 @@ import {
   RUN_ALL_RETRY_TASKS_SUCCESS,
   RUN_ALL_SCHEDULED_TASKS_SUCCESS,
   RUN_DEAD_TASK_SUCCESS,
+  RUN_RETRY_TASK_SUCCESS,
+  RUN_SCHEDULED_TASK_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
 
@@ -43,6 +45,20 @@ function snackbarReducer(
         // smoother transition animation.
         ...state,
         isOpen: false,
+      };
+
+    case RUN_SCHEDULED_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        // TODO: show only task id
+        message: `Scheduled task ${action.taskKey} is now pending`,
+      };
+
+    case RUN_RETRY_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        // TODO: show only task id
+        message: `Retry task ${action.taskKey} is now pending`,
       };
 
     case RUN_DEAD_TASK_SUCCESS:
