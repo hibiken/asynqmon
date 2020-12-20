@@ -1,20 +1,27 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
+import Tooltip from "@material-ui/core/Tooltip";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import DeleteIcon from "@material-ui/icons/Delete";
+import ArchiveIcon from "@material-ui/icons/Archive";
 import IconButton from "@material-ui/core/IconButton";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   actionsContainer: {
+    display: "flex",
     padding: "4px",
   },
   moreIcon: {
     marginRight: "8px",
   },
-});
+  iconGroup: {
+    paddingLeft: theme.spacing(1),
+    borderLeft: `1px solid ${theme.palette.grey[100]}`,
+  },
+}));
 
 interface Props {
   allActionPending: boolean;
@@ -40,13 +47,15 @@ export default function TableActions(props: Props) {
 
   return (
     <div className={classes.actionsContainer}>
-      <IconButton
-        aria-label="actions"
-        className={classes.moreIcon}
-        onClick={handleMenuClick}
-      >
-        <MoreHorizIcon />
-      </IconButton>
+      <Tooltip title="More Actions">
+        <IconButton
+          aria-label="actions"
+          className={classes.moreIcon}
+          onClick={handleMenuClick}
+        >
+          <MoreHorizIcon />
+        </IconButton>
+      </Tooltip>
       <Menu
         id="action-menu"
         keepMounted
@@ -86,35 +95,37 @@ export default function TableActions(props: Props) {
         </MenuItem>
       </Menu>
       {props.showBatchActions && (
-        <ButtonGroup
-          variant="text"
-          color="primary"
-          aria-label="text primary button group"
-        >
-          <Button
-            disabled={props.batchActionPending}
-            onClick={props.onBatchRunClick}
-          >
-            Run
-          </Button>
+        <div className={classes.iconGroup}>
           {props.onBatchKillClick && (
-            <Button
-              disabled={props.batchActionPending}
-              onClick={() => {
-                if (!props.onBatchKillClick) return;
-                props.onBatchKillClick();
-              }}
-            >
-              Kill
-            </Button>
+            <Tooltip title="Kill">
+              <IconButton
+                disabled={props.batchActionPending}
+                onClick={() => {
+                  if (!props.onBatchKillClick) return;
+                  props.onBatchKillClick();
+                }}
+              >
+                <ArchiveIcon />
+              </IconButton>
+            </Tooltip>
           )}
-          <Button
-            disabled={props.batchActionPending}
-            onClick={props.onBatchDeleteClick}
-          >
-            Delete
-          </Button>
-        </ButtonGroup>
+          <Tooltip title="Delete">
+            <IconButton
+              disabled={props.batchActionPending}
+              onClick={props.onBatchDeleteClick}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Run">
+            <IconButton
+              disabled={props.batchActionPending}
+              onClick={props.onBatchRunClick}
+            >
+              <PlayArrowIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
       )}
     </div>
   );
