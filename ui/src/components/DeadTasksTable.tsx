@@ -260,7 +260,11 @@ function Row(props: RowProps) {
   const classes = useRowStyles();
   return (
     <React.Fragment>
-      <TableRow key={task.id} className={classes.root}>
+      <TableRow
+        key={task.id}
+        className={classes.root}
+        selected={props.isSelected}
+      >
         <TableCell padding="checkbox">
           <Checkbox
             onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -299,7 +303,7 @@ function Row(props: RowProps) {
           </Button>
         </TableCell>
       </TableRow>
-      <TableRow>
+      <TableRow selected={props.isSelected}>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
