@@ -40,7 +40,7 @@ import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import TableActions from "./TableActions";
-import { durationBefore } from "../timeutil";
+import { durationBefore, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
 import { RetryTaskExtended } from "../reducers/tasksReducer";
 
@@ -307,7 +307,7 @@ function Row(props: RowProps) {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          {task.id}
+          {uuidPrefix(task.id)}
         </TableCell>
         <TableCell>{task.type}</TableCell>
         <TableCell>{durationBefore(task.next_process_at)}</TableCell>

@@ -37,7 +37,7 @@ import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import TableActions from "./TableActions";
-import { timeAgo } from "../timeutil";
+import { timeAgo, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
 import { DeadTaskExtended } from "../reducers/tasksReducer";
 
@@ -283,7 +283,7 @@ function Row(props: RowProps) {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          {task.id}
+          {uuidPrefix(task.id)}
         </TableCell>
         <TableCell>{task.type}</TableCell>
         <TableCell>{timeAgo(task.last_failed_at)}</TableCell>

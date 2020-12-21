@@ -32,6 +32,7 @@ import TablePaginationActions, {
 } from "./TablePaginationActions";
 import { usePolling } from "../hooks";
 import { ActiveTaskExtended } from "../reducers/tasksReducer";
+import { uuidPrefix } from "../utils";
 
 const useStyles = makeStyles({
   table: {
@@ -177,7 +178,7 @@ function Row(props: { task: ActiveTaskExtended; onCancelClick: () => void }) {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          {task.id}
+          {uuidPrefix(task.id)}
         </TableCell>
         <TableCell>{task.type}</TableCell>
         <TableCell align="center">

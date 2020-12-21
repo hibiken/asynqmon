@@ -17,7 +17,7 @@ import QueueSizeChart from "../components/QueueSizeChart";
 import ProcessedTasksChart from "../components/ProcessedTasksChart";
 import QueuesOverviewTable from "../components/QueuesOverviewTable";
 import Tooltip from "../components/Tooltip";
-import { getCurrentUTCDate } from "../timeutil";
+import { getCurrentUTCDate } from "../utils";
 import { usePolling } from "../hooks";
 
 const useStyles = makeStyles((theme) => ({

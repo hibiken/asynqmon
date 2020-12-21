@@ -56,43 +56,37 @@ function snackbarReducer(
     case RUN_SCHEDULED_TASK_SUCCESS:
       return {
         isOpen: true,
-        // TODO: show only task id
-        message: `Scheduled task ${action.taskKey} is now pending`,
+        message: `Scheduled task is now pending`,
       };
 
     case RUN_RETRY_TASK_SUCCESS:
       return {
         isOpen: true,
-        // TODO: show only task id
-        message: `Retry task ${action.taskKey} is now pending`,
+        message: `Retry task is now pending`,
       };
 
     case RUN_DEAD_TASK_SUCCESS:
       return {
         isOpen: true,
-        // TODO: show only task id
-        message: `Dead task ${action.taskKey} is now pending`,
+        message: `Dead task is now pending`,
       };
 
     case KILL_SCHEDULED_TASK_SUCCESS:
       return {
         isOpen: true,
-        // TODO: show only task id
-        message: `Scheduled task ${action.taskKey} is now dead`,
+        message: `Scheduled task is now dead`,
       };
 
     case KILL_RETRY_TASK_SUCCESS:
       return {
         isOpen: true,
-        // TODO: show only task id
-        message: `Retry task ${action.taskKey} is now dead`,
+        message: `Retry task is now dead`,
       };
 
     case DELETE_SCHEDULED_TASK_SUCCESS:
       return {
         isOpen: true,
-        // TODO: show only task id
-        message: `Scheduled task ${action.taskKey} deleted`,
+        message: `Scheduled task deleted`,
       };
 
     case BATCH_RUN_SCHEDULED_TASKS_SUCCESS: {
@@ -142,8 +136,7 @@ function snackbarReducer(
     case DELETE_RETRY_TASK_SUCCESS:
       return {
         isOpen: true,
-        // TODO: show only task id
-        message: `Retry task ${action.taskKey} deleted`,
+        message: `Retry task deleted`,
       };
 
     case BATCH_RUN_RETRY_TASKS_SUCCESS: {
@@ -191,8 +184,7 @@ function snackbarReducer(
     case DELETE_DEAD_TASK_SUCCESS:
       return {
         isOpen: true,
-        // TODO: show only task id
-        message: `Dead task ${action.taskKey} deleted`,
+        message: `Dead task deleted`,
       };
 
     case BATCH_RUN_DEAD_TASKS_SUCCESS: {

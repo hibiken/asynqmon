@@ -14,7 +14,7 @@ import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/
 import { SortDirection, ColumnConfig } from "../types/table";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import { SchedulerEntry } from "../api";
-import { timeAgo, durationBefore } from "../timeutil";
+import { timeAgo, durationBefore } from "../utils";
 
 const useStyles = makeStyles((theme) => ({
   table: {

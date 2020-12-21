@@ -29,6 +29,7 @@ import { listPendingTasksAsync } from "../actions/tasksActions";
 import { AppState } from "../store";
 import { PendingTask } from "../api";
 import { usePolling } from "../hooks";
+import { uuidPrefix } from "../utils";
 
 const useStyles = makeStyles({
   table: {
@@ -166,7 +167,7 @@ function Row(props: { task: PendingTask }) {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          {task.id}
+          {uuidPrefix(task.id)}
         </TableCell>
         <TableCell>{task.type}</TableCell>
         <TableCell>

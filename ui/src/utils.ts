@@ -51,3 +51,11 @@ export function getCurrentUTCDate(): string {
   const yyyy = today.getFullYear();
   return `${yyyy}-${mm}-${dd}`;
 }
+
+export function uuidPrefix(uuid: string): string {
+  const idx = uuid.indexOf("-");
+  if (idx === -1) {
+    return uuid;
+  }
+  return uuid.substr(0, idx);
+}
