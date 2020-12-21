@@ -14,6 +14,7 @@ import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
+import Checkbox from "@material-ui/core/Checkbox";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
@@ -63,6 +64,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
   const classes = useStyles();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -76,6 +78,15 @@ function ActiveTasksTable(props: Props & ReduxProps) {
   ) => {
     setPageSize(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      const newSelected = props.tasks.map((t) => t.id);
+      setSelectedIds(newSelected);
+    } else {
+      setSelectedIds([]);
+    }
   };
 
   const fetchData = useCallback(() => {
@@ -101,6 +112,8 @@ function ActiveTasksTable(props: Props & ReduxProps) {
     { label: "Actions", align: "center" },
   ];
 
+  const rowCount = props.tasks.length;
+  const numSelected = selectedIds.length;
   return (
     <TableContainer component={Paper}>
       <Table
@@ -111,6 +124,16 @@ function ActiveTasksTable(props: Props & ReduxProps) {
       >
         <TableHead>
           <TableRow>
+            <TableCell padding="checkbox">
+              <Checkbox
+                indeterminate={numSelected > 0 && numSelected < rowCount}
+                checked={rowCount > 0 && numSelected === rowCount}
+                onChange={handleSelectAllClick}
+                inputProps={{
+                  "aria-label": "select all tasks shown in the table",
+                }}
+              />
+            </TableCell>
             {columns.map((col) => (
               <TableCell key={col.label} align={col.align}>
                 {col.label}
@@ -124,6 +147,14 @@ function ActiveTasksTable(props: Props & ReduxProps) {
             <Row
               key={task.id}
               task={task}
+              isSelected={selectedIds.includes(task.id)}
+              onSelectChange={(checked: boolean) => {
+                if (checked) {
+                  setSelectedIds(selectedIds.concat(task.id));
+                } else {
+                  setSelectedIds(selectedIds.filter((id) => id !== task.id));
+                }
+              }}
               onCancelClick={() => {
                 props.cancelActiveTaskAsync(queue, task.id);
               }}
@@ -161,13 +192,32 @@ const useRowStyles = makeStyles({
   },
 });
 
-function Row(props: { task: ActiveTaskExtended; onCancelClick: () => void }) {
+interface RowProps {
+  task: ActiveTaskExtended;
+  isSelected: boolean;
+  onSelectChange: (checked: boolean) => void;
+  onCancelClick: () => void;
+}
+
+function Row(props: RowProps) {
   const { task } = props;
   const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();
   return (
     <React.Fragment>
-      <TableRow key={task.id} className={classes.root}>
+      <TableRow
+        key={task.id}
+        className={classes.root}
+        selected={props.isSelected}
+      >
+        <TableCell padding="checkbox">
+          <Checkbox
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              props.onSelectChange(event.target.checked)
+            }
+            checked={props.isSelected}
+          />
+        </TableCell>
         <TableCell>
           <IconButton
             aria-label="expand row"
@@ -191,7 +241,7 @@ function Row(props: { task: ActiveTaskExtended; onCancelClick: () => void }) {
           </Button>
         </TableCell>
       </TableRow>
-      <TableRow>
+      <TableRow selected={props.isSelected}>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
