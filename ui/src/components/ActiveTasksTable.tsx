@@ -17,6 +17,7 @@ import Box from "@material-ui/core/Box";
 import Checkbox from "@material-ui/core/Checkbox";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
+import CancelIcon from "@material-ui/icons/Cancel";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
@@ -31,6 +32,7 @@ import TablePaginationActions, {
   rowsPerPageOptions,
   defaultPageSize,
 } from "./TablePaginationActions";
+import TableActions from "./TableActions";
 import { usePolling } from "../hooks";
 import { ActiveTaskExtended } from "../reducers/tasksReducer";
 import { uuidPrefix } from "../utils";
@@ -115,72 +117,92 @@ function ActiveTasksTable(props: Props & ReduxProps) {
   const rowCount = props.tasks.length;
   const numSelected = selectedIds.length;
   return (
-    <TableContainer component={Paper}>
-      <Table
-        stickyHeader={true}
-        className={classes.table}
-        aria-label="active tasks table"
-        size="small"
-      >
-        <TableHead>
-          <TableRow>
-            <TableCell padding="checkbox">
-              <Checkbox
-                indeterminate={numSelected > 0 && numSelected < rowCount}
-                checked={rowCount > 0 && numSelected === rowCount}
-                onChange={handleSelectAllClick}
-                inputProps={{
-                  "aria-label": "select all tasks shown in the table",
+    <div>
+      <TableActions
+        showIconButtons={numSelected > 0}
+        iconButtonActions={[
+          {
+            tooltip: "Cancel",
+            icon: <CancelIcon />,
+            onClick: () => console.log("TODO"),
+            disabled: false,
+          },
+        ]}
+        menuItemActions={[
+          {
+            label: "Cancel All",
+            onClick: () => console.log("TODO"),
+            disabled: false,
+          },
+        ]}
+      />
+      <TableContainer component={Paper}>
+        <Table
+          stickyHeader={true}
+          className={classes.table}
+          aria-label="active tasks table"
+          size="small"
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell padding="checkbox">
+                <Checkbox
+                  indeterminate={numSelected > 0 && numSelected < rowCount}
+                  checked={rowCount > 0 && numSelected === rowCount}
+                  onChange={handleSelectAllClick}
+                  inputProps={{
+                    "aria-label": "select all tasks shown in the table",
+                  }}
+                />
+              </TableCell>
+              {columns.map((col) => (
+                <TableCell key={col.label} align={col.align}>
+                  {col.label}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {/* TODO: loading and empty state */}
+            {props.tasks.map((task) => (
+              <Row
+                key={task.id}
+                task={task}
+                isSelected={selectedIds.includes(task.id)}
+                onSelectChange={(checked: boolean) => {
+                  if (checked) {
+                    setSelectedIds(selectedIds.concat(task.id));
+                  } else {
+                    setSelectedIds(selectedIds.filter((id) => id !== task.id));
+                  }
+                }}
+                onCancelClick={() => {
+                  props.cancelActiveTaskAsync(queue, task.id);
                 }}
               />
-            </TableCell>
-            {columns.map((col) => (
-              <TableCell key={col.label} align={col.align}>
-                {col.label}
-              </TableCell>
             ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {/* TODO: loading and empty state */}
-          {props.tasks.map((task) => (
-            <Row
-              key={task.id}
-              task={task}
-              isSelected={selectedIds.includes(task.id)}
-              onSelectChange={(checked: boolean) => {
-                if (checked) {
-                  setSelectedIds(selectedIds.concat(task.id));
-                } else {
-                  setSelectedIds(selectedIds.filter((id) => id !== task.id));
-                }
-              }}
-              onCancelClick={() => {
-                props.cancelActiveTaskAsync(queue, task.id);
-              }}
-            />
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TablePagination
-              rowsPerPageOptions={rowsPerPageOptions}
-              colSpan={columns.length}
-              count={props.tasks.length}
-              rowsPerPage={pageSize}
-              page={page}
-              SelectProps={{
-                inputProps: { "aria-label": "rows per page" },
-                native: true,
-              }}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
-              ActionsComponent={TablePaginationActions}
-            />
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </TableContainer>
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={rowsPerPageOptions}
+                colSpan={columns.length}
+                count={props.tasks.length}
+                rowsPerPage={pageSize}
+                page={page}
+                SelectProps={{
+                  inputProps: { "aria-label": "rows per page" },
+                  native: true,
+                }}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+                ActionsComponent={TablePaginationActions}
+              />
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </TableContainer>
+    </div>
   );
 }
 
