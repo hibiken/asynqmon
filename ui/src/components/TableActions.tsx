@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Tooltip from "@material-ui/core/Tooltip";
-import PlayArrowIcon from "@material-ui/icons/PlayArrow";
-import DeleteIcon from "@material-ui/icons/Delete";
-import ArchiveIcon from "@material-ui/icons/Archive";
 import IconButton from "@material-ui/core/IconButton";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -23,16 +20,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+interface MenuItemAction {
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+}
+
+interface IconButtonAction {
+  icon: React.ReactElement;
+  tooltip: string;
+  onClick: () => void;
+  disabled: boolean;
+}
+
 interface Props {
-  allActionPending: boolean;
-  onRunAllClick: () => void;
-  onDeleteAllClick: () => void;
-  onKillAllClick?: () => void;
-  showBatchActions: boolean;
-  batchActionPending: boolean;
-  onBatchRunClick: () => void;
-  onBatchDeleteClick: () => void;
-  onBatchKillClick?: () => void;
+  menuItemActions: MenuItemAction[];
+  iconButtonActions: IconButtonAction[];
+  showIconButtons: boolean;
 }
 
 export default function TableActions(props: Props) {
@@ -63,68 +67,25 @@ export default function TableActions(props: Props) {
         open={Boolean(menuAnchor)}
         onClose={closeMenu}
       >
-        <MenuItem
-          onClick={() => {
-            props.onRunAllClick();
-            closeMenu();
-          }}
-          disabled={props.allActionPending}
-        >
-          Run All
-        </MenuItem>
-        {props.onKillAllClick && (
+        {props.menuItemActions.map((action) => (
           <MenuItem
-            onClick={() => {
-              if (!props.onKillAllClick) return;
-              props.onKillAllClick();
-              closeMenu();
-            }}
-            disabled={props.allActionPending}
+            key={action.label}
+            onClick={action.onClick}
+            disabled={action.disabled}
           >
-            Kill All
+            {action.label}
           </MenuItem>
-        )}
-        <MenuItem
-          onClick={() => {
-            props.onDeleteAllClick();
-            closeMenu();
-          }}
-          disabled={props.allActionPending}
-        >
-          Delete All
-        </MenuItem>
+        ))}
       </Menu>
-      {props.showBatchActions && (
+      {props.showIconButtons && (
         <div className={classes.iconGroup}>
-          {props.onBatchKillClick && (
-            <Tooltip title="Kill">
-              <IconButton
-                disabled={props.batchActionPending}
-                onClick={() => {
-                  if (!props.onBatchKillClick) return;
-                  props.onBatchKillClick();
-                }}
-              >
-                <ArchiveIcon />
+          {props.iconButtonActions.map((action) => (
+            <Tooltip key={action.tooltip} title={action.tooltip}>
+              <IconButton onClick={action.onClick} disabled={action.disabled}>
+                {action.icon}
               </IconButton>
             </Tooltip>
-          )}
-          <Tooltip title="Delete">
-            <IconButton
-              disabled={props.batchActionPending}
-              onClick={props.onBatchDeleteClick}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Run">
-            <IconButton
-              disabled={props.batchActionPending}
-              onClick={props.onBatchRunClick}
-            >
-              <PlayArrowIcon />
-            </IconButton>
-          </Tooltip>
+          ))}
         </div>
       )}
     </div>

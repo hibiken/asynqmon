@@ -13,6 +13,8 @@ import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import DeleteIcon from "@material-ui/icons/Delete";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
@@ -164,13 +166,33 @@ function DeadTasksTable(props: Props & ReduxProps) {
   return (
     <div>
       <TableActions
-        allActionPending={props.allActionPending}
-        batchActionPending={props.batchActionPending}
-        showBatchActions={numSelected > 0}
-        onRunAllClick={handleRunAllClick}
-        onDeleteAllClick={handleDeleteAllClick}
-        onBatchRunClick={handleBatchRunClick}
-        onBatchDeleteClick={handleBatchDeleteClick}
+        showIconButtons={numSelected > 0}
+        iconButtonActions={[
+          {
+            tooltip: "Delete",
+            icon: <DeleteIcon />,
+            onClick: handleBatchDeleteClick,
+            disabled: props.batchActionPending,
+          },
+          {
+            tooltip: "Run",
+            icon: <PlayArrowIcon />,
+            onClick: handleBatchRunClick,
+            disabled: props.batchActionPending,
+          },
+        ]}
+        menuItemActions={[
+          {
+            label: "Delete All",
+            onClick: handleDeleteAllClick,
+            disabled: props.allActionPending,
+          },
+          {
+            label: "Run All",
+            onClick: handleRunAllClick,
+            disabled: props.allActionPending,
+          },
+        ]}
       />
       <TableContainer component={Paper}>
         <Table
