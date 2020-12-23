@@ -11,7 +11,7 @@ import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
-import { SortDirection, ColumnConfig } from "../types/table";
+import { SortDirection, SortableTableColumn } from "../types/table";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import { SchedulerEntry } from "../api";
 import { timeAgo, durationBefore } from "../utils";
@@ -41,7 +41,7 @@ enum SortBy {
   PrevEnqueue,
 }
 
-const colConfigs: ColumnConfig<SortBy>[] = [
+const colConfigs: SortableTableColumn<SortBy>[] = [
   {
     label: "Entry ID",
     key: "entry_id",

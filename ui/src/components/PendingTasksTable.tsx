@@ -6,7 +6,6 @@ import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
-import Button from "@material-ui/core/Button";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
@@ -30,6 +29,7 @@ import { AppState } from "../store";
 import { PendingTask } from "../api";
 import { usePolling } from "../hooks";
 import { uuidPrefix } from "../utils";
+import { TableColumn } from "../types/table";
 
 const useStyles = makeStyles({
   table: {
@@ -92,11 +92,10 @@ function PendingTasksTable(props: Props & ReduxProps) {
     );
   }
 
-  const columns = [
-    { label: "" },
-    { label: "ID" },
-    { label: "Type" },
-    { label: "Actions" },
+  const columns: TableColumn[] = [
+    { key: "icon", label: "", align: "left" },
+    { key: "id", label: "ID", align: "left" },
+    { key: "type", label: "Type", align: "left" },
   ];
 
   return (
@@ -110,7 +109,9 @@ function PendingTasksTable(props: Props & ReduxProps) {
         <TableHead>
           <TableRow>
             {columns.map((col) => (
-              <TableCell key={col.label}>{col.label}</TableCell>
+              <TableCell key={col.key} align={col.align}>
+                {col.label}
+              </TableCell>
             ))}
           </TableRow>
         </TableHead>
@@ -170,9 +171,6 @@ function Row(props: { task: PendingTask }) {
           {uuidPrefix(task.id)}
         </TableCell>
         <TableCell>{task.type}</TableCell>
-        <TableCell>
-          <Button>Cancel</Button>
-        </TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>

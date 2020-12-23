@@ -4,7 +4,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
-import Button from "@material-ui/core/Button";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
@@ -12,12 +11,14 @@ import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
+import Tooltip from "@material-ui/core/Tooltip";
 import Checkbox from "@material-ui/core/Checkbox";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ArchiveIcon from "@material-ui/icons/Archive";
+import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
@@ -46,6 +47,8 @@ import TableActions from "./TableActions";
 import { durationBefore, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
 import { RetryTaskExtended } from "../reducers/tasksReducer";
+import clsx from "clsx";
+import { TableColumn } from "../types/table";
 
 const useStyles = makeStyles({
   table: {
@@ -91,6 +94,7 @@ function RetryTasksTable(props: Props & ReduxProps) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState<string>("");
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -161,15 +165,15 @@ function RetryTasksTable(props: Props & ReduxProps) {
     );
   }
 
-  const columns = [
-    { label: "" },
-    { label: "ID" },
-    { label: "Type" },
-    { label: "Retry In" },
-    { label: "Last Error" },
-    { label: "Retried" },
-    { label: "Max Retry" },
-    { label: "Actions" },
+  const columns: TableColumn[] = [
+    { key: "icon", label: "", align: "left" },
+    { key: "id", label: "ID", align: "left" },
+    { key: "type", label: "Type", align: "left" },
+    { key: "retry_in", label: "Retry In", align: "left" },
+    { key: "last_error", label: "Last Error", align: "left" },
+    { key: "retried", label: "Retried", align: "left" },
+    { key: "max_retry", label: "Max Retry", align: "left" },
+    { key: "actions", label: "Actions", align: "center" },
   ];
 
   const rowCount = props.tasks.length;
@@ -236,7 +240,9 @@ function RetryTasksTable(props: Props & ReduxProps) {
                 />
               </TableCell>
               {columns.map((col) => (
-                <TableCell key={col.label}>{col.label}</TableCell>
+                <TableCell key={col.label} align={col.align}>
+                  {col.label}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -265,6 +271,9 @@ function RetryTasksTable(props: Props & ReduxProps) {
                 onKillClick={() => {
                   props.killRetryTaskAsync(task.queue, task.key);
                 }}
+                onActionCellEnter={() => setActiveTaskId(task.id)}
+                onActionCellLeave={() => setActiveTaskId("")}
+                showActions={activeTaskId === task.id}
               />
             ))}
           </TableBody>
@@ -298,6 +307,13 @@ const useRowStyles = makeStyles({
       borderBottom: "unset",
     },
   },
+  actionCell: {
+    width: "140px",
+  },
+  activeActionCell: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
 });
 
 interface RowProps {
@@ -308,6 +324,9 @@ interface RowProps {
   onRunClick: () => void;
   onKillClick: () => void;
   allActionPending: boolean;
+  showActions: boolean;
+  onActionCellEnter: () => void;
+  onActionCellLeave: () => void;
 }
 
 function Row(props: RowProps) {
@@ -346,25 +365,50 @@ function Row(props: RowProps) {
         <TableCell>{task.error_message}</TableCell>
         <TableCell>{task.retried}</TableCell>
         <TableCell>{task.max_retry}</TableCell>
-        <TableCell>
-          <Button
-            onClick={props.onRunClick}
-            disabled={task.requestPending || props.allActionPending}
-          >
-            Run
-          </Button>
-          <Button
-            onClick={props.onKillClick}
-            disabled={task.requestPending || props.allActionPending}
-          >
-            Kill
-          </Button>
-          <Button
-            disabled={task.requestPending}
-            onClick={props.onDeleteClick || props.allActionPending}
-          >
-            Delete
-          </Button>
+        <TableCell
+          align="center"
+          className={clsx(
+            classes.actionCell,
+            props.showActions && classes.activeActionCell
+          )}
+          onMouseEnter={props.onActionCellEnter}
+          onMouseLeave={props.onActionCellLeave}
+        >
+          {props.showActions ? (
+            <React.Fragment>
+              <Tooltip title="Delete">
+                <IconButton
+                  onClick={props.onDeleteClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Kill">
+                <IconButton
+                  onClick={props.onKillClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                >
+                  <ArchiveIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Run">
+                <IconButton
+                  onClick={props.onRunClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                >
+                  <PlayArrowIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </React.Fragment>
+          ) : (
+            <IconButton size="small" onClick={props.onActionCellEnter}>
+              <MoreHorizIcon fontSize="small" />
+            </IconButton>
+          )}
         </TableCell>
       </TableRow>
       <TableRow selected={props.isSelected}>

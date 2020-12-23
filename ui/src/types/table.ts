@@ -4,12 +4,17 @@ export enum SortDirection {
   Desc = "desc",
 }
 
-// ColumnConfig is a config for a table column.
+// TableColumn is a config for a table column.
+export interface TableColumn {
+  key: string;
+  label: string;
+  align: "left" | "right" | "center";
+}
+
+// SortableTableColumn is a config for a table column
+// for table with sorting support.
 //
 // T is the enum of sort keys.
-export interface ColumnConfig<T> {
-  label: string;
-  key: string;
+export interface SortableTableColumn<T> extends TableColumn {
   sortBy: T;
-  align: "left" | "right" | "center";
 }

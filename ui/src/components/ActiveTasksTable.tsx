@@ -6,18 +6,19 @@ import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
-import Button from "@material-ui/core/Button";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
+import Tooltip from "@material-ui/core/Tooltip";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Checkbox from "@material-ui/core/Checkbox";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
 import CancelIcon from "@material-ui/icons/Cancel";
+import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
@@ -38,6 +39,7 @@ import TableActions from "./TableActions";
 import { usePolling } from "../hooks";
 import { ActiveTaskExtended } from "../reducers/tasksReducer";
 import { uuidPrefix } from "../utils";
+import { TableColumn } from "../types/table";
 
 const useStyles = makeStyles({
   table: {
@@ -76,6 +78,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState<string>("");
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -126,11 +129,12 @@ function ActiveTasksTable(props: Props & ReduxProps) {
     );
   }
 
-  const columns: { label: string; align: "left" | "center" | "right" }[] = [
-    { label: "", align: "left" },
-    { label: "ID", align: "left" },
-    { label: "Type", align: "left" },
-    { label: "Actions", align: "center" },
+  const columns: TableColumn[] = [
+    { key: "icon", label: "", align: "left" },
+    { key: "id", label: "ID", align: "left" },
+    { key: "type", label: "Type", align: "left" },
+    { key: "status", label: "Status", align: "left" },
+    { key: "actions", label: "Actions", align: "center" },
   ];
 
   const rowCount = props.tasks.length;
@@ -175,7 +179,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
                 />
               </TableCell>
               {columns.map((col) => (
-                <TableCell key={col.label} align={col.align}>
+                <TableCell key={col.key} align={col.align}>
                   {col.label}
                 </TableCell>
               ))}
@@ -198,6 +202,9 @@ function ActiveTasksTable(props: Props & ReduxProps) {
                 onCancelClick={() => {
                   props.cancelActiveTaskAsync(queue, task.id);
                 }}
+                onActionCellEnter={() => setActiveTaskId(task.id)}
+                onActionCellLeave={() => setActiveTaskId("")}
+                showActions={activeTaskId === task.id}
               />
             ))}
           </TableBody>
@@ -238,6 +245,9 @@ interface RowProps {
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
   onCancelClick: () => void;
+  showActions: boolean;
+  onActionCellEnter: () => void;
+  onActionCellLeave: () => void;
 }
 
 function Row(props: RowProps) {
@@ -272,14 +282,29 @@ function Row(props: RowProps) {
           {uuidPrefix(task.id)}
         </TableCell>
         <TableCell>{task.type}</TableCell>
-        <TableCell align="center">
-          <Button
-            color="primary"
-            onClick={props.onCancelClick}
-            disabled={task.requestPending || task.canceling}
-          >
-            {task.canceling ? "Canceling..." : "Cancel"}
-          </Button>
+        <TableCell>{task.canceling ? "Canceling" : "Running"}</TableCell>
+        <TableCell
+          align="center"
+          onMouseEnter={props.onActionCellEnter}
+          onMouseLeave={props.onActionCellLeave}
+        >
+          {props.showActions ? (
+            <React.Fragment>
+              <Tooltip title="Cancel">
+                <IconButton
+                  onClick={props.onCancelClick}
+                  disabled={task.requestPending || task.canceling}
+                  size="small"
+                >
+                  <CancelIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </React.Fragment>
+          ) : (
+            <IconButton size="small" onClick={props.onActionCellEnter}>
+              <MoreHorizIcon fontSize="small" />
+            </IconButton>
+          )}
         </TableCell>
       </TableRow>
       <TableRow selected={props.isSelected}>

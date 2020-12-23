@@ -1,20 +1,22 @@
 import React, { useCallback, useState } from "react";
+import clsx from "clsx";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
-import Button from "@material-ui/core/Button";
 import Checkbox from "@material-ui/core/Checkbox";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import Tooltip from "@material-ui/core/Tooltip";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import DeleteIcon from "@material-ui/icons/Delete";
+import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
@@ -42,6 +44,7 @@ import TableActions from "./TableActions";
 import { timeAgo, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
 import { DeadTaskExtended } from "../reducers/tasksReducer";
+import { TableColumn } from "../types/table";
 
 const useStyles = makeStyles({
   table: {
@@ -54,6 +57,13 @@ const useRowStyles = makeStyles({
     "& > *": {
       borderBottom: "unset",
     },
+  },
+  actionCell: {
+    width: "96px",
+  },
+  activeActionCell: {
+    display: "flex",
+    justifyContent: "space-between",
   },
 });
 
@@ -92,6 +102,7 @@ function DeadTasksTable(props: Props & ReduxProps) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState<string>("");
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -152,13 +163,13 @@ function DeadTasksTable(props: Props & ReduxProps) {
     );
   }
 
-  const columns = [
-    { label: "" },
-    { label: "ID" },
-    { label: "Type" },
-    { label: "Last Failed" },
-    { label: "Last Error" },
-    { label: "Actions" },
+  const columns: TableColumn[] = [
+    { key: "icon", label: "", align: "left" },
+    { key: "id", label: "ID", align: "left" },
+    { key: "type", label: "Type", align: "left" },
+    { key: "last_failed", label: "Last Failed", align: "left" },
+    { key: "last_error", label: "Last Error", align: "left" },
+    { key: "actions", label: "Actions", align: "center" },
   ];
 
   const rowCount = props.tasks.length;
@@ -214,7 +225,9 @@ function DeadTasksTable(props: Props & ReduxProps) {
                 />
               </TableCell>
               {columns.map((col) => (
-                <TableCell key={col.label}>{col.label}</TableCell>
+                <TableCell key={col.key} align={col.align}>
+                  {col.label}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -240,6 +253,9 @@ function DeadTasksTable(props: Props & ReduxProps) {
                   props.deleteDeadTaskAsync(queue, task.key);
                 }}
                 allActionPending={props.allActionPending}
+                onActionCellEnter={() => setActiveTaskId(task.id)}
+                onActionCellLeave={() => setActiveTaskId("")}
+                showActions={activeTaskId === task.id}
               />
             ))}
           </TableBody>
@@ -274,6 +290,9 @@ interface RowProps {
   onRunClick: () => void;
   onDeleteClick: () => void;
   allActionPending: boolean;
+  showActions: boolean;
+  onActionCellEnter: () => void;
+  onActionCellLeave: () => void;
 }
 
 function Row(props: RowProps) {
@@ -310,19 +329,41 @@ function Row(props: RowProps) {
         <TableCell>{task.type}</TableCell>
         <TableCell>{timeAgo(task.last_failed_at)}</TableCell>
         <TableCell>{task.error_message}</TableCell>
-        <TableCell>
-          <Button
-            onClick={props.onRunClick}
-            disabled={task.requestPending || props.allActionPending}
-          >
-            Run
-          </Button>
-          <Button
-            onClick={props.onDeleteClick}
-            disabled={task.requestPending || props.allActionPending}
-          >
-            Delete
-          </Button>
+        <TableCell
+          align="center"
+          className={clsx(
+            classes.actionCell,
+            props.showActions && classes.activeActionCell
+          )}
+          onMouseEnter={props.onActionCellEnter}
+          onMouseLeave={props.onActionCellLeave}
+        >
+          {props.showActions ? (
+            <React.Fragment>
+              <Tooltip title="Delete">
+                <IconButton
+                  onClick={props.onDeleteClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Run">
+                <IconButton
+                  onClick={props.onRunClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                >
+                  <PlayArrowIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </React.Fragment>
+          ) : (
+            <IconButton size="small" onClick={props.onActionCellEnter}>
+              <MoreHorizIcon fontSize="small" />
+            </IconButton>
+          )}
         </TableCell>
       </TableRow>
       <TableRow selected={props.isSelected}>
