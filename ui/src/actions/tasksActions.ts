@@ -1,4 +1,6 @@
 import {
+  batchCancelActiveTasks,
+  BatchCancelTasksResponse,
   batchDeleteDeadTasks,
   batchDeleteRetryTasks,
   batchDeleteScheduledTasks,
@@ -11,6 +13,7 @@ import {
   batchRunScheduledTasks,
   BatchRunTasksResponse,
   cancelActiveTask,
+  cancelAllActiveTasks,
   deleteAllDeadTasks,
   deleteAllRetryTasks,
   deleteAllScheduledTasks,
@@ -60,6 +63,16 @@ export const LIST_DEAD_TASKS_ERROR = "LIST_DEAD_TASKS_ERROR";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
+export const CANCEL_ALL_ACTIVE_TASKS_BEGIN = "CANCEL_ALL_ACTIVE_TASKS_BEGIN";
+export const CANCEL_ALL_ACTIVE_TASKS_SUCCESS =
+  "CANCEL_ALL_ACTIVE_TASKS_SUCCESS";
+export const CANCEL_ALL_ACTIVE_TASKS_ERROR = "CANCEL_ALL_ACTIVE_TASKS_ERROR";
+export const BATCH_CANCEL_ACTIVE_TASKS_BEGIN =
+  "BATCH_CANCEL_ACTIVE_TASKS_BEGIN";
+export const BATCH_CANCEL_ACTIVE_TASKS_SUCCESS =
+  "BATCH_CANCEL_ACTIVE_TASKS_SUCCESS";
+export const BATCH_CANCEL_ACTIVE_TASKS_ERROR =
+  "BATCH_CANCEL_ACTIVE_TASKS_ERROR";
 export const RUN_SCHEDULED_TASK_BEGIN = "RUN_DEAD_TASK_BEGIN";
 export const RUN_SCHEDULED_TASK_SUCCESS = "RUN_DEAD_TASK_SUCCESS";
 export const RUN_SCHEDULED_TASK_ERROR = "RUN_DEAD_TASK_ERROR";
@@ -250,6 +263,41 @@ interface CancelActiveTaskErrorAction {
   type: typeof CANCEL_ACTIVE_TASK_ERROR;
   queue: string;
   taskId: string;
+  error: string;
+}
+
+interface CancelAllActiveTasksBeginAction {
+  type: typeof CANCEL_ALL_ACTIVE_TASKS_BEGIN;
+  queue: string;
+}
+
+interface CancelAllActiveTasksSuccessAction {
+  type: typeof CANCEL_ALL_ACTIVE_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface CancelAllActiveTasksErrorAction {
+  type: typeof CANCEL_ALL_ACTIVE_TASKS_ERROR;
+  queue: string;
+  error: string;
+}
+
+interface BatchCancelActiveTasksBeginAction {
+  type: typeof BATCH_CANCEL_ACTIVE_TASKS_BEGIN;
+  queue: string;
+  taskIds: string[];
+}
+
+interface BatchCancelActiveTasksSuccessAction {
+  type: typeof BATCH_CANCEL_ACTIVE_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchCancelTasksResponse;
+}
+
+interface BatchCancelActiveTasksErrorAction {
+  type: typeof BATCH_CANCEL_ACTIVE_TASKS_ERROR;
+  queue: string;
+  taskIds: string[];
   error: string;
 }
 
@@ -705,6 +753,12 @@ export type TasksActionTypes =
   | CancelActiveTaskBeginAction
   | CancelActiveTaskSuccessAction
   | CancelActiveTaskErrorAction
+  | CancelAllActiveTasksBeginAction
+  | CancelAllActiveTasksSuccessAction
+  | CancelAllActiveTasksErrorAction
+  | BatchCancelActiveTasksBeginAction
+  | BatchCancelActiveTasksSuccessAction
+  | BatchCancelActiveTasksErrorAction
   | RunScheduledTaskBeginAction
   | RunScheduledTaskSuccessAction
   | RunScheduledTaskErrorAction
@@ -905,6 +959,45 @@ export function cancelActiveTaskAsync(queue: string, taskId: string) {
         error: `Could not cancel task: ${taskId}`,
         queue,
         taskId,
+      });
+    }
+  };
+}
+
+export function cancelAllActiveTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: CANCEL_ALL_ACTIVE_TASKS_BEGIN, queue });
+    try {
+      await cancelAllActiveTasks(queue);
+      dispatch({ type: CANCEL_ALL_ACTIVE_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("cancelAllActiveTasksAsync: ", error);
+      dispatch({
+        type: CANCEL_ALL_ACTIVE_TASKS_ERROR,
+        error: "Could not cancel all tasks",
+        queue,
+      });
+    }
+  };
+}
+
+export function batchCancelActiveTasksAsync(queue: string, taskIds: string[]) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: BATCH_CANCEL_ACTIVE_TASKS_BEGIN, queue, taskIds });
+    try {
+      const response = await batchCancelActiveTasks(queue, taskIds);
+      dispatch({
+        type: BATCH_CANCEL_ACTIVE_TASKS_SUCCESS,
+        queue: queue,
+        payload: response,
+      });
+    } catch (error) {
+      console.error("batchCancelActiveTasksAsync: ", error);
+      dispatch({
+        type: BATCH_CANCEL_ACTIVE_TASKS_ERROR,
+        error: `Could not batch cancel tasks: ${taskIds}`,
+        queue,
+        taskIds,
       });
     }
   };

@@ -41,6 +41,11 @@ export interface ListSchedulerEntriesResponse {
   entries: SchedulerEntry[];
 }
 
+export interface BatchCancelTasksResponse {
+  canceled_ids: string[];
+  error_ids: string[];
+}
+
 export interface BatchDeleteTasksResponse {
   deleted_keys: string[];
   failed_keys: string[];
@@ -196,6 +201,27 @@ export async function cancelActiveTask(
     method: "post",
     url: `${BASE_URL}/queues/${qname}/active_tasks/${taskId}:cancel`,
   });
+}
+
+export async function cancelAllActiveTasks(qname: string): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/active_tasks:cancel_all`,
+  });
+}
+
+export async function batchCancelActiveTasks(
+  qname: string,
+  taskIds: string[]
+): Promise<BatchCancelTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/active_tasks:batch_cancel`,
+    data: {
+      task_ids: taskIds,
+    },
+  });
+  return resp.data;
 }
 
 export async function listPendingTasks(

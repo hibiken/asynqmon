@@ -70,7 +70,10 @@ export default function TableActions(props: Props) {
         {props.menuItemActions.map((action) => (
           <MenuItem
             key={action.label}
-            onClick={action.onClick}
+            onClick={() => {
+              action.onClick();
+              closeMenu();
+            }}
             disabled={action.disabled}
           >
             {action.label}

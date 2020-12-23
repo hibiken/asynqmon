@@ -3,6 +3,7 @@ import {
   SnackbarActionTypes,
 } from "../actions/snackbarActions";
 import {
+  BATCH_CANCEL_ACTIVE_TASKS_SUCCESS,
   BATCH_DELETE_DEAD_TASKS_SUCCESS,
   BATCH_DELETE_RETRY_TASKS_SUCCESS,
   BATCH_DELETE_SCHEDULED_TASKS_SUCCESS,
@@ -11,6 +12,7 @@ import {
   BATCH_RUN_DEAD_TASKS_SUCCESS,
   BATCH_RUN_RETRY_TASKS_SUCCESS,
   BATCH_RUN_SCHEDULED_TASKS_SUCCESS,
+  CANCEL_ALL_ACTIVE_TASKS_SUCCESS,
   DELETE_ALL_DEAD_TASKS_SUCCESS,
   DELETE_ALL_RETRY_TASKS_SUCCESS,
   DELETE_ALL_SCHEDULED_TASKS_SUCCESS,
@@ -51,6 +53,22 @@ function snackbarReducer(
         // smoother transition animation.
         ...state,
         isOpen: false,
+      };
+
+    case BATCH_CANCEL_ACTIVE_TASKS_SUCCESS: {
+      const n = action.payload.canceled_ids.length;
+      return {
+        isOpen: true,
+        message: `Cancelation signal sent to ${n} ${
+          n === 1 ? "task" : "tasks"
+        }`,
+      };
+    }
+
+    case CANCEL_ALL_ACTIVE_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: `Cancelation signal sent to all tasks in ${action.queue} queue`,
       };
 
     case RUN_SCHEDULED_TASK_SUCCESS:

@@ -90,6 +90,12 @@ import {
   BATCH_KILL_RETRY_TASKS_SUCCESS,
   BATCH_KILL_RETRY_TASKS_BEGIN,
   BATCH_KILL_RETRY_TASKS_ERROR,
+  BATCH_CANCEL_ACTIVE_TASKS_BEGIN,
+  BATCH_CANCEL_ACTIVE_TASKS_SUCCESS,
+  BATCH_CANCEL_ACTIVE_TASKS_ERROR,
+  CANCEL_ALL_ACTIVE_TASKS_BEGIN,
+  CANCEL_ALL_ACTIVE_TASKS_SUCCESS,
+  CANCEL_ALL_ACTIVE_TASKS_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -130,6 +136,8 @@ export interface DeadTaskExtended extends DeadTask {
 interface TasksState {
   activeTasks: {
     loading: boolean;
+    batchActionPending: boolean;
+    allActionPending: boolean;
     error: string;
     data: ActiveTaskExtended[];
   };
@@ -164,6 +172,8 @@ interface TasksState {
 const initialState: TasksState = {
   activeTasks: {
     loading: false,
+    batchActionPending: false,
+    allActionPending: false,
     error: "",
     data: [],
   },
@@ -214,6 +224,7 @@ function tasksReducer(
       return {
         ...state,
         activeTasks: {
+          ...state.activeTasks,
           loading: false,
           error: "",
           data: action.payload.tasks.map((task) => ({
@@ -412,6 +423,103 @@ function tasksReducer(
           data: newData,
         },
       };
+
+    case BATCH_CANCEL_ACTIVE_TASKS_BEGIN: {
+      const newData = state.activeTasks.data.map((task) => {
+        if (!action.taskIds.includes(task.id)) {
+          return task;
+        }
+        return { ...task, requestPending: true };
+      });
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          batchActionPending: true,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_CANCEL_ACTIVE_TASKS_SUCCESS: {
+      const newData = state.activeTasks.data.map((task) => {
+        if (action.payload.canceled_ids.includes(task.id)) {
+          return { ...task, canceling: true, requestPending: false };
+        }
+        if (action.payload.error_ids.includes(task.id)) {
+          return { ...task, requestPending: false };
+        }
+        return task;
+      });
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_CANCEL_ACTIVE_TASKS_ERROR: {
+      const newData = state.activeTasks.data.map((task) => {
+        return { ...task, requestPending: false };
+      });
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case CANCEL_ALL_ACTIVE_TASKS_BEGIN: {
+      const newData = state.activeTasks.data.map((task) => ({
+        ...task,
+        requestPending: true,
+      }));
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          allActionPending: true,
+          data: newData,
+        },
+      };
+    }
+
+    case CANCEL_ALL_ACTIVE_TASKS_SUCCESS: {
+      const newData = state.activeTasks.data.map((task) => ({
+        ...task,
+        requestPending: false,
+        canceling: true,
+      }));
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          allActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case CANCEL_ALL_ACTIVE_TASKS_ERROR: {
+      const newData = state.activeTasks.data.map((task) => ({
+        ...task,
+        requestPending: false,
+      }));
+      return {
+        ...state,
+        activeTasks: {
+          ...state.activeTasks,
+          allActionPending: false,
+          data: newData,
+        },
+      };
+    }
 
     case RUN_SCHEDULED_TASK_BEGIN:
     case KILL_SCHEDULED_TASK_BEGIN:

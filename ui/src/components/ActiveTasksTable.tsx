@@ -26,6 +26,8 @@ import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/
 import {
   listActiveTasksAsync,
   cancelActiveTaskAsync,
+  batchCancelActiveTasksAsync,
+  cancelAllActiveTasksAsync,
 } from "../actions/tasksActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
@@ -47,11 +49,18 @@ function mapStateToProps(state: AppState) {
   return {
     loading: state.tasks.activeTasks.loading,
     tasks: state.tasks.activeTasks.data,
+    batchActionPending: state.tasks.activeTasks.batchActionPending,
+    allActionPending: state.tasks.activeTasks.allActionPending,
     pollInterval: state.settings.pollInterval,
   };
 }
 
-const mapDispatchToProps = { listActiveTasksAsync, cancelActiveTaskAsync };
+const mapDispatchToProps = {
+  listActiveTasksAsync,
+  cancelActiveTaskAsync,
+  batchCancelActiveTasksAsync,
+  cancelAllActiveTasksAsync,
+};
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -91,6 +100,16 @@ function ActiveTasksTable(props: Props & ReduxProps) {
     }
   };
 
+  const handleCancelAllClick = () => {
+    props.cancelAllActiveTasksAsync(queue);
+  };
+
+  const handleBatchCancelClick = () => {
+    props
+      .batchCancelActiveTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
+  };
+
   const fetchData = useCallback(() => {
     const pageOpts = { page: page + 1, size: pageSize };
     listActiveTasksAsync(queue, pageOpts);
@@ -124,15 +143,15 @@ function ActiveTasksTable(props: Props & ReduxProps) {
           {
             tooltip: "Cancel",
             icon: <CancelIcon />,
-            onClick: () => console.log("TODO"),
-            disabled: false,
+            onClick: handleBatchCancelClick,
+            disabled: props.batchActionPending,
           },
         ]}
         menuItemActions={[
           {
             label: "Cancel All",
-            onClick: () => console.log("TODO"),
-            disabled: false,
+            onClick: handleCancelAllClick,
+            disabled: props.allActionPending,
           },
         ]}
       />
