@@ -57,6 +57,73 @@ func newCancelActiveTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc
 	}
 }
 
+func newCancelAllActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		const batchSize = 100
+		page := 1
+		qname := mux.Vars(r)["qname"]
+		for {
+			tasks, err := inspector.ListActiveTasks(qname, asynq.Page(page), asynq.PageSize(batchSize))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			for _, t := range tasks {
+				if err := inspector.CancelActiveTask(t.ID); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+			if len(tasks) < batchSize {
+				break
+			}
+			page++
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+type batchCancelTasksRequest struct {
+	TaskIDs []string `json:"task_ids"`
+}
+
+type batchCancelTasksResponse struct {
+	CanceledIDs []string `json:"canceled_ids"`
+	ErrorIDs    []string `json:"error_ids"`
+}
+
+func newBatchCancelActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+
+		var req batchCancelTasksRequest
+		if err := dec.Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		resp := batchCancelTasksResponse{
+			// avoid null in the json response
+			CanceledIDs: make([]string, 0),
+			ErrorIDs:    make([]string, 0),
+		}
+		for _, id := range req.TaskIDs {
+			if err := inspector.CancelActiveTask(id); err != nil {
+				log.Printf("error: could not send cancelation signal to task %s", id)
+				resp.ErrorIDs = append(resp.ErrorIDs, id)
+			} else {
+				resp.CanceledIDs = append(resp.CanceledIDs, id)
+			}
+		}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func newListPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
