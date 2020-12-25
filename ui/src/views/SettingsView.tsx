@@ -52,10 +52,15 @@ function SettingsView(props: PropsFromRedux) {
         <Grid item xs={12}>
           <Typography variant="h5">Settings</Typography>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={5}>
           <Paper className={classes.paper} variant="outlined">
-            <Typography gutterBottom color="primary">
-              Polling Interval (Every {sliderValue} seconds)
+            <Typography color="textPrimary">Polling Interval</Typography>
+            <Typography gutterBottom color="textSecondary" variant="subtitle1">
+              Web UI will fetch live data with the specified interval
+            </Typography>
+            <Typography gutterBottom color="textSecondary" variant="subtitle1">
+              Currently: Every{" "}
+              {sliderValue === 1 ? "second" : `${sliderValue} seconds`}
             </Typography>
             <Slider
               value={sliderValue}
