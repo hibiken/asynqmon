@@ -32,11 +32,11 @@ function QueueSizeChart(props: Props) {
         <YAxis />
         <Tooltip />
         <Legend />
-        <Bar dataKey="active" stackId="a" fill="#7bb3ff" />
-        <Bar dataKey="pending" stackId="a" fill="#e86af0" />
-        <Bar dataKey="scheduled" stackId="a" fill="#9e379f" />
-        <Bar dataKey="retry" stackId="a" fill="#493267" />
-        <Bar dataKey="dead" stackId="a" fill="#373854" />
+        <Bar dataKey="active" stackId="a" fill="#1967d2" />
+        <Bar dataKey="pending" stackId="a" fill="#669df6" />
+        <Bar dataKey="scheduled" stackId="a" fill="#fdd663" />
+        <Bar dataKey="retry" stackId="a" fill="#f666a9" />
+        <Bar dataKey="dead" stackId="a" fill="#ac4776" />
       </BarChart>
     </ResponsiveContainer>
   );
