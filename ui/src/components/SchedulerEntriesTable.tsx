@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
+import Collapse from "@material-ui/core/Collapse";
+import IconButton from "@material-ui/core/IconButton";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
@@ -194,51 +198,64 @@ export default function SchedulerEntriesTable(props: Props) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortEntries(props.entries, cmpFunc).map((entry, idx) => {
-            const isLastRow = idx === props.entries.length - 1;
-            return (
-              <TableRow key={entry.id}>
-                <TableCell
-                  component="th"
-                  scope="row"
-                  className={clsx(isLastRow && classes.noBorder)}
-                >
-                  {entry.id}
-                </TableCell>
-                <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {entry.spec}
-                </TableCell>
-                <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {entry.task_type}
-                </TableCell>
-                <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  <SyntaxHighlighter
-                    language="json"
-                    style={syntaxHighlightStyle}
-                  >
-                    {JSON.stringify(entry.task_payload)}
-                  </SyntaxHighlighter>
-                </TableCell>
-                <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  <SyntaxHighlighter language="go" style={syntaxHighlightStyle}>
-                    {entry.options.length > 0
-                      ? entry.options.join(", ")
-                      : "No options"}
-                  </SyntaxHighlighter>
-                </TableCell>
-                <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {durationBefore(entry.next_enqueue_at)}
-                </TableCell>
-                <TableCell className={clsx(isLastRow && classes.noBorder)}>
-                  {entry.prev_enqueue_at
-                    ? timeAgo(entry.prev_enqueue_at)
-                    : "N/A"}
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {sortEntries(props.entries, cmpFunc).map((entry, idx) => (
+            <Row
+              key={entry.id}
+              entry={entry}
+              isLastRow={idx === props.entries.length - 1}
+            />
+          ))}
         </TableBody>
       </Table>
     </TableContainer>
+  );
+}
+
+interface RowProps {
+  entry: SchedulerEntry;
+  isLastRow: boolean;
+}
+
+const useRowStyles = makeStyles((theme) => ({
+  noBorder: {
+    border: "none",
+  },
+}));
+
+function Row(props: RowProps) {
+  const { entry, isLastRow } = props;
+  const classes = useRowStyles();
+  return (
+    <TableRow>
+      <TableCell
+        component="th"
+        scope="row"
+        className={clsx(isLastRow && classes.noBorder)}
+      >
+        {entry.id}
+      </TableCell>
+      <TableCell className={clsx(isLastRow && classes.noBorder)}>
+        {entry.spec}
+      </TableCell>
+      <TableCell className={clsx(isLastRow && classes.noBorder)}>
+        {entry.task_type}
+      </TableCell>
+      <TableCell className={clsx(isLastRow && classes.noBorder)}>
+        <SyntaxHighlighter language="json" style={syntaxHighlightStyle}>
+          {JSON.stringify(entry.task_payload)}
+        </SyntaxHighlighter>
+      </TableCell>
+      <TableCell className={clsx(isLastRow && classes.noBorder)}>
+        <SyntaxHighlighter language="go" style={syntaxHighlightStyle}>
+          {entry.options.length > 0 ? entry.options.join(", ") : "No options"}
+        </SyntaxHighlighter>
+      </TableCell>
+      <TableCell className={clsx(isLastRow && classes.noBorder)}>
+        {durationBefore(entry.next_enqueue_at)}
+      </TableCell>
+      <TableCell className={clsx(isLastRow && classes.noBorder)}>
+        {entry.prev_enqueue_at ? timeAgo(entry.prev_enqueue_at) : "N/A"}
+      </TableCell>
+    </TableRow>
   );
 }
