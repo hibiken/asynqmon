@@ -9,6 +9,7 @@ import AlertTitle from "@material-ui/lab/AlertTitle";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import Tooltip from "@material-ui/core/Tooltip";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
@@ -159,13 +160,15 @@ function Row(props: { task: PendingTask }) {
     <React.Fragment>
       <TableRow key={task.id} className={classes.root}>
         <TableCell>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
+          <Tooltip title={open ? "Hide Details" : "Show Details"}>
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          </Tooltip>
         </TableCell>
         <TableCell component="th" scope="row">
           {uuidPrefix(task.id)}

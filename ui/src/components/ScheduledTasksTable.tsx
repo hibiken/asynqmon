@@ -346,13 +346,15 @@ function Row(props: RowProps) {
           />
         </TableCell>
         <TableCell>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
+          <Tooltip title={open ? "Hide Details" : "Show Details"}>
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          </Tooltip>
         </TableCell>
         <TableCell component="th" scope="row">
           {uuidPrefix(task.id)}
