@@ -10,18 +10,22 @@ import {
   LinkProps as RouterLinkProps,
 } from "react-router-dom";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   listItem: {
     borderTopRightRadius: "24px",
     borderBottomRightRadius: "24px",
   },
   selected: {
-    backgroundColor: "rgba(0, 0, 0, 0.07)",
+    backgroundColor: `${theme.palette.primary.main}30`,
   },
-  boldText: {
+  selectedText: {
     fontWeight: 600,
+    color: theme.palette.primary.main,
   },
-});
+  selectedIcon: {
+    color: theme.palette.primary.main,
+  },
+}));
 
 interface Props {
   to: string;
@@ -53,11 +57,15 @@ function ListItemLink(props: Props): ReactElement {
         component={renderLink}
         className={clsx(classes.listItem, isMatch && classes.selected)}
       >
-        {icon ? <ListItemIcon>{icon}</ListItemIcon> : null}
+        {icon && (
+          <ListItemIcon className={clsx(isMatch && classes.selectedIcon)}>
+            {icon}
+          </ListItemIcon>
+        )}
         <ListItemText
           primary={primary}
           classes={{
-            primary: isMatch ? classes.boldText : undefined,
+            primary: isMatch ? classes.selectedText : undefined,
           }}
         />
       </ListItem>
