@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/hibiken/asynq"
 )
 
@@ -26,6 +27,33 @@ func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector) http.Handler
 		} else {
 			payload["entries"] = toSchedulerEntries(entries)
 		}
-		json.NewEncoder(w).Encode(payload)
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+type ListSchedulerEnqueueEventsResponse struct {
+	Events []*SchedulerEnqueueEvent `json:"events"`
+}
+
+func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		entryID := mux.Vars(r)["entry_id"]
+		pageSize, pageNum := getPageOptions(r)
+		events, err := inspector.ListSchedulerEnqueueEvents(
+			entryID, asynq.PageSize(pageSize), asynq.Page(pageNum))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		resp := ListSchedulerEnqueueEventsResponse{
+			Events: toSchedulerEnqueueEvents(events),
+		}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }

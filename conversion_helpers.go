@@ -257,3 +257,23 @@ func toSchedulerEntries(in []*asynq.SchedulerEntry) []*SchedulerEntry {
 	}
 	return out
 }
+
+type SchedulerEnqueueEvent struct {
+	TaskID     string `json:"task_id"`
+	EnqueuedAt string `json:"enqueued_at"`
+}
+
+func toSchedulerEnqueueEvent(e *asynq.SchedulerEnqueueEvent) *SchedulerEnqueueEvent {
+	return &SchedulerEnqueueEvent{
+		TaskID:     e.TaskID,
+		EnqueuedAt: e.EnqueuedAt.Format(time.RFC3339),
+	}
+}
+
+func toSchedulerEnqueueEvents(in []*asynq.SchedulerEnqueueEvent) []*SchedulerEnqueueEvent {
+	out := make([]*SchedulerEnqueueEvent, len(in))
+	for i, e := range in {
+		out[i] = toSchedulerEnqueueEvent(e)
+	}
+	return out
+}
