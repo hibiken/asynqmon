@@ -1,3 +1,4 @@
+import uniqBy from "lodash.uniqby";
 import {
   LIST_SCHEDULER_ENQUEUE_EVENTS_BEGIN,
   LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR,
@@ -18,7 +19,7 @@ interface SchedulerEntriesState {
   };
 }
 
-function getEnqueueEventsEntry(
+export function getEnqueueEventsEntry(
   state: SchedulerEntriesState,
   entryId: string
 ): { data: SchedulerEnqueueEvent[]; loading: boolean } {
@@ -70,14 +71,24 @@ function schedulerEntriesReducer(
       };
     }
     case LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS: {
+      const sortByEnqueuedAt = (
+        e1: SchedulerEnqueueEvent,
+        e2: SchedulerEnqueueEvent
+      ): number => {
+        return Date.parse(e2.enqueued_at) - Date.parse(e1.enqueued_at);
+      };
       const entry = getEnqueueEventsEntry(state, action.entryId);
+      const newData = uniqBy(
+        [...entry.data, ...action.payload.events],
+        "task_id"
+      ).sort(sortByEnqueuedAt);
       return {
         ...state,
         enqueueEventsByEntryId: {
           ...state.enqueueEventsByEntryId,
           [action.entryId]: {
             loading: false,
-            data: [...entry.data, ...action.payload.events],
+            data: newData,
           },
         },
       };
