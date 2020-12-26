@@ -1,10 +1,21 @@
 import { Dispatch } from "@reduxjs/toolkit";
-import { listSchedulerEntries, ListSchedulerEntriesResponse } from "../api";
+import {
+  listSchedulerEnqueueEvents,
+  ListSchedulerEnqueueEventsResponse,
+  listSchedulerEntries,
+  ListSchedulerEntriesResponse,
+} from "../api";
 
 // List of scheduler-entry related action types.
 export const LIST_SCHEDULER_ENTRIES_BEGIN = "LIST_SCHEDULER_ENTRIES_BEGIN";
 export const LIST_SCHEDULER_ENTRIES_SUCCESS = "LIST_SCHEDULER_ENTRIES_SUCCESS";
 export const LIST_SCHEDULER_ENTRIES_ERROR = "LIST_SCHEDULER_ENTRIES_ERROR";
+export const LIST_SCHEDULER_ENQUEUE_EVENTS_BEGIN =
+  "LIST_SCHEDULER_ENQUEUE_EVENTS_BEGIN";
+export const LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS =
+  "LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS";
+export const LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR =
+  "LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR";
 
 interface ListSchedulerEntriesBeginAction {
   type: typeof LIST_SCHEDULER_ENTRIES_BEGIN;
@@ -20,11 +31,31 @@ interface ListSchedulerEntriesErrorAction {
   error: string; // error description
 }
 
+interface ListSchedulerEnqueueEventBeginAction {
+  type: typeof LIST_SCHEDULER_ENQUEUE_EVENTS_BEGIN;
+  entryId: string;
+}
+
+interface ListSchedulerEnqueueEventSuccessAction {
+  type: typeof LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS;
+  entryId: string;
+  payload: ListSchedulerEnqueueEventsResponse;
+}
+
+interface ListSchedulerEnqueueEventErrorAction {
+  type: typeof LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR;
+  entryId: string;
+  error: string;
+}
+
 // Union of all scheduler-entry related actions.
 export type SchedulerEntriesActionTypes =
   | ListSchedulerEntriesBeginAction
   | ListSchedulerEntriesSuccessAction
-  | ListSchedulerEntriesErrorAction;
+  | ListSchedulerEntriesErrorAction
+  | ListSchedulerEnqueueEventBeginAction
+  | ListSchedulerEnqueueEventSuccessAction
+  | ListSchedulerEnqueueEventErrorAction;
 
 export function listSchedulerEntriesAsync() {
   return async (dispatch: Dispatch<SchedulerEntriesActionTypes>) => {
@@ -40,6 +71,27 @@ export function listSchedulerEntriesAsync() {
       dispatch({
         type: LIST_SCHEDULER_ENTRIES_ERROR,
         error: "Could not retrieve scheduler entries",
+      });
+    }
+  };
+}
+
+export function listSchedulerEnqueueEventsAsync(entryId: string) {
+  return async (dispatch: Dispatch<SchedulerEntriesActionTypes>) => {
+    dispatch({ type: LIST_SCHEDULER_ENQUEUE_EVENTS_BEGIN, entryId });
+    try {
+      const response = await listSchedulerEnqueueEvents(entryId);
+      dispatch({
+        type: LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS,
+        payload: response,
+        entryId,
+      });
+    } catch (error) {
+      console.error("listSchedulerEnqueueEventsAsync: ", error);
+      dispatch({
+        type: LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR,
+        error: `Could not get enqueue events for entry: ${entryId}`,
+        entryId,
       });
     }
   };

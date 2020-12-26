@@ -1,21 +1,35 @@
 import {
+  LIST_SCHEDULER_ENQUEUE_EVENTS_BEGIN,
+  LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR,
+  LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS,
   LIST_SCHEDULER_ENTRIES_BEGIN,
   LIST_SCHEDULER_ENTRIES_ERROR,
   LIST_SCHEDULER_ENTRIES_SUCCESS,
   SchedulerEntriesActionTypes,
 } from "../actions/schedulerEntriesActions";
-import { SchedulerEntry } from "../api";
+import { SchedulerEnqueueEvent, SchedulerEntry } from "../api";
 
 interface SchedulerEntriesState {
   loading: boolean;
   data: SchedulerEntry[];
   error: string; // error description
+  enqueueEventsByEntryId: {
+    [entryId: string]: { data: SchedulerEnqueueEvent[]; loading: boolean };
+  };
+}
+
+function getEnqueueEventsEntry(
+  state: SchedulerEntriesState,
+  entryId: string
+): { data: SchedulerEnqueueEvent[]; loading: boolean } {
+  return state.enqueueEventsByEntryId[entryId] || { data: [], loading: false };
 }
 
 const initialState: SchedulerEntriesState = {
   loading: false,
   data: [],
   error: "",
+  enqueueEventsByEntryId: {},
 };
 
 function schedulerEntriesReducer(
@@ -30,6 +44,7 @@ function schedulerEntriesReducer(
       };
     case LIST_SCHEDULER_ENTRIES_SUCCESS:
       return {
+        ...state,
         error: "",
         loading: false,
         data: action.payload.entries,
@@ -41,6 +56,45 @@ function schedulerEntriesReducer(
         loading: false,
         error: action.error,
       };
+    case LIST_SCHEDULER_ENQUEUE_EVENTS_BEGIN: {
+      const entry = getEnqueueEventsEntry(state, action.entryId);
+      return {
+        ...state,
+        enqueueEventsByEntryId: {
+          ...state.enqueueEventsByEntryId,
+          [action.entryId]: {
+            ...entry,
+            loading: true,
+          },
+        },
+      };
+    }
+    case LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS: {
+      const entry = getEnqueueEventsEntry(state, action.entryId);
+      return {
+        ...state,
+        enqueueEventsByEntryId: {
+          ...state.enqueueEventsByEntryId,
+          [action.entryId]: {
+            loading: false,
+            data: [...entry.data, ...action.payload.events],
+          },
+        },
+      };
+    }
+    case LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR: {
+      const entry = getEnqueueEventsEntry(state, action.entryId);
+      return {
+        ...state,
+        enqueueEventsByEntryId: {
+          ...state.enqueueEventsByEntryId,
+          [action.entryId]: {
+            ...entry,
+            loading: false,
+          },
+        },
+      };
+    }
     default:
       return state;
   }

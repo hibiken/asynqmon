@@ -41,6 +41,10 @@ export interface ListSchedulerEntriesResponse {
   entries: SchedulerEntry[];
 }
 
+export interface ListSchedulerEnqueueEventsResponse {
+  events: SchedulerEnqueueEvent[];
+}
+
 export interface BatchCancelTasksResponse {
   canceled_ids: string[];
   error_ids: string[];
@@ -134,6 +138,11 @@ export interface SchedulerEntry {
   // prev_enqueue_at will be omitted
   // if there were no previous enqueue events.
   prev_enqueue_at?: string;
+}
+
+export interface SchedulerEnqueueEvent {
+  task_id: string;
+  enqueued_at: string;
 }
 
 export interface PaginationOptions extends Record<string, number | undefined> {
@@ -536,6 +545,16 @@ export async function listSchedulerEntries(): Promise<ListSchedulerEntriesRespon
   const resp = await axios({
     method: "get",
     url: `${BASE_URL}/scheduler_entries`,
+  });
+  return resp.data;
+}
+
+export async function listSchedulerEnqueueEvents(
+  entryId: string
+): Promise<ListSchedulerEnqueueEventsResponse> {
+  const resp = await axios({
+    method: "get",
+    url: `${BASE_URL}/scheduler_entries/${entryId}/enqueue_events`,
   });
   return resp.data;
 }
