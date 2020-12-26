@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import Collapse from "@material-ui/core/Collapse";
+import Box from "@material-ui/core/Box";
 import IconButton from "@material-ui/core/IconButton";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -9,6 +10,8 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import Typography from "@material-ui/core/Typography";
+import Tooltip from "@material-ui/core/Tooltip";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import Alert from "@material-ui/lab/Alert";
@@ -43,6 +46,8 @@ enum SortBy {
   Options,
   NextEnqueue,
   PrevEnqueue,
+
+  None,
 }
 
 const colConfigs: SortableTableColumn<SortBy>[] = [
@@ -86,6 +91,12 @@ const colConfigs: SortableTableColumn<SortBy>[] = [
     label: "Prev Enqueue",
     key: "prev_enqueue",
     sortBy: SortBy.PrevEnqueue,
+    align: "left",
+  },
+  {
+    label: "",
+    key: "show_history",
+    sortBy: SortBy.None,
     align: "left",
   },
 ];
@@ -217,45 +228,103 @@ interface RowProps {
 }
 
 const useRowStyles = makeStyles((theme) => ({
+  root: {
+    "& > *": {
+      borderBottom: "unset",
+    },
+  },
+  historyBox: {
+    maxWidth: 540,
+  },
   noBorder: {
     border: "none",
   },
 }));
 
+// TODO: replace with real data
+const history = [
+  { enqueuedAt: "3m ago", taskId: "abc123" },
+  { enqueuedAt: "10m ago", taskId: "xyz456" },
+  { enqueuedAt: "30m ago", taskId: "dyz45f" },
+];
+
 function Row(props: RowProps) {
   const { entry, isLastRow } = props;
   const classes = useRowStyles();
+  const [open, setOpen] = useState<boolean>(false);
   return (
-    <TableRow>
-      <TableCell
-        component="th"
-        scope="row"
-        className={clsx(isLastRow && classes.noBorder)}
-      >
-        {entry.id}
-      </TableCell>
-      <TableCell className={clsx(isLastRow && classes.noBorder)}>
-        {entry.spec}
-      </TableCell>
-      <TableCell className={clsx(isLastRow && classes.noBorder)}>
-        {entry.task_type}
-      </TableCell>
-      <TableCell className={clsx(isLastRow && classes.noBorder)}>
-        <SyntaxHighlighter language="json" style={syntaxHighlightStyle}>
-          {JSON.stringify(entry.task_payload)}
-        </SyntaxHighlighter>
-      </TableCell>
-      <TableCell className={clsx(isLastRow && classes.noBorder)}>
-        <SyntaxHighlighter language="go" style={syntaxHighlightStyle}>
-          {entry.options.length > 0 ? entry.options.join(", ") : "No options"}
-        </SyntaxHighlighter>
-      </TableCell>
-      <TableCell className={clsx(isLastRow && classes.noBorder)}>
-        {durationBefore(entry.next_enqueue_at)}
-      </TableCell>
-      <TableCell className={clsx(isLastRow && classes.noBorder)}>
-        {entry.prev_enqueue_at ? timeAgo(entry.prev_enqueue_at) : "N/A"}
-      </TableCell>
-    </TableRow>
+    <React.Fragment>
+      <TableRow className={classes.root}>
+        <TableCell
+          component="th"
+          scope="row"
+          className={clsx(isLastRow && classes.noBorder)}
+        >
+          {entry.id}
+        </TableCell>
+        <TableCell className={clsx(isLastRow && classes.noBorder)}>
+          {entry.spec}
+        </TableCell>
+        <TableCell className={clsx(isLastRow && classes.noBorder)}>
+          {entry.task_type}
+        </TableCell>
+        <TableCell className={clsx(isLastRow && classes.noBorder)}>
+          <SyntaxHighlighter language="json" style={syntaxHighlightStyle}>
+            {JSON.stringify(entry.task_payload)}
+          </SyntaxHighlighter>
+        </TableCell>
+        <TableCell className={clsx(isLastRow && classes.noBorder)}>
+          <SyntaxHighlighter language="go" style={syntaxHighlightStyle}>
+            {entry.options.length > 0 ? entry.options.join(", ") : "No options"}
+          </SyntaxHighlighter>
+        </TableCell>
+        <TableCell className={clsx(isLastRow && classes.noBorder)}>
+          {durationBefore(entry.next_enqueue_at)}
+        </TableCell>
+        <TableCell className={clsx(isLastRow && classes.noBorder)}>
+          {entry.prev_enqueue_at ? timeAgo(entry.prev_enqueue_at) : "N/A"}
+        </TableCell>
+        <TableCell>
+          <Tooltip title={open ? "Hide History" : "Show History"}>
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          </Tooltip>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box margin={1} className={classes.historyBox}>
+              <Typography variant="h6" gutterBottom component="div">
+                History
+              </Typography>
+              <Table size="small" aria-label="purchases">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Enqueued</TableCell>
+                    <TableCell>Task ID</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {history.map((historyRow) => (
+                    <TableRow key={historyRow.taskId}>
+                      <TableCell component="th" scope="row">
+                        {historyRow.enqueuedAt}
+                      </TableCell>
+                      <TableCell>{historyRow.taskId}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </React.Fragment>
   );
 }
