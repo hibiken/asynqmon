@@ -7,6 +7,9 @@ import AppBar from "@material-ui/core/AppBar";
 import Drawer from "@material-ui/core/Drawer";
 import Toolbar from "@material-ui/core/Toolbar";
 import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
 import Typography from "@material-ui/core/Typography";
 import Snackbar from "@material-ui/core/Snackbar";
 import SnackbarContent from "@material-ui/core/SnackbarContent";
@@ -17,6 +20,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 import BarChartIcon from "@material-ui/icons/BarChart";
 import LayersIcon from "@material-ui/icons/Layers";
 import SettingsIcon from "@material-ui/icons/Settings";
+import FeedbackIcon from "@material-ui/icons/Feedback";
 import CloseIcon from "@material-ui/icons/Close";
 import { AppState } from "./store";
 import { paths } from "./paths";
@@ -108,6 +112,10 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "space-between",
     height: "100%",
     flexDirection: "column",
+  },
+  listItem: {
+    borderTopRightRadius: "24px",
+    borderBottomRightRadius: "24px",
   },
 }));
 
@@ -218,6 +226,18 @@ function App(props: ConnectedProps<typeof connector>) {
                   primary="Settings"
                   icon={<SettingsIcon />}
                 />
+                <ListItem
+                  button
+                  component="a"
+                  className={classes.listItem}
+                  href="https://github.com/hibiken/asynqmon/issues"
+                  target="_blank"
+                >
+                  <ListItemIcon>
+                    <FeedbackIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Report Issues" />
+                </ListItem>
               </List>
             </div>
           </Drawer>
