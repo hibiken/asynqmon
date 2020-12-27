@@ -7,11 +7,6 @@ export interface ListQueuesResponse {
   queues: Queue[];
 }
 
-export interface GetQueueResponse {
-  current: Queue;
-  history: DailyStat[];
-}
-
 export interface ListActiveTasksResponse {
   tasks: ActiveTask[];
   stats: Queue;
@@ -154,14 +149,6 @@ export async function listQueues(): Promise<ListQueuesResponse> {
   const resp = await axios({
     method: "get",
     url: `${BASE_URL}/queues`,
-  });
-  return resp.data;
-}
-
-export async function getQueue(qname: string): Promise<GetQueueResponse> {
-  const resp = await axios({
-    method: "get",
-    url: `${BASE_URL}/queues/${qname}`,
   });
   return resp.data;
 }

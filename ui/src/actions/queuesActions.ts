@@ -1,7 +1,5 @@
 import {
   deleteQueue,
-  getQueue,
-  GetQueueResponse,
   listQueues,
   ListQueuesResponse,
   pauseQueue,
@@ -12,9 +10,6 @@ import { Dispatch } from "redux";
 // List of queue related action types.
 export const LIST_QUEUES_BEGIN = "LIST_QUEUES_BEGIN";
 export const LIST_QUEUES_SUCCESS = "LIST_QUEUES_SUCCESS";
-export const GET_QUEUE_BEGIN = "GET_QUEUE_BEGIN";
-export const GET_QUEUE_SUCCESS = "GET_QUEUE_SUCCESS";
-export const GET_QUEUE_ERROR = "GET_QUEUE_ERROR";
 export const DELETE_QUEUE_BEGIN = "DELETE_QUEUE_BEGIN";
 export const DELETE_QUEUE_SUCCESS = "DELETE_QUEUE_SUCCESS";
 export const DELETE_QUEUE_ERROR = "DELETE_QUEUE_ERROR";
@@ -32,23 +27,6 @@ interface ListQueuesBeginAction {
 interface ListQueuesSuccessAction {
   type: typeof LIST_QUEUES_SUCCESS;
   payload: ListQueuesResponse;
-}
-
-interface GetQueueBeginAction {
-  type: typeof GET_QUEUE_BEGIN;
-  queue: string; // name of the queue
-}
-
-interface GetQueueSuccessAction {
-  type: typeof GET_QUEUE_SUCCESS;
-  queue: string; // name of the queue
-  payload: GetQueueResponse;
-}
-
-interface GetQueueErrorAction {
-  type: typeof GET_QUEUE_ERROR;
-  queue: string; // name of the queue
-  error: string; // error description
 }
 
 interface DeleteQueueBeginAction {
@@ -103,9 +81,6 @@ interface ResumeQueueErrorAction {
 export type QueuesActionTypes =
   | ListQueuesBeginAction
   | ListQueuesSuccessAction
-  | GetQueueBeginAction
-  | GetQueueSuccessAction
-  | GetQueueErrorAction
   | DeleteQueueBeginAction
   | DeleteQueueSuccessAction
   | DeleteQueueErrorAction
@@ -125,27 +100,6 @@ export function listQueuesAsync() {
       type: LIST_QUEUES_SUCCESS,
       payload: response,
     });
-  };
-}
-
-export function getQueueAsync(qname: string) {
-  return async (dispatch: Dispatch<QueuesActionTypes>) => {
-    dispatch({ type: GET_QUEUE_BEGIN, queue: qname });
-    try {
-      const response = await getQueue(qname);
-      dispatch({
-        type: GET_QUEUE_SUCCESS,
-        queue: qname,
-        payload: response,
-      });
-    } catch (error) {
-      console.error(error);
-      dispatch({
-        type: GET_QUEUE_ERROR,
-        queue: qname,
-        error: `Could not retrieve queue data for queue: ${qname}`,
-      });
-    }
   };
 }
 

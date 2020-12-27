@@ -8,7 +8,6 @@ import {
   RESUME_QUEUE_BEGIN,
   RESUME_QUEUE_ERROR,
   RESUME_QUEUE_SUCCESS,
-  GET_QUEUE_SUCCESS,
   DELETE_QUEUE_BEGIN,
   DELETE_QUEUE_ERROR,
   DELETE_QUEUE_SUCCESS,
@@ -45,7 +44,7 @@ import {
   RUN_SCHEDULED_TASK_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
-import { DailyStat, Queue } from "../api";
+import { Queue } from "../api";
 
 interface QueuesState {
   loading: boolean;
@@ -55,7 +54,6 @@ interface QueuesState {
 export interface QueueInfo {
   name: string; // name of the queue.
   currentStats: Queue;
-  history: DailyStat[];
   requestPending: boolean; // indicates pause/resume/delete action is pending on this queue
 }
 
@@ -77,21 +75,9 @@ function queuesReducer(
         data: queues.map((q: Queue) => ({
           name: q.queue,
           currentStats: q,
-          history: [],
           requestPending: false,
         })),
       };
-
-    case GET_QUEUE_SUCCESS:
-      const newData = state.data
-        .filter((queueInfo) => queueInfo.name !== action.queue)
-        .concat({
-          name: action.queue,
-          currentStats: action.payload.current,
-          history: action.payload.history,
-          requestPending: false,
-        });
-      return { ...state, data: newData };
 
     case DELETE_QUEUE_BEGIN:
     case PAUSE_QUEUE_BEGIN:
@@ -165,7 +151,6 @@ function queuesReducer(
         .concat({
           name: action.queue,
           currentStats: action.payload.stats,
-          history: [],
           requestPending: false,
         });
       return { ...state, data: newData };
