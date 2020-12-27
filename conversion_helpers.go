@@ -72,6 +72,14 @@ func toDailyStats(s *asynq.DailyStats) *DailyStats {
 	}
 }
 
+func toDailyStatsList(in []*asynq.DailyStats) []*DailyStats {
+	out := make([]*DailyStats, len(in))
+	for i, s := range in {
+		out[i] = toDailyStats(s)
+	}
+	return out
+}
+
 type BaseTask struct {
 	ID      string        `json:"id"`
 	Type    string        `json:"type"`

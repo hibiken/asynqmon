@@ -106,3 +106,31 @@ func newResumeQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
+
+type ListQueueStatsResponse struct {
+	Stats map[string][]*DailyStats `json:"stats"`
+}
+
+func newListQueueStatsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qnames, err := inspector.Queues()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		resp := ListQueueStatsResponse{Stats: make(map[string][]*DailyStats)}
+		const numdays = 90 // Get stats for the last 90 days.
+		for _, qname := range qnames {
+			stats, err := inspector.History(qname, numdays)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			resp.Stats[qname] = toDailyStatsList(stats)
+		}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
