@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import Container from "@material-ui/core/Container";
 import { makeStyles } from "@material-ui/core/styles";
@@ -19,8 +19,8 @@ import ProcessedTasksChart from "../components/ProcessedTasksChart";
 import QueuesOverviewTable from "../components/QueuesOverviewTable";
 import Tooltip from "../components/Tooltip";
 import SplitButton from "../components/SplitButton";
-import { getCurrentUTCDate } from "../utils";
 import { usePolling } from "../hooks";
+import DailyStatsChart from "../components/DailyStatsChart";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -68,6 +68,7 @@ function mapStateToProps(state: AppState) {
       requestPending: q.requestPending,
     })),
     pollInterval: state.settings.pollInterval,
+    queueStats: state.queueStats.data,
   };
 }
 
@@ -83,9 +84,15 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 
 type Props = ConnectedProps<typeof connector>;
 
+type DailyStatsKey = "today" | "last-7d" | "last-30d" | "last-90d";
+const initialStatsKey = "last-7d";
+
 function DashboardView(props: Props) {
   const { pollInterval, listQueuesAsync, queues, listQueueStatsAsync } = props;
   const classes = useStyles();
+  const [dailyStatsKey, setDailyStatsKey] = useState<DailyStatsKey>(
+    initialStatsKey
+  );
 
   usePolling(listQueuesAsync, pollInterval);
 
@@ -161,16 +168,15 @@ function DashboardView(props: Props) {
                   title={
                     <div>
                       <div className={classes.tooltipSection}>
-                        Total number of tasks processed today (
-                        {getCurrentUTCDate()} UTC)
+                        Total number of tasks processed in a given day (UTC)
                       </div>
                       <div className={classes.tooltipSection}>
                         <strong>Succeeded</strong>: number of tasks successfully
-                        processed from the queue
+                        processed
                       </div>
                       <div>
                         <strong>Failed</strong>: number of tasks failed to be
-                        processed from the queue
+                        processed
                       </div>
                     </div>
                   }
@@ -186,13 +192,24 @@ function DashboardView(props: Props) {
                     { label: "Last 30d", key: "last-30d" },
                     { label: "Last 90d", key: "last-90d" },
                   ]}
-                  initialSelectedKey="today"
-                  onSelect={(key) => console.log("option selected:", key)}
+                  initialSelectedKey={initialStatsKey}
+                  onSelect={(key) => setDailyStatsKey(key as DailyStatsKey)}
                 />
               </div>
             </div>
             <div className={classes.chartContainer}>
-              <ProcessedTasksChart data={processedStats} />
+              {dailyStatsKey === "today" && (
+                <ProcessedTasksChart data={processedStats} />
+              )}
+              {dailyStatsKey === "last-7d" && (
+                <DailyStatsChart data={props.queueStats} numDays={7} />
+              )}
+              {dailyStatsKey === "last-30d" && (
+                <DailyStatsChart data={props.queueStats} numDays={30} />
+              )}
+              {dailyStatsKey === "last-90d" && (
+                <DailyStatsChart data={props.queueStats} numDays={90} />
+              )}
             </div>
           </Paper>
         </Grid>
