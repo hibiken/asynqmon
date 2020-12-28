@@ -55,11 +55,11 @@ func toQueueStateSnapshot(s *asynq.QueueStats) *QueueStateSnapshot {
 }
 
 type DailyStats struct {
-	Queue     string    `json:"queue"`
-	Processed int       `json:"processed"`
-	Succeeded int       `json:"succeeded"`
-	Failed    int       `json:"failed"`
-	Date      time.Time `json:"date"`
+	Queue     string `json:"queue"`
+	Processed int    `json:"processed"`
+	Succeeded int    `json:"succeeded"`
+	Failed    int    `json:"failed"`
+	Date      string `json:"date"`
 }
 
 func toDailyStats(s *asynq.DailyStats) *DailyStats {
@@ -68,7 +68,7 @@ func toDailyStats(s *asynq.DailyStats) *DailyStats {
 		Processed: s.Processed,
 		Succeeded: s.Processed - s.Failed,
 		Failed:    s.Failed,
-		Date:      s.Date,
+		Date:      s.Date.Format("2006-01-02"),
 	}
 }
 

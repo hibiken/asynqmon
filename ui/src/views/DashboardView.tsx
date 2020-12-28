@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import Container from "@material-ui/core/Container";
 import { makeStyles } from "@material-ui/core/styles";
@@ -12,6 +12,7 @@ import {
   resumeQueueAsync,
   deleteQueueAsync,
 } from "../actions/queuesActions";
+import { listQueueStatsAsync } from "../actions/queueStatsActions";
 import { AppState } from "../store";
 import QueueSizeChart from "../components/QueueSizeChart";
 import ProcessedTasksChart from "../components/ProcessedTasksChart";
@@ -75,6 +76,7 @@ const mapDispatchToProps = {
   pauseQueueAsync,
   resumeQueueAsync,
   deleteQueueAsync,
+  listQueueStatsAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -82,10 +84,20 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
 
 function DashboardView(props: Props) {
-  const { pollInterval, listQueuesAsync, queues } = props;
+  const { pollInterval, listQueuesAsync, queues, listQueueStatsAsync } = props;
   const classes = useStyles();
 
   usePolling(listQueuesAsync, pollInterval);
+
+  // Refetch queue stats if a queue is added or deleted.
+  const qnames = queues
+    .map((q) => q.queue)
+    .sort()
+    .join(",");
+
+  useEffect(() => {
+    listQueueStatsAsync();
+  }, [listQueueStatsAsync, qnames]);
 
   const processedStats = queues.map((q) => ({
     queue: q.queue,

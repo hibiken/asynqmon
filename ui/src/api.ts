@@ -60,6 +60,10 @@ export interface BatchKillTasksResponse {
   error_keys: string[];
 }
 
+export interface ListQueueStatsResponse {
+  stats: { [qname: string]: DailyStat[] };
+}
+
 export interface Queue {
   queue: string;
   paused: boolean;
@@ -75,6 +79,7 @@ export interface Queue {
 }
 
 export interface DailyStat {
+  queue: string;
   date: string;
   processed: number;
   failed: number;
@@ -172,6 +177,14 @@ export async function resumeQueue(qname: string): Promise<void> {
     method: "post",
     url: `${BASE_URL}/queues/${qname}:resume`,
   });
+}
+
+export async function listQueueStats(): Promise<ListQueueStatsResponse> {
+  const resp = await axios({
+    method: "get",
+    url: `${BASE_URL}/queue_stats`,
+  });
+  return resp.data;
 }
 
 export async function listActiveTasks(
