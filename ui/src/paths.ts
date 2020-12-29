@@ -1,6 +1,7 @@
 export const paths = {
   HOME: "/",
   SETTINGS: "/settings",
+  SERVERS: "/servers",
   SCHEDULERS: "/schedulers",
   QUEUE_DETAILS: "/queues/:qname",
 };

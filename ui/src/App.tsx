@@ -20,6 +20,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 import BarChartIcon from "@material-ui/icons/BarChart";
 import LayersIcon from "@material-ui/icons/Layers";
 import SettingsIcon from "@material-ui/icons/Settings";
+import ScheduleIcon from "@material-ui/icons/Schedule";
 import FeedbackIcon from "@material-ui/icons/Feedback";
 import CloseIcon from "@material-ui/icons/Close";
 import { AppState } from "./store";
@@ -30,6 +31,7 @@ import SchedulersView from "./views/SchedulersView";
 import DashboardView from "./views/DashboardView";
 import TasksView from "./views/TasksView";
 import SettingsView from "./views/SettingsView";
+import ServersView from "./views/ServersView";
 
 const drawerWidth = 220;
 
@@ -214,9 +216,14 @@ function App(props: ConnectedProps<typeof connector>) {
                     icon={<BarChartIcon />}
                   />
                   <ListItemLink
+                    to={paths.SERVERS}
+                    primary="Servers"
+                    icon={<LayersIcon />}
+                  />
+                  <ListItemLink
                     to={paths.SCHEDULERS}
                     primary="Schedulers"
-                    icon={<LayersIcon />}
+                    icon={<ScheduleIcon />}
                   />
                 </div>
               </List>
@@ -249,6 +256,9 @@ function App(props: ConnectedProps<typeof connector>) {
                 </Route>
                 <Route exact path={paths.SCHEDULERS}>
                   <SchedulersView />
+                </Route>
+                <Route exact path={paths.SERVERS}>
+                  <ServersView />
                 </Route>
                 <Route exact path={paths.SETTINGS}>
                   <SettingsView />

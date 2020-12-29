@@ -128,6 +128,10 @@ export interface DeadTask extends BaseTask {
   error_message: string;
 }
 
+export interface ServerInfo {
+  // TODO: fill this out
+}
+
 export interface SchedulerEntry {
   id: string;
   spec: string;
