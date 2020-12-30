@@ -285,3 +285,57 @@ func toSchedulerEnqueueEvents(in []*asynq.SchedulerEnqueueEvent) []*SchedulerEnq
 	}
 	return out
 }
+
+type ServerInfo struct {
+	ID             string         `json:"id"`
+	Host           string         `json:"host"`
+	PID            int            `json:"pid"`
+	Concurrency    int            `json:"concurrency"`
+	Queues         map[string]int `json:"queue_priorities"`
+	StrictPriority bool           `json:"strict_priority_enabled"`
+	Started        string         `json:"start_time"`
+	Status         string         `json:"status"`
+	ActiveWorkers  []*WorkerInfo  `json:"active_workers"`
+}
+
+func toServerInfo(info *asynq.ServerInfo) *ServerInfo {
+	return &ServerInfo{
+		ID:             info.ID,
+		Host:           info.Host,
+		PID:            info.PID,
+		Concurrency:    info.Concurrency,
+		Queues:         info.Queues,
+		StrictPriority: info.StrictPriority,
+		Started:        info.Started.Format(time.RFC3339),
+		Status:         info.Status,
+		ActiveWorkers:  toWorkerInfoList(info.ActiveWorkers),
+	}
+}
+
+func toServerInfoList(in []*asynq.ServerInfo) []*ServerInfo {
+	out := make([]*ServerInfo, len(in))
+	for i, s := range in {
+		out[i] = toServerInfo(s)
+	}
+	return out
+}
+
+type WorkerInfo struct {
+	Task    *ActiveTask `json:"task"`
+	Started string      `json:"start_time"`
+}
+
+func toWorkerInfo(info *asynq.WorkerInfo) *WorkerInfo {
+	return &WorkerInfo{
+		Task:    toActiveTask(info.Task),
+		Started: info.Started.Format(time.RFC3339),
+	}
+}
+
+func toWorkerInfoList(in []*asynq.WorkerInfo) []*WorkerInfo {
+	out := make([]*WorkerInfo, len(in))
+	for i, w := range in {
+		out[i] = toWorkerInfo(w)
+	}
+	return out
+}

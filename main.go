@@ -112,6 +112,9 @@ func main() {
 	api.HandleFunc("/queues/{qname}/dead_tasks:run_all", newRunAllDeadTasksHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/dead_tasks:batch_run", newBatchRunTasksHandlerFunc(inspector)).Methods("POST")
 
+	// Servers endpoints.
+	api.HandleFunc("/servers", newListServersHandlerFunc(inspector)).Methods("GET")
+
 	// Scheduler Entry endpoints.
 	api.HandleFunc("/scheduler_entries", newListSchedulerEntriesHandlerFunc(inspector)).Methods("GET")
 	api.HandleFunc("/scheduler_entries/{entry_id}/enqueue_events", newListSchedulerEnqueueEventsHandlerFunc(inspector)).Methods("GET")
