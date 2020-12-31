@@ -32,6 +32,10 @@ export interface ListDeadTasksResponse {
   stats: Queue;
 }
 
+export interface ListServersResponse {
+  servers: ServerInfo[];
+}
+
 export interface ListSchedulerEntriesResponse {
   entries: SchedulerEntry[];
 }
@@ -129,7 +133,20 @@ export interface DeadTask extends BaseTask {
 }
 
 export interface ServerInfo {
-  // TODO: fill this out
+  id: string;
+  host: string;
+  pid: number;
+  concurrency: number;
+  queue_priorities: { [qname: string]: number };
+  strict_priority_enabled: boolean;
+  start_time: string;
+  status: string;
+  active_workers: WorkerInfo[];
+}
+
+export interface WorkerInfo {
+  task: ActiveTask;
+  start_time: string;
 }
 
 export interface SchedulerEntry {
@@ -543,6 +560,14 @@ export async function runAllDeadTasks(qname: string): Promise<void> {
     method: "post",
     url: `${BASE_URL}/queues/${qname}/dead_tasks:run_all`,
   });
+}
+
+export async function listServers(): Promise<ListServersResponse> {
+  const resp = await axios({
+    method: "get",
+    url: `${BASE_URL}/servers`,
+  });
+  return resp.data;
 }
 
 export async function listSchedulerEntries(): Promise<ListSchedulerEntriesResponse> {

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
-import IconButton from "@material-ui/core/IconButton";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -13,6 +12,7 @@ import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import { ServerInfo } from "../api";
 import { SortDirection, SortableTableColumn } from "../types/table";
+import { timeAgo } from "../utils";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -140,8 +140,43 @@ export default function ServersTable(props: Props) {
             ))}
           </TableRow>
         </TableHead>
-        <TableBody></TableBody>
+        <TableBody>
+          {sortServerInfos(props.servers, cmpFunc).map((srv) => (
+            <Row key={srv.id} server={srv} />
+          ))}
+        </TableBody>
       </Table>
     </TableContainer>
+  );
+}
+interface RowProps {
+  server: ServerInfo;
+}
+
+const useRowStyles = makeStyles((theme) => ({
+  rowRoot: {
+    "& > *": {
+      borderBottom: "unset",
+    },
+  },
+  noBorder: {
+    border: "none",
+  },
+}));
+
+function Row(props: RowProps) {
+  const classes = useRowStyles();
+  const { server } = props;
+  return (
+    <TableRow className={classes.rowRoot}>
+      <TableCell>{server.host}</TableCell>
+      <TableCell>{server.pid}</TableCell>
+      <TableCell>{server.status}</TableCell>
+      <TableCell>
+        {server.active_workers.length}/{server.concurrency}
+      </TableCell>
+      <TableCell>{JSON.stringify(server.queue_priorities)}</TableCell>
+      <TableCell>{timeAgo(server.start_time)}</TableCell>
+    </TableRow>
   );
 }

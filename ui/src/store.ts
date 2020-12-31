@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import settingsReducer from "./reducers/settingsReducer";
 import queuesReducer from "./reducers/queuesReducer";
 import tasksReducer from "./reducers/tasksReducer";
+import serversReducer from "./reducers/serversReducer";
 import schedulerEntriesReducer from "./reducers/schedulerEntriesReducer";
 import snackbarReducer from "./reducers/snackbarReducer";
 import queueStatsReducer from "./reducers/queueStatsReducer";
@@ -10,6 +11,7 @@ const rootReducer = combineReducers({
   settings: settingsReducer,
   queues: queuesReducer,
   tasks: tasksReducer,
+  servers: serversReducer,
   schedulerEntries: schedulerEntriesReducer,
   snackbar: snackbarReducer,
   queueStats: queueStatsReducer,
