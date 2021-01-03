@@ -4,6 +4,7 @@ export const paths = {
   SERVERS: "/servers",
   SCHEDULERS: "/schedulers",
   QUEUE_DETAILS: "/queues/:qname",
+  REDIS: "/redis",
 };
 
 export function queueDetailsPath(qname: string, taskStatus?: string): string {
