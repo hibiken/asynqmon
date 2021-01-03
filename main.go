@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/hibiken/asynq"
 	"github.com/rs/cors"
@@ -64,6 +65,11 @@ func main() {
 	})
 	defer inspector.Close()
 
+	rdb := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+	defer rdb.Close()
+
 	router := mux.NewRouter()
 	router.Use(loggingMiddleware)
 
@@ -118,6 +124,9 @@ func main() {
 	// Scheduler Entry endpoints.
 	api.HandleFunc("/scheduler_entries", newListSchedulerEntriesHandlerFunc(inspector)).Methods("GET")
 	api.HandleFunc("/scheduler_entries/{entry_id}/enqueue_events", newListSchedulerEnqueueEventsHandlerFunc(inspector)).Methods("GET")
+
+	// Redis info endpoint.
+	api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(rdb)).Methods("GET")
 
 	fs := &staticFileServer{staticPath: "ui/build", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(fs)
