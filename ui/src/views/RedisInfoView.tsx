@@ -1,8 +1,12 @@
 import React from "react";
+import { connect, ConnectedProps } from "react-redux";
 import Container from "@material-ui/core/Container";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
+import { getRedisInfoAsync } from "../actions/redisInfoActions";
+import { usePolling } from "../hooks";
+import { AppState } from "../store";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -17,8 +21,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function RedisInfoView() {
+function mapStateToProps(state: AppState) {
+  return {
+    loading: state.redis.loading,
+    redisInfo: state.redis.data,
+    pollInterval: state.settings.pollInterval,
+  };
+}
+
+const connector = connect(mapStateToProps, { getRedisInfoAsync });
+type Props = ConnectedProps<typeof connector>;
+
+function RedisInfoView(props: Props) {
   const classes = useStyles();
+  const { pollInterval, getRedisInfoAsync } = props;
+
+  usePolling(getRedisInfoAsync, pollInterval);
 
   return (
     <Container maxWidth="lg" className={classes.container}>
@@ -31,4 +49,4 @@ function RedisInfoView() {
   );
 }
 
-export default RedisInfoView;
+export default connector(RedisInfoView);

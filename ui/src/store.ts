@@ -6,6 +6,7 @@ import serversReducer from "./reducers/serversReducer";
 import schedulerEntriesReducer from "./reducers/schedulerEntriesReducer";
 import snackbarReducer from "./reducers/snackbarReducer";
 import queueStatsReducer from "./reducers/queueStatsReducer";
+import redisInfoReducer from "./reducers/redisInfoReducer";
 
 const rootReducer = combineReducers({
   settings: settingsReducer,
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   schedulerEntries: schedulerEntriesReducer,
   snackbar: snackbarReducer,
   queueStats: queueStatsReducer,
+  redis: redisInfoReducer,
 });
 
 // AppState is the top-level application state maintained by redux store.
