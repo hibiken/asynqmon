@@ -71,6 +71,7 @@ export interface ListQueueStatsResponse {
 export interface RedisInfoResponse {
   address: string;
   info: RedisInfo;
+  raw_info: string;
 }
 
 // Return value from redis INFO command.

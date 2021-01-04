@@ -37,11 +37,16 @@ export function durationBefore(timestamp: string): string {
 
 export function timeAgo(timestamp: string): string {
   try {
-    const duration = durationBetween(Date.now(), Date.parse(timestamp));
-    return stringifyDuration(duration) + " ago";
-  } catch {
+    return timeAgoUnix(Date.parse(timestamp) / 1000);
+  } catch (error) {
+    console.error("Could not parse timestamp: ", timestamp, error);
     return "-";
   }
+}
+
+export function timeAgoUnix(unixtime: number) {
+  const duration = durationBetween(Date.now(), unixtime * 1000);
+  return stringifyDuration(duration) + " ago";
 }
 
 export function getCurrentUTCDate(): string {

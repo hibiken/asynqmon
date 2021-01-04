@@ -15,8 +15,9 @@ import (
 // ****************************************************************************
 
 type RedisInfoResponse struct {
-	Addr string            `json:"address"`
-	Info map[string]string `json:"info"`
+	Addr    string            `json:"address"`
+	Info    map[string]string `json:"info"`
+	RawInfo string            `json:"raw_info"`
 }
 
 func newRedisInfoHandlerFunc(rdb *redis.Client) http.HandlerFunc {
@@ -29,8 +30,9 @@ func newRedisInfoHandlerFunc(rdb *redis.Client) http.HandlerFunc {
 		}
 		info := parseRedisInfo(res)
 		resp := RedisInfoResponse{
-			Addr: redisAddr,
-			Info: info,
+			Addr:    redisAddr,
+			Info:    info,
+			RawInfo: res,
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

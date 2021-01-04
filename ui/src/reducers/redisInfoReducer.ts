@@ -10,12 +10,14 @@ interface RedisInfoState {
   loading: boolean;
   address: string;
   data: RedisInfo | null;
+  rawData: string | null;
 }
 
 const initialState: RedisInfoState = {
   loading: false,
   address: "",
   data: null,
+  rawData: null,
 };
 
 export default function redisInfoReducer(
@@ -40,6 +42,7 @@ export default function redisInfoReducer(
         loading: false,
         address: action.payload.address,
         data: action.payload.info,
+        rawData: action.payload.raw_info,
       };
 
     default:
