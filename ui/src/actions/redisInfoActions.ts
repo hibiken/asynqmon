@@ -1,5 +1,5 @@
 import { Dispatch } from "redux";
-import { getRedisInfo, RedisInfo } from "../api";
+import { getRedisInfo, RedisInfoResponse } from "../api";
 
 // List of redis-info related action types.
 export const GET_REDIS_INFO_BEGIN = "GET_REDIS_INFO_BEGIN";
@@ -12,7 +12,7 @@ interface GetRedisInfoBeginAction {
 
 interface GetRedisInfoSuccessAction {
   type: typeof GET_REDIS_INFO_SUCCESS;
-  payload: RedisInfo;
+  payload: RedisInfoResponse;
 }
 
 interface GetRedisInfoErrorAction {

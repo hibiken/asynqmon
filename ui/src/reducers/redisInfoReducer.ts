@@ -8,11 +8,13 @@ import { RedisInfo } from "../api";
 
 interface RedisInfoState {
   loading: boolean;
+  address: string;
   data: RedisInfo | null;
 }
 
 const initialState: RedisInfoState = {
   loading: false,
+  address: "",
   data: null,
 };
 
@@ -36,7 +38,8 @@ export default function redisInfoReducer(
     case GET_REDIS_INFO_SUCCESS:
       return {
         loading: false,
-        data: action.payload,
+        address: action.payload.address,
+        data: action.payload.info,
       };
 
     default:

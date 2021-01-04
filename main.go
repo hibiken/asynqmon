@@ -57,16 +57,19 @@ func (srv *staticFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.Dir(srv.staticPath)).ServeHTTP(w, r)
 }
 
-const addr = "127.0.0.1:8080"
+const (
+	addr      = "127.0.0.1:8080"
+	redisAddr = "localhost:6379" // TODO: make this configurable
+)
 
 func main() {
 	inspector := asynq.NewInspector(asynq.RedisClientOpt{
-		Addr: "localhost:6379",
+		Addr: redisAddr,
 	})
 	defer inspector.Close()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: redisAddr,
 	})
 	defer rdb.Close()
 

@@ -68,6 +68,11 @@ export interface ListQueueStatsResponse {
   stats: { [qname: string]: DailyStat[] };
 }
 
+export interface RedisInfoResponse {
+  address: string;
+  info: RedisInfo;
+}
+
 // Return value from redis INFO command.
 // See https://redis.io/commands/info#return-value.
 export interface RedisInfo {
@@ -723,7 +728,7 @@ export async function listSchedulerEnqueueEvents(
   return resp.data;
 }
 
-export async function getRedisInfo(): Promise<RedisInfo> {
+export async function getRedisInfo(): Promise<RedisInfoResponse> {
   const resp = await axios({
     method: "get",
     url: `${BASE_URL}/redis_info`,

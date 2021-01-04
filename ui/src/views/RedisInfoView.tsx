@@ -25,6 +25,7 @@ function mapStateToProps(state: AppState) {
   return {
     loading: state.redis.loading,
     redisInfo: state.redis.data,
+    redisAddress: state.redis.address,
     pollInterval: state.settings.pollInterval,
   };
 }
@@ -38,11 +39,24 @@ function RedisInfoView(props: Props) {
 
   usePolling(getRedisInfoAsync, pollInterval);
 
+  console.log("DEBUG: redisInfo", props.redisInfo);
+
+  // Metrics to show
+  // - Used Memory
+  // - Memory Fragmentation Ratio
+  // - Connected Clients
+  // - Connected Replicas (slaves)
+  // - Persistence (rdb_last_save_time, rdb_changes_since_last_save)
+  // - Errors (rejected_connections)
+
   return (
     <Container maxWidth="lg" className={classes.container}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Typography variant="h5">Redis Info</Typography>
+          <Typography variant="subtitle1" color="textSecondary">
+            Connected to: {props.redisAddress}
+          </Typography>
         </Grid>
       </Grid>
     </Container>
