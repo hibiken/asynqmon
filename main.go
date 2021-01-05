@@ -2,11 +2,11 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"fmt"
-	"io"
+	"io/fs"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -21,9 +21,9 @@ import (
 // path to the index file within that static directory are used to
 // serve the SPA in the given static directory.
 type staticFileServer struct {
-	staticContents embed.FS
-	staticDirPath  string
-	indexFileName  string
+	contents      embed.FS
+	staticDirPath string
+	indexFileName string
 }
 
 // ServeHTTP inspects the URL path to locate a file within the static dir
@@ -39,26 +39,30 @@ func (srv *staticFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if path == "/" {
-		path = filepath.Join(srv.staticDirPath, srv.indexFileName)
+		path = srv.indexFilePath()
 	} else {
 		path = filepath.Join(srv.staticDirPath, path)
 	}
 
-	f, err := srv.staticContents.Open(path)
-	if err != nil {
-		status := http.StatusInternalServerError
-		if os.IsNotExist(err) {
-			status = http.StatusNotFound
-		}
-		http.Error(w, err.Error(), status)
-		return
+	bytes, err := srv.contents.ReadFile(path)
+	// If path is error (e.g. file not exist, path is a directory), serve index file.
+	var pathErr *fs.PathError
+	if errors.As(err, &pathErr) {
+		bytes, err = srv.contents.ReadFile(srv.indexFilePath())
 	}
-	defer f.Close()
-
-	if _, err := io.Copy(w, f); err != nil {
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	if _, err := w.Write(bytes); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (srv *staticFileServer) indexFilePath() string {
+	return filepath.Join(srv.staticDirPath, srv.indexFileName)
 }
 
 const (
@@ -139,9 +143,9 @@ func main() {
 	api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(rdb)).Methods("GET")
 
 	fs := &staticFileServer{
-		staticContents: staticContents,
-		staticDirPath:  "ui/build",
-		indexFileName:  "index.html",
+		contents:      staticContents,
+		staticDirPath: "ui/build",
+		indexFileName: "index.html",
 	}
 	router.PathPrefix("/").Handler(fs)
 
