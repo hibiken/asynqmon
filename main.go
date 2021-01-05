@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -19,48 +21,53 @@ import (
 // path to the index file within that static directory are used to
 // serve the SPA in the given static directory.
 type staticFileServer struct {
-	staticPath string
-	indexPath  string
+	staticContents embed.FS
+	staticDirPath  string
+	indexFileName  string
 }
 
 // ServeHTTP inspects the URL path to locate a file within the static dir
-// on the SPA handler. If a file is found, it will be served. If not, the
-// file located at the index path on the SPA handler will be served. This
-// is suitable behavior for serving an SPA (single page application).
+// on the SPA handler.
+// If path '/' is requested, it will serve the index file, otherwise it will
+// serve the file specified by the URL path.
 func (srv *staticFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// get the absolute path to prevent directory traversal
+	// Get the absolute path to prevent directory traversal.
 	path, err := filepath.Abs(r.URL.Path)
 	if err != nil {
-		// if we failed to get the absolute path respond with a 400 bad request
-		// and stop
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// prepend the path with the path to the static directory
-	path = filepath.Join(srv.staticPath, path)
+	if path == "/" {
+		path = filepath.Join(srv.staticDirPath, srv.indexFileName)
+	} else {
+		path = filepath.Join(srv.staticDirPath, path)
+	}
 
-	// check whether a file exists at the given path
-	_, err = os.Stat(path)
-	if os.IsNotExist(err) {
-		// file does not exist, serve index.html
-		http.ServeFile(w, r, filepath.Join(srv.staticPath, srv.indexPath))
+	f, err := srv.staticContents.Open(path)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if os.IsNotExist(err) {
+			status = http.StatusNotFound
+		}
+		http.Error(w, err.Error(), status)
 		return
-	} else if err != nil {
-		// if we got an error (that wasn't that the file doesn't exist) stating the
-		// file, return a 500 internal server error and stop
+	}
+	defer f.Close()
+
+	if _, err := io.Copy(w, f); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// otherwise, use http.FileServer to serve the static dir
-	http.FileServer(http.Dir(srv.staticPath)).ServeHTTP(w, r)
 }
 
 const (
 	addr      = "127.0.0.1:8080"
 	redisAddr = "localhost:6379" // TODO: make this configurable
 )
+
+//go:embed ui/build/*
+var staticContents embed.FS
 
 func main() {
 	inspector := asynq.NewInspector(asynq.RedisClientOpt{
@@ -131,7 +138,11 @@ func main() {
 	// Redis info endpoint.
 	api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(rdb)).Methods("GET")
 
-	fs := &staticFileServer{staticPath: "ui/build", indexPath: "index.html"}
+	fs := &staticFileServer{
+		staticContents: staticContents,
+		staticDirPath:  "ui/build",
+		indexFileName:  "index.html",
+	}
 	router.PathPrefix("/").Handler(fs)
 
 	c := cors.New(cors.Options{
