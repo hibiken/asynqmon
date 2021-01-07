@@ -34,6 +34,7 @@ import TasksView from "./views/TasksView";
 import SettingsView from "./views/SettingsView";
 import ServersView from "./views/ServersView";
 import RedisInfoView from "./views/RedisInfoView";
+import PageNotFoundView from "./views/PageNotFoundView";
 
 const drawerWidth = 220;
 
@@ -273,8 +274,11 @@ function App(props: ConnectedProps<typeof connector>) {
                 <Route exact path={paths.SETTINGS}>
                   <SettingsView />
                 </Route>
-                <Route path={paths.HOME}>
+                <Route exact path={paths.HOME}>
                   <DashboardView />
+                </Route>
+                <Route path="*">
+                  <PageNotFoundView />
                 </Route>
               </Switch>
             </div>
