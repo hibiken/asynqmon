@@ -1,8 +1,10 @@
 package main
 
 import (
+	"crypto/tls"
 	"embed"
 	"errors"
+	"flag"
 	"fmt"
 	"io/fs"
 	"log"
@@ -15,6 +17,23 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/rs/cors"
 )
+
+// Command-line flags
+var (
+	flagPort          int
+	flagRedisAddr     string
+	flagRedisDB       int
+	flagRedisPassword string
+	flagRedisTLS      string
+)
+
+func init() {
+	flag.IntVar(&flagPort, "port", 8080, "port number to use for web ui server")
+	flag.StringVar(&flagRedisAddr, "redis_addr", "localhost:6379", "address of redis server to connect to")
+	flag.IntVar(&flagRedisDB, "redis_db", 0, "redis database number")
+	flag.StringVar(&flagRedisPassword, "redis_password", "", "password to use when connecting to redis server")
+	flag.StringVar(&flagRedisTLS, "redis_tls", "", "server name for TLS validation used when connecting to redis server")
+}
 
 // staticFileServer implements the http.Handler interface, so we can use it
 // to respond to HTTP requests. The path to the static directory and
@@ -65,22 +84,30 @@ func (srv *staticFileServer) indexFilePath() string {
 	return filepath.Join(srv.staticDirPath, srv.indexFileName)
 }
 
-const (
-	addr      = "127.0.0.1:8080"
-	redisAddr = "localhost:6379" // TODO: make this configurable
-)
-
 //go:embed ui/build/*
 var staticContents embed.FS
 
 func main() {
+	flag.Parse()
+
+	var tlsConfig *tls.Config
+	if flagRedisTLS != "" {
+		tlsConfig = &tls.Config{ServerName: flagRedisTLS}
+	}
+
 	inspector := asynq.NewInspector(asynq.RedisClientOpt{
-		Addr: redisAddr,
+		Addr:      flagRedisAddr,
+		DB:        flagRedisDB,
+		Password:  flagRedisPassword,
+		TLSConfig: tlsConfig,
 	})
 	defer inspector.Close()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
+		Addr:      flagRedisAddr,
+		DB:        flagRedisDB,
+		Password:  flagRedisPassword,
+		TLSConfig: tlsConfig,
 	})
 	defer rdb.Close()
 
@@ -156,11 +183,11 @@ func main() {
 
 	srv := &http.Server{
 		Handler:      handler,
-		Addr:         addr,
+		Addr:         fmt.Sprintf(":%d", flagPort),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
 	}
 
-	fmt.Printf("Asynq Monitoring WebUI server is running on %s\n", addr)
+	fmt.Printf("Asynq Monitoring WebUI server is listening on port %d\n", flagPort)
 	log.Fatal(srv.ListenAndServe())
 }

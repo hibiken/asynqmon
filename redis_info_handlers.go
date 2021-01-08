@@ -30,7 +30,7 @@ func newRedisInfoHandlerFunc(rdb *redis.Client) http.HandlerFunc {
 		}
 		info := parseRedisInfo(res)
 		resp := RedisInfoResponse{
-			Addr:    redisAddr,
+			Addr:    flagRedisAddr,
 			Info:    info,
 			RawInfo: res,
 		}

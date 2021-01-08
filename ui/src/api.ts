@@ -1,7 +1,11 @@
 import axios from "axios";
 import queryString from "query-string";
 
-const BASE_URL = "http://localhost:8080/api";
+// In production build, API server is on listening on the same port as
+// the static file server.
+// In developement, we assume that the API server is listening on port 8080.
+const BASE_URL =
+  process.env.NODE_ENV === "production" ? "/api" : "http://localhost:8080/api";
 
 export interface ListQueuesResponse {
   queues: Queue[];
