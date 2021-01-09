@@ -6,6 +6,8 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import InfoIcon from "@material-ui/icons/Info";
+import Alert from "@material-ui/lab/Alert";
+import AlertTitle from "@material-ui/lab/AlertTitle";
 import {
   listQueuesAsync,
   pauseQueueAsync,
@@ -67,6 +69,7 @@ function mapStateToProps(state: AppState) {
       ...q.currentStats,
       requestPending: q.requestPending,
     })),
+    error: state.queues.error,
     pollInterval: state.settings.pollInterval,
     queueStats: state.queueStats.data,
   };
@@ -115,6 +118,15 @@ function DashboardView(props: Props) {
   return (
     <Container maxWidth="lg" className={classes.container}>
       <Grid container spacing={3}>
+        {props.error.length > 0 && (
+          <Grid item xs={12}>
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              Could not retreive queues live data —{" "}
+              <strong>See the logs for details</strong>
+            </Alert>
+          </Grid>
+        )}
         <Grid item xs={6}>
           <Paper className={classes.paper} variant="outlined">
             <div className={classes.chartHeader}>

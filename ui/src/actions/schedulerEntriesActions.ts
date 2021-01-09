@@ -5,6 +5,7 @@ import {
   listSchedulerEntries,
   ListSchedulerEntriesResponse,
 } from "../api";
+import { toErrorString } from "../utils";
 
 // List of scheduler-entry related action types.
 export const LIST_SCHEDULER_ENTRIES_BEGIN = "LIST_SCHEDULER_ENTRIES_BEGIN";
@@ -67,10 +68,10 @@ export function listSchedulerEntriesAsync() {
         payload: response,
       });
     } catch (error) {
-      console.error(error);
+      console.error(`listSchedulerEnqueueEventsAsync: ${toErrorString(error)}`);
       dispatch({
         type: LIST_SCHEDULER_ENTRIES_ERROR,
-        error: "Could not retrieve scheduler entries",
+        error: error.response.data,
       });
     }
   };

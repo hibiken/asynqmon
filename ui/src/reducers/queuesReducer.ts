@@ -11,6 +11,7 @@ import {
   DELETE_QUEUE_BEGIN,
   DELETE_QUEUE_ERROR,
   DELETE_QUEUE_SUCCESS,
+  LIST_QUEUES_ERROR,
 } from "../actions/queuesActions";
 import {
   BATCH_DELETE_DEAD_TASKS_SUCCESS,
@@ -49,6 +50,7 @@ import { Queue } from "../api";
 interface QueuesState {
   loading: boolean;
   data: QueueInfo[];
+  error: string;
 }
 
 export interface QueueInfo {
@@ -57,7 +59,7 @@ export interface QueueInfo {
   requestPending: boolean; // indicates pause/resume/delete action is pending on this queue
 }
 
-const initialState: QueuesState = { data: [], loading: false };
+const initialState: QueuesState = { data: [], loading: false, error: "" };
 
 function queuesReducer(
   state = initialState,
@@ -72,11 +74,19 @@ function queuesReducer(
       return {
         ...state,
         loading: false,
+        error: "",
         data: queues.map((q: Queue) => ({
           name: q.queue,
           currentStats: q,
           requestPending: false,
         })),
+      };
+
+    case LIST_QUEUES_ERROR:
+      return {
+        ...state,
+        loading: false,
+        error: action.error,
       };
 
     case DELETE_QUEUE_BEGIN:

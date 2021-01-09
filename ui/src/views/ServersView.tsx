@@ -5,6 +5,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
+import Alert from "@material-ui/lab/Alert";
+import AlertTitle from "@material-ui/lab/AlertTitle";
 import ServersTable from "../components/ServersTable";
 import { listServersAsync } from "../actions/serversActions";
 import { AppState } from "../store";
@@ -30,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
 function mapStateToProps(state: AppState) {
   return {
     loading: state.servers.loading,
+    error: state.servers.error,
     servers: state.servers.data,
     pollInterval: state.settings.pollInterval,
   };
@@ -48,14 +51,24 @@ function ServersView(props: Props) {
   return (
     <Container maxWidth="lg" className={classes.container}>
       <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper className={classes.paper} variant="outlined">
-            <Typography variant="h6" className={classes.heading}>
-              Servers
-            </Typography>
-            <ServersTable servers={props.servers} />
-          </Paper>
-        </Grid>
+        {props.error === "" ? (
+          <Grid item xs={12}>
+            <Paper className={classes.paper} variant="outlined">
+              <Typography variant="h6" className={classes.heading}>
+                Servers
+              </Typography>
+              <ServersTable servers={props.servers} />
+            </Paper>
+          </Grid>
+        ) : (
+          <Grid item xs={12}>
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              Could not retreive servers live data —{" "}
+              <strong>See the logs for details</strong>
+            </Alert>
+          </Grid>
+        )}
       </Grid>
     </Container>
   );

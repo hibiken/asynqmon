@@ -1,5 +1,6 @@
 import { Dispatch } from "redux";
 import { listServers, ListServersResponse } from "../api";
+import { toErrorString } from "../utils";
 
 // List of server related action types.
 export const LIST_SERVERS_BEGIN = "LIST_SERVERS_BEGIN";
@@ -34,10 +35,10 @@ export function listServersAsync() {
         payload: response,
       });
     } catch (error) {
-      console.error("listServersAsync: ", error);
+      console.error(`listServersAsync: ${toErrorString(error)}`);
       dispatch({
         type: LIST_SERVERS_ERROR,
-        error: "Could not retrieve servers info",
+        error: error.response.data,
       });
     }
   };

@@ -51,7 +51,6 @@ function schedulerEntriesReducer(
         data: action.payload.entries,
       };
     case LIST_SCHEDULER_ENTRIES_ERROR:
-      // TODO: set error state
       return {
         ...state,
         loading: false,

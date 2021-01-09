@@ -8,11 +8,13 @@ import { ServerInfo } from "../api";
 
 interface ServersState {
   loading: boolean;
+  error: string;
   data: ServerInfo[];
 }
 
 const initialState: ServersState = {
   loading: false,
+  error: "",
   data: [],
 };
 
@@ -30,12 +32,14 @@ export default function serversReducer(
     case LIST_SERVERS_SUCCESS:
       return {
         loading: false,
+        error: "",
         data: action.payload.servers,
       };
 
     case LIST_SERVERS_ERROR:
       return {
         ...state,
+        error: action.error,
         loading: false,
       };
 

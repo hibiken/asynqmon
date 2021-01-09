@@ -1,3 +1,4 @@
+import { Dispatch } from "redux";
 import {
   deleteQueue,
   listQueues,
@@ -5,11 +6,12 @@ import {
   pauseQueue,
   resumeQueue,
 } from "../api";
-import { Dispatch } from "redux";
+import { toErrorString } from "../utils";
 
 // List of queue related action types.
 export const LIST_QUEUES_BEGIN = "LIST_QUEUES_BEGIN";
 export const LIST_QUEUES_SUCCESS = "LIST_QUEUES_SUCCESS";
+export const LIST_QUEUES_ERROR = "LIST_QUEUES_ERROR";
 export const DELETE_QUEUE_BEGIN = "DELETE_QUEUE_BEGIN";
 export const DELETE_QUEUE_SUCCESS = "DELETE_QUEUE_SUCCESS";
 export const DELETE_QUEUE_ERROR = "DELETE_QUEUE_ERROR";
@@ -27,6 +29,11 @@ interface ListQueuesBeginAction {
 interface ListQueuesSuccessAction {
   type: typeof LIST_QUEUES_SUCCESS;
   payload: ListQueuesResponse;
+}
+
+interface ListQueuesErrorAction {
+  type: typeof LIST_QUEUES_ERROR;
+  error: string;
 }
 
 interface DeleteQueueBeginAction {
@@ -81,6 +88,7 @@ interface ResumeQueueErrorAction {
 export type QueuesActionTypes =
   | ListQueuesBeginAction
   | ListQueuesSuccessAction
+  | ListQueuesErrorAction
   | DeleteQueueBeginAction
   | DeleteQueueSuccessAction
   | DeleteQueueErrorAction
@@ -94,12 +102,19 @@ export type QueuesActionTypes =
 export function listQueuesAsync() {
   return async (dispatch: Dispatch<QueuesActionTypes>) => {
     dispatch({ type: LIST_QUEUES_BEGIN });
-    // TODO: try/catch and dispatch error action on failure
-    const response = await listQueues();
-    dispatch({
-      type: LIST_QUEUES_SUCCESS,
-      payload: response,
-    });
+    try {
+      const response = await listQueues();
+      dispatch({
+        type: LIST_QUEUES_SUCCESS,
+        payload: response,
+      });
+    } catch (error) {
+      console.error(`listQueuesAsync: ${toErrorString(error)}`);
+      dispatch({
+        type: LIST_QUEUES_ERROR,
+        error: error.response.data,
+      });
+    }
   };
 }
 

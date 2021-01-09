@@ -6,6 +6,8 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import SchedulerEntriesTable from "../components/SchedulerEntriesTable";
 import Typography from "@material-ui/core/Typography";
+import Alert from "@material-ui/lab/Alert";
+import AlertTitle from "@material-ui/lab/AlertTitle";
 import { AppState } from "../store";
 import { listSchedulerEntriesAsync } from "../actions/schedulerEntriesActions";
 import { usePolling } from "../hooks";
@@ -30,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
 function mapStateToProps(state: AppState) {
   return {
     loading: state.schedulerEntries.loading,
+    error: state.schedulerEntries.error,
     entries: state.schedulerEntries.data,
     pollInterval: state.settings.pollInterval,
   };
@@ -48,14 +51,24 @@ function SchedulersView(props: Props) {
   return (
     <Container maxWidth="lg" className={classes.container}>
       <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper className={classes.paper} variant="outlined">
-            <Typography variant="h6" className={classes.heading}>
-              Scheduler Entries
-            </Typography>
-            <SchedulerEntriesTable entries={props.entries} />
-          </Paper>
-        </Grid>
+        {props.error === "" ? (
+          <Grid item xs={12}>
+            <Paper className={classes.paper} variant="outlined">
+              <Typography variant="h6" className={classes.heading}>
+                Scheduler Entries
+              </Typography>
+              <SchedulerEntriesTable entries={props.entries} />
+            </Paper>
+          </Grid>
+        ) : (
+          <Grid item xs={12}>
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              Could not retreive scheduler entries live data —{" "}
+              <strong>See the logs for details</strong>
+            </Alert>
+          </Grid>
+        )}
       </Grid>
     </Container>
   );
