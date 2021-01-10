@@ -11,6 +11,7 @@ import TableRow from "@material-ui/core/TableRow";
 import TableFooter from "@material-ui/core/TableFooter";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
 import PauseCircleFilledIcon from "@material-ui/icons/PauseCircleFilled";
 import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -258,25 +259,31 @@ export default function QueuesOverviewTable(props: Props) {
                     {activeRowIndex === i ? (
                       <React.Fragment>
                         {q.paused ? (
-                          <IconButton
-                            color="secondary"
-                            onClick={() => props.onResumeClick(q.queue)}
-                            disabled={q.requestPending}
-                          >
-                            <PlayCircleFilledIcon />
-                          </IconButton>
+                          <Tooltip title="Resume">
+                            <IconButton
+                              color="secondary"
+                              onClick={() => props.onResumeClick(q.queue)}
+                              disabled={q.requestPending}
+                            >
+                              <PlayCircleFilledIcon />
+                            </IconButton>
+                          </Tooltip>
                         ) : (
-                          <IconButton
-                            color="primary"
-                            onClick={() => props.onPauseClick(q.queue)}
-                            disabled={q.requestPending}
-                          >
-                            <PauseCircleFilledIcon />
-                          </IconButton>
+                          <Tooltip title="Pause">
+                            <IconButton
+                              color="primary"
+                              onClick={() => props.onPauseClick(q.queue)}
+                              disabled={q.requestPending}
+                            >
+                              <PauseCircleFilledIcon />
+                            </IconButton>
+                          </Tooltip>
                         )}
-                        <IconButton onClick={() => setQueueToDelete(q)}>
-                          <DeleteIcon />
-                        </IconButton>
+                        <Tooltip title="Delete">
+                          <IconButton onClick={() => setQueueToDelete(q)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
                       </React.Fragment>
                     ) : (
                       <IconButton>

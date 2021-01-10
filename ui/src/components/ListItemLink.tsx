@@ -3,6 +3,7 @@ import clsx from "clsx";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
+import Tooltip from "@material-ui/core/Tooltip";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   useRouteMatch,
@@ -52,23 +53,25 @@ function ListItemLink(props: Props): ReactElement {
   );
   return (
     <li>
-      <ListItem
-        button
-        component={renderLink}
-        className={clsx(classes.listItem, isMatch && classes.selected)}
-      >
-        {icon && (
-          <ListItemIcon className={clsx(isMatch && classes.selectedIcon)}>
-            {icon}
-          </ListItemIcon>
-        )}
-        <ListItemText
-          primary={primary}
-          classes={{
-            primary: isMatch ? classes.selectedText : undefined,
-          }}
-        />
-      </ListItem>
+      <Tooltip title={primary} placement="right">
+        <ListItem
+          button
+          component={renderLink}
+          className={clsx(classes.listItem, isMatch && classes.selected)}
+        >
+          {icon && (
+            <ListItemIcon className={clsx(isMatch && classes.selectedIcon)}>
+              {icon}
+            </ListItemIcon>
+          )}
+          <ListItemText
+            primary={primary}
+            classes={{
+              primary: isMatch ? classes.selectedText : undefined,
+            }}
+          />
+        </ListItem>
+      </Tooltip>
     </li>
   );
 }

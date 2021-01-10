@@ -251,7 +251,7 @@ function App(props: ConnectedProps<typeof connector>) {
                   <ListItemIcon>
                     <FeedbackIcon />
                   </ListItemIcon>
-                  <ListItemText primary="Report Issues" />
+                  <ListItemText primary="Send Feedback" />
                 </ListItem>
               </List>
             </div>
