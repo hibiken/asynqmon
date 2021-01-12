@@ -5,8 +5,14 @@ import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import Slider from "@material-ui/core/Slider/Slider";
-import { pollIntervalChange } from "../actions/settingsActions";
+import Switch from "@material-ui/core/Switch";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormGroup from "@material-ui/core/FormGroup";
+import Slider from "@material-ui/core/Slider";
+import {
+  pollIntervalChange,
+  toggleDarkTheme,
+} from "../actions/settingsActions";
 import { AppState } from "../store";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,10 +31,11 @@ const useStyles = makeStyles((theme) => ({
 function mapStateToProps(state: AppState) {
   return {
     pollInterval: state.settings.pollInterval,
+    isDarkTheme: state.settings.isDarkTheme,
   };
 }
 
-const mapDispatchToProps = { pollIntervalChange };
+const mapDispatchToProps = { pollIntervalChange, toggleDarkTheme };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -46,6 +53,9 @@ function SettingsView(props: PropsFromRedux) {
     props.pollIntervalChange(val as number);
   };
 
+  const handleThemeChange = (event: React.ChangeEvent<HTMLElement>) => {
+    props.toggleDarkTheme();
+  };
   return (
     <Container maxWidth="lg" className={classes.container}>
       <Grid container spacing={3}>
@@ -73,6 +83,23 @@ function SettingsView(props: PropsFromRedux) {
               min={2}
               max={20}
             />
+          </Paper>
+        </Grid>
+        <Grid item xs={5}>
+          <Paper>
+            <Typography color="textPrimary">theme switch</Typography>
+            <FormGroup row>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={props.isDarkTheme}
+                    onChange={handleThemeChange}
+                    name="DarkTheme"
+                  />
+                }
+                label="🌛"
+              />
+            </FormGroup>
           </Paper>
         </Grid>
       </Grid>

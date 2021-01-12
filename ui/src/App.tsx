@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import clsx from "clsx";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, ThemeProvider } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Drawer from "@material-ui/core/Drawer";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -26,6 +26,7 @@ import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 import CloseIcon from "@material-ui/icons/Close";
 import { AppState } from "./store";
 import { paths } from "./paths";
+import { makeTheme } from "./theme";
 import { closeSnackbar } from "./actions/snackbarActions";
 import ListItemLink from "./components/ListItemLink";
 import SchedulersView from "./views/SchedulersView";
@@ -125,7 +126,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function mapStateToProps(state: AppState) {
-  return { snackbar: state.snackbar };
+  return {
+    snackbar: state.snackbar,
+    isDarkTheme: state.settings.isDarkTheme,
+  };
 }
 
 const mapDispatchToProps = {
@@ -141,151 +145,152 @@ function SlideUpTransition(props: TransitionProps) {
 function App(props: ConnectedProps<typeof connector>) {
   const classes = useStyles();
   const [open, setOpen] = useState(true);
-  const toggleDrawer = () => {
-    setOpen(!open);
-  };
+  const toggleDrawer = () => setOpen(!open);
+  const theme = makeTheme(props.isDarkTheme);
   return (
-    <Router>
-      <div className={classes.root}>
-        <AppBar
-          position="absolute"
-          className={classes.appBar}
-          variant="outlined"
-        >
-          <Toolbar className={classes.toolbar}>
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleDrawer}
-              className={classes.menuButton}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography
-              component="h1"
-              variant="h6"
-              color="inherit"
-              noWrap
-              className={classes.title}
-            >
-              Asynq Monitoring
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <div className={classes.mainContainer}>
-          <Drawer
-            variant="permanent"
-            classes={{
-              paper: clsx(
-                classes.drawerPaper,
-                !open && classes.drawerPaperClose
-              ),
-            }}
-            open={open}
+    <ThemeProvider theme={theme}>
+      <Router>
+        <div className={classes.root}>
+          <AppBar
+            position="absolute"
+            className={classes.appBar}
+            variant="outlined"
           >
-            <Snackbar
-              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-              open={props.snackbar.isOpen}
-              autoHideDuration={6000}
-              onClose={props.closeSnackbar}
-              TransitionComponent={SlideUpTransition}
+            <Toolbar className={classes.toolbar}>
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="open drawer"
+                onClick={toggleDrawer}
+                className={classes.menuButton}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography
+                component="h1"
+                variant="h6"
+                color="inherit"
+                noWrap
+                className={classes.title}
+              >
+                Asynq Monitoring
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <div className={classes.mainContainer}>
+            <Drawer
+              variant="permanent"
+              classes={{
+                paper: clsx(
+                  classes.drawerPaper,
+                  !open && classes.drawerPaperClose
+                ),
+              }}
+              open={open}
             >
-              <SnackbarContent
-                message={props.snackbar.message}
-                className={classes.snackbar}
-                action={
-                  <IconButton
-                    size="small"
-                    aria-label="close"
-                    color="inherit"
-                    onClick={props.closeSnackbar}
-                  >
-                    <CloseIcon
-                      className={classes.snackbarCloseIcon}
-                      fontSize="small"
-                    />
-                  </IconButton>
-                }
-              />
-            </Snackbar>
-            <div className={classes.appBarSpacer} />
-            <div className={classes.sidebarContainer}>
-              <List>
-                <div>
-                  <ListItemLink
-                    to={paths.HOME}
-                    primary="Queues"
-                    icon={<BarChartIcon />}
-                  />
-                  <ListItemLink
-                    to={paths.SERVERS}
-                    primary="Servers"
-                    icon={<DoubleArrowIcon />}
-                  />
-                  <ListItemLink
-                    to={paths.SCHEDULERS}
-                    primary="Schedulers"
-                    icon={<ScheduleIcon />}
-                  />
-                  <ListItemLink
-                    to={paths.REDIS}
-                    primary="Redis"
-                    icon={<LayersIcon />}
-                  />
-                </div>
-              </List>
-              <List>
-                <ListItemLink
-                  to={paths.SETTINGS}
-                  primary="Settings"
-                  icon={<SettingsIcon />}
+              <Snackbar
+                anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                open={props.snackbar.isOpen}
+                autoHideDuration={6000}
+                onClose={props.closeSnackbar}
+                TransitionComponent={SlideUpTransition}
+              >
+                <SnackbarContent
+                  message={props.snackbar.message}
+                  className={classes.snackbar}
+                  action={
+                    <IconButton
+                      size="small"
+                      aria-label="close"
+                      color="inherit"
+                      onClick={props.closeSnackbar}
+                    >
+                      <CloseIcon
+                        className={classes.snackbarCloseIcon}
+                        fontSize="small"
+                      />
+                    </IconButton>
+                  }
                 />
-                <ListItem
-                  button
-                  component="a"
-                  className={classes.listItem}
-                  href="https://github.com/hibiken/asynqmon/issues"
-                  target="_blank"
-                >
-                  <ListItemIcon>
-                    <FeedbackIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Send Feedback" />
-                </ListItem>
-              </List>
-            </div>
-          </Drawer>
-          <main className={classes.content}>
-            <div className={classes.contentWrapper}>
-              <Switch>
-                <Route exact path={paths.QUEUE_DETAILS}>
-                  <TasksView />
-                </Route>
-                <Route exact path={paths.SCHEDULERS}>
-                  <SchedulersView />
-                </Route>
-                <Route exact path={paths.SERVERS}>
-                  <ServersView />
-                </Route>
-                <Route exact path={paths.REDIS}>
-                  <RedisInfoView />
-                </Route>
-                <Route exact path={paths.SETTINGS}>
-                  <SettingsView />
-                </Route>
-                <Route exact path={paths.HOME}>
-                  <DashboardView />
-                </Route>
-                <Route path="*">
-                  <PageNotFoundView />
-                </Route>
-              </Switch>
-            </div>
-          </main>
+              </Snackbar>
+              <div className={classes.appBarSpacer} />
+              <div className={classes.sidebarContainer}>
+                <List>
+                  <div>
+                    <ListItemLink
+                      to={paths.HOME}
+                      primary="Queues"
+                      icon={<BarChartIcon />}
+                    />
+                    <ListItemLink
+                      to={paths.SERVERS}
+                      primary="Servers"
+                      icon={<DoubleArrowIcon />}
+                    />
+                    <ListItemLink
+                      to={paths.SCHEDULERS}
+                      primary="Schedulers"
+                      icon={<ScheduleIcon />}
+                    />
+                    <ListItemLink
+                      to={paths.REDIS}
+                      primary="Redis"
+                      icon={<LayersIcon />}
+                    />
+                  </div>
+                </List>
+                <List>
+                  <ListItemLink
+                    to={paths.SETTINGS}
+                    primary="Settings"
+                    icon={<SettingsIcon />}
+                  />
+                  <ListItem
+                    button
+                    component="a"
+                    className={classes.listItem}
+                    href="https://github.com/hibiken/asynqmon/issues"
+                    target="_blank"
+                  >
+                    <ListItemIcon>
+                      <FeedbackIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Send Feedback" />
+                  </ListItem>
+                </List>
+              </div>
+            </Drawer>
+            <main className={classes.content}>
+              <div className={classes.contentWrapper}>
+                <Switch>
+                  <Route exact path={paths.QUEUE_DETAILS}>
+                    <TasksView />
+                  </Route>
+                  <Route exact path={paths.SCHEDULERS}>
+                    <SchedulersView />
+                  </Route>
+                  <Route exact path={paths.SERVERS}>
+                    <ServersView />
+                  </Route>
+                  <Route exact path={paths.REDIS}>
+                    <RedisInfoView />
+                  </Route>
+                  <Route exact path={paths.SETTINGS}>
+                    <SettingsView />
+                  </Route>
+                  <Route exact path={paths.HOME}>
+                    <DashboardView />
+                  </Route>
+                  <Route path="*">
+                    <PageNotFoundView />
+                  </Route>
+                </Switch>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 

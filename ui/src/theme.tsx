@@ -1,18 +1,19 @@
-import { createMuiTheme } from "@material-ui/core/styles";
+import { createMuiTheme, Theme } from "@material-ui/core/styles";
 
-// Got color palette from https://htmlcolors.com/palette/31/stripe
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#4379FF",
+export function makeTheme(isDarkTheme: boolean): Theme {
+  return createMuiTheme({
+    // Got color palette from https://htmlcolors.com/palette/31/stripe
+    palette: {
+      primary: {
+        main: "#4379FF",
+      },
+      secondary: {
+        main: "#97FBD1",
+      },
+      background: {
+        default: "#f5f7f9",
+      },
+      type: isDarkTheme ? "dark" : "light",
     },
-    secondary: {
-      main: "#97FBD1",
-    },
-    background: {
-      default: "#f5f7f9",
-    },
-  },
-});
-
-export default theme;
+  });
+}
