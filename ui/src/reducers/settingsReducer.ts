@@ -1,23 +1,24 @@
-import {
-  POLL_INTERVAL_CHANGE,
-  SettingsActionTypes,
-} from "../actions/settingsActions";
+import {POLL_INTERVAL_CHANGE, SettingsActionTypes, TOGGLE_DARK_THEME,} from '../actions/settingsActions';
 
 interface SettingsState {
   pollInterval: number;
+  isDarkTheme: boolean;
 }
 
 const initialState: SettingsState = {
   pollInterval: 8,
+  isDarkTheme: false,
 };
 
 function settingsReducer(
-  state = initialState,
-  action: SettingsActionTypes
-): SettingsState {
+    state = initialState, action: SettingsActionTypes): SettingsState {
   switch (action.type) {
     case POLL_INTERVAL_CHANGE:
-      return { ...state, pollInterval: action.value };
+      return {...state, pollInterval: action.value};
+    case TOGGLE_DARK_THEME:
+      return {
+        ...state, isDarkTheme: !state.isDarkTheme
+      }
     default:
       return state;
   }
