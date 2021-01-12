@@ -30,14 +30,14 @@ import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/
 import {
   batchDeleteScheduledTasksAsync,
   batchRunScheduledTasksAsync,
-  batchKillScheduledTasksAsync,
+  batchArchiveScheduledTasksAsync,
   deleteAllScheduledTasksAsync,
   runAllScheduledTasksAsync,
-  killAllScheduledTasksAsync,
+  archiveAllScheduledTasksAsync,
   listScheduledTasksAsync,
   deleteScheduledTaskAsync,
   runScheduledTaskAsync,
-  killScheduledTaskAsync,
+  archiveScheduledTaskAsync,
 } from "../actions/tasksActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
@@ -70,13 +70,13 @@ const mapDispatchToProps = {
   listScheduledTasksAsync,
   batchDeleteScheduledTasksAsync,
   batchRunScheduledTasksAsync,
-  batchKillScheduledTasksAsync,
+  batchArchiveScheduledTasksAsync,
   deleteAllScheduledTasksAsync,
   runAllScheduledTasksAsync,
-  killAllScheduledTasksAsync,
+  archiveAllScheduledTasksAsync,
   deleteScheduledTaskAsync,
   runScheduledTaskAsync,
-  killScheduledTaskAsync,
+  archiveScheduledTaskAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -127,8 +127,8 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
     props.deleteAllScheduledTasksAsync(queue);
   };
 
-  const handleKillAllClick = () => {
-    props.killAllScheduledTasksAsync(queue);
+  const handleArchiveAllClick = () => {
+    props.archiveAllScheduledTasksAsync(queue);
   };
 
   const handleBatchRunClick = () => {
@@ -143,9 +143,9 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
       .then(() => setSelectedKeys([]));
   };
 
-  const handleBatchKillClick = () => {
+  const handleBatchArchiveClick = () => {
     props
-      .batchKillScheduledTasksAsync(queue, selectedKeys)
+      .batchArchiveScheduledTasksAsync(queue, selectedKeys)
       .then(() => setSelectedKeys([]));
   };
 
@@ -187,9 +187,9 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
             disabled: props.batchActionPending,
           },
           {
-            tooltip: "Kill",
+            tooltip: "Archive",
             icon: <ArchiveIcon />,
-            onClick: handleBatchKillClick,
+            onClick: handleBatchArchiveClick,
             disabled: props.batchActionPending,
           },
           {
@@ -206,8 +206,8 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
             disabled: props.allActionPending,
           },
           {
-            label: "Kill All",
-            onClick: handleKillAllClick,
+            label: "Archive All",
+            onClick: handleArchiveAllClick,
             disabled: props.allActionPending,
           },
           {
@@ -265,8 +265,8 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
                 onDeleteClick={() => {
                   props.deleteScheduledTaskAsync(queue, task.key);
                 }}
-                onKillClick={() => {
-                  props.killScheduledTaskAsync(queue, task.key);
+                onArchiveClick={() => {
+                  props.archiveScheduledTaskAsync(queue, task.key);
                 }}
                 onActionCellEnter={() => setActiveTaskId(task.id)}
                 onActionCellLeave={() => setActiveTaskId("")}
@@ -319,7 +319,7 @@ interface RowProps {
   onSelectChange: (checked: boolean) => void;
   onRunClick: () => void;
   onDeleteClick: () => void;
-  onKillClick: () => void;
+  onArchiveClick: () => void;
   allActionPending: boolean;
   showActions: boolean;
   onActionCellEnter: () => void;
@@ -381,9 +381,9 @@ function Row(props: RowProps) {
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Kill">
+              <Tooltip title="Archive">
                 <IconButton
-                  onClick={props.onKillClick}
+                  onClick={props.onArchiveClick}
                   disabled={task.requestPending || props.allActionPending}
                   size="small"
                 >

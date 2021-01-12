@@ -4,29 +4,29 @@ import {
 } from "../actions/snackbarActions";
 import {
   BATCH_CANCEL_ACTIVE_TASKS_SUCCESS,
-  BATCH_DELETE_DEAD_TASKS_SUCCESS,
+  BATCH_DELETE_ARCHIVED_TASKS_SUCCESS,
   BATCH_DELETE_RETRY_TASKS_SUCCESS,
   BATCH_DELETE_SCHEDULED_TASKS_SUCCESS,
-  BATCH_KILL_RETRY_TASKS_SUCCESS,
-  BATCH_KILL_SCHEDULED_TASKS_SUCCESS,
-  BATCH_RUN_DEAD_TASKS_SUCCESS,
+  BATCH_ARCHIVE_RETRY_TASKS_SUCCESS,
+  BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS,
+  BATCH_RUN_ARCHIVED_TASKS_SUCCESS,
   BATCH_RUN_RETRY_TASKS_SUCCESS,
   BATCH_RUN_SCHEDULED_TASKS_SUCCESS,
   CANCEL_ALL_ACTIVE_TASKS_SUCCESS,
-  DELETE_ALL_DEAD_TASKS_SUCCESS,
+  DELETE_ALL_ARCHIVED_TASKS_SUCCESS,
   DELETE_ALL_RETRY_TASKS_SUCCESS,
   DELETE_ALL_SCHEDULED_TASKS_SUCCESS,
-  DELETE_DEAD_TASK_SUCCESS,
+  DELETE_ARCHIVED_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
-  KILL_ALL_RETRY_TASKS_SUCCESS,
-  KILL_ALL_SCHEDULED_TASKS_SUCCESS,
-  KILL_RETRY_TASK_SUCCESS,
-  KILL_SCHEDULED_TASK_SUCCESS,
-  RUN_ALL_DEAD_TASKS_SUCCESS,
+  ARCHIVE_ALL_RETRY_TASKS_SUCCESS,
+  ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS,
+  ARCHIVE_RETRY_TASK_SUCCESS,
+  ARCHIVE_SCHEDULED_TASK_SUCCESS,
+  RUN_ALL_ARCHIVED_TASKS_SUCCESS,
   RUN_ALL_RETRY_TASKS_SUCCESS,
   RUN_ALL_SCHEDULED_TASKS_SUCCESS,
-  RUN_DEAD_TASK_SUCCESS,
+  RUN_ARCHIVED_TASK_SUCCESS,
   RUN_RETRY_TASK_SUCCESS,
   RUN_SCHEDULED_TASK_SUCCESS,
   TasksActionTypes,
@@ -83,22 +83,22 @@ function snackbarReducer(
         message: `Retry task is now pending`,
       };
 
-    case RUN_DEAD_TASK_SUCCESS:
+    case RUN_ARCHIVED_TASK_SUCCESS:
       return {
         isOpen: true,
-        message: `Dead task is now pending`,
+        message: `Archived task is now pending`,
       };
 
-    case KILL_SCHEDULED_TASK_SUCCESS:
+    case ARCHIVE_SCHEDULED_TASK_SUCCESS:
       return {
         isOpen: true,
-        message: `Scheduled task is now dead`,
+        message: `Scheduled task is now archived`,
       };
 
-    case KILL_RETRY_TASK_SUCCESS:
+    case ARCHIVE_RETRY_TASK_SUCCESS:
       return {
         isOpen: true,
-        message: `Retry task is now dead`,
+        message: `Retry task is now archived`,
       };
 
     case DELETE_SCHEDULED_TASK_SUCCESS:
@@ -117,11 +117,13 @@ function snackbarReducer(
       };
     }
 
-    case BATCH_KILL_SCHEDULED_TASKS_SUCCESS: {
-      const n = action.payload.dead_keys.length;
+    case BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS: {
+      const n = action.payload.archived_keys.length;
       return {
         isOpen: true,
-        message: `${n} scheduled ${n === 1 ? "task is" : "tasks are"} now dead`,
+        message: `${n} scheduled ${
+          n === 1 ? "task is" : "tasks are"
+        } now archived`,
       };
     }
 
@@ -139,10 +141,10 @@ function snackbarReducer(
         message: "All scheduled tasks are now pending",
       };
 
-    case KILL_ALL_SCHEDULED_TASKS_SUCCESS:
+    case ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS:
       return {
         isOpen: true,
-        message: "All scheduled tasks are now dead",
+        message: "All scheduled tasks are now archived",
       };
 
     case DELETE_ALL_SCHEDULED_TASKS_SUCCESS:
@@ -165,11 +167,11 @@ function snackbarReducer(
       };
     }
 
-    case BATCH_KILL_RETRY_TASKS_SUCCESS: {
-      const n = action.payload.dead_keys.length;
+    case BATCH_ARCHIVE_RETRY_TASKS_SUCCESS: {
+      const n = action.payload.archived_keys.length;
       return {
         isOpen: true,
-        message: `${n} retry ${n === 1 ? "task is" : "tasks are"} now dead`,
+        message: `${n} retry ${n === 1 ? "task is" : "tasks are"} now archived`,
       };
     }
 
@@ -187,10 +189,10 @@ function snackbarReducer(
         message: "All retry tasks are now pending",
       };
 
-    case KILL_ALL_RETRY_TASKS_SUCCESS:
+    case ARCHIVE_ALL_RETRY_TASKS_SUCCESS:
       return {
         isOpen: true,
-        message: "All retry tasks are now dead",
+        message: "All retry tasks are now archived",
       };
 
     case DELETE_ALL_RETRY_TASKS_SUCCESS:
@@ -199,38 +201,40 @@ function snackbarReducer(
         message: "All retry tasks deleted",
       };
 
-    case DELETE_DEAD_TASK_SUCCESS:
+    case DELETE_ARCHIVED_TASK_SUCCESS:
       return {
         isOpen: true,
-        message: `Dead task deleted`,
+        message: `Archived task deleted`,
       };
 
-    case BATCH_RUN_DEAD_TASKS_SUCCESS: {
+    case BATCH_RUN_ARCHIVED_TASKS_SUCCESS: {
       const n = action.payload.pending_keys.length;
       return {
         isOpen: true,
-        message: `${n} dead ${n === 1 ? "task is" : "tasks are"} now pending`,
+        message: `${n} archived ${
+          n === 1 ? "task is" : "tasks are"
+        } now pending`,
       };
     }
 
-    case BATCH_DELETE_DEAD_TASKS_SUCCESS: {
+    case BATCH_DELETE_ARCHIVED_TASKS_SUCCESS: {
       const n = action.payload.deleted_keys.length;
       return {
         isOpen: true,
-        message: `${n} dead ${n === 1 ? "task" : "tasks"} deleted`,
+        message: `${n} archived ${n === 1 ? "task" : "tasks"} deleted`,
       };
     }
 
-    case RUN_ALL_DEAD_TASKS_SUCCESS:
+    case RUN_ALL_ARCHIVED_TASKS_SUCCESS:
       return {
         isOpen: true,
-        message: "All dead tasks are now pending",
+        message: "All archived tasks are now pending",
       };
 
-    case DELETE_ALL_DEAD_TASKS_SUCCESS:
+    case DELETE_ALL_ARCHIVED_TASKS_SUCCESS:
       return {
         isOpen: true,
-        message: "All dead tasks deleted",
+        message: "All archived tasks deleted",
       };
 
     default:

@@ -155,8 +155,8 @@ function DashboardView(props: Props) {
                         retried in the future
                       </div>
                       <div>
-                        <strong>Dead</strong>: number of tasks exhausted their
-                        retries
+                        <strong>Archived</strong>: number of tasks exhausted
+                        their retries
                       </div>
                     </div>
                   }

@@ -67,7 +67,7 @@ enum SortBy {
   Pending,
   Scheduled,
   Retry,
-  Dead,
+  Archived,
 
   None, // no sort support
 }
@@ -84,7 +84,12 @@ const colConfigs: SortableTableColumn<SortBy>[] = [
     align: "right",
   },
   { label: "Retry", key: "retry", sortBy: SortBy.Retry, align: "right" },
-  { label: "Dead", key: "dead", sortBy: SortBy.Dead, align: "right" },
+  {
+    label: "Archived",
+    key: "archived",
+    sortBy: SortBy.Archived,
+    align: "right",
+  },
   { label: "Actions", key: "actions", sortBy: SortBy.None, align: "center" },
 ];
 
@@ -148,9 +153,9 @@ export default function QueuesOverviewTable(props: Props) {
         if (q1.retry === q2.retry) return 0;
         isQ1Smaller = q1.retry < q2.retry;
         break;
-      case SortBy.Dead:
-        if (q1.dead === q2.dead) return 0;
-        isQ1Smaller = q1.dead < q2.dead;
+      case SortBy.Archived:
+        if (q1.archived === q2.archived) return 0;
+        isQ1Smaller = q1.archived < q2.archived;
         break;
       default:
         // eslint-disable-next-line no-throw-literal
@@ -248,10 +253,10 @@ export default function QueuesOverviewTable(props: Props) {
                 </TableCell>
                 <TableCell align="right">
                   <Link
-                    to={queueDetailsPath(q.queue, "dead")}
+                    to={queueDetailsPath(q.queue, "archived")}
                     className={classes.linkCell}
                   >
-                    {q.dead}
+                    {q.archived}
                   </Link>
                 </TableCell>
                 <TableCell align="center">
@@ -318,7 +323,7 @@ export default function QueuesOverviewTable(props: Props) {
                 {total.retry}
               </TableCell>
               <TableCell className={classes.footerCell} align="right">
-                {total.dead}
+                {total.archived}
               </TableCell>
             </TableRow>
           </TableFooter>
@@ -338,7 +343,7 @@ interface AggregateCounts {
   pending: number;
   scheduled: number;
   retry: number;
-  dead: number;
+  archived: number;
 }
 
 function getAggregateCounts(queues: Queue[]): AggregateCounts {
@@ -348,7 +353,7 @@ function getAggregateCounts(queues: Queue[]): AggregateCounts {
     pending: 0,
     scheduled: 0,
     retry: 0,
-    dead: 0,
+    archived: 0,
   };
   queues.forEach((q) => {
     total.size += q.size;
@@ -356,7 +361,7 @@ function getAggregateCounts(queues: Queue[]): AggregateCounts {
     total.pending += q.pending;
     total.scheduled += q.scheduled;
     total.retry += q.retry;
-    total.dead += q.dead;
+    total.archived += q.archived;
   });
   return total;
 }

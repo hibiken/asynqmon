@@ -22,7 +22,7 @@ type QueueStateSnapshot struct {
 	Pending   int `json:"pending"`
 	Scheduled int `json:"scheduled"`
 	Retry     int `json:"retry"`
-	Dead      int `json:"dead"`
+	Archived  int `json:"archived"`
 
 	// Total number of tasks processed during the given date.
 	// The number includes both succeeded and failed tasks.
@@ -45,7 +45,7 @@ func toQueueStateSnapshot(s *asynq.QueueStats) *QueueStateSnapshot {
 		Pending:   s.Pending,
 		Scheduled: s.Scheduled,
 		Retry:     s.Retry,
-		Dead:      s.Dead,
+		Archived:  s.Archived,
 		Processed: s.Processed,
 		Succeeded: s.Processed - s.Failed,
 		Failed:    s.Failed,
@@ -193,7 +193,7 @@ func toRetryTasks(in []*asynq.RetryTask) []*RetryTask {
 	return out
 }
 
-type DeadTask struct {
+type ArchivedTask struct {
 	*BaseTask
 	Key          string    `json:"key"`
 	MaxRetry     int       `json:"max_retry"`
@@ -202,14 +202,14 @@ type DeadTask struct {
 	LastFailedAt time.Time `json:"last_failed_at"`
 }
 
-func toDeadTask(t *asynq.DeadTask) *DeadTask {
+func toArchivedTask(t *asynq.ArchivedTask) *ArchivedTask {
 	base := &BaseTask{
 		ID:      t.ID,
 		Type:    t.Type,
 		Payload: t.Payload,
 		Queue:   t.Queue,
 	}
-	return &DeadTask{
+	return &ArchivedTask{
 		BaseTask:     base,
 		Key:          t.Key(),
 		MaxRetry:     t.MaxRetry,
@@ -219,10 +219,10 @@ func toDeadTask(t *asynq.DeadTask) *DeadTask {
 	}
 }
 
-func toDeadTasks(in []*asynq.DeadTask) []*DeadTask {
-	out := make([]*DeadTask, len(in))
+func toArchivedTasks(in []*asynq.ArchivedTask) []*ArchivedTask {
+	out := make([]*ArchivedTask, len(in))
 	for i, t := range in {
-		out[i] = toDeadTask(t)
+		out[i] = toArchivedTask(t)
 	}
 	return out
 }

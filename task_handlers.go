@@ -217,12 +217,12 @@ func newListRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newListDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		pageSize, pageNum := getPageOptions(r)
-		tasks, err := inspector.ListDeadTasks(
+		tasks, err := inspector.ListArchivedTasks(
 			qname, asynq.PageSize(pageSize), asynq.Page(pageNum))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -236,9 +236,9 @@ func newListDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 		payload := make(map[string]interface{})
 		if len(tasks) == 0 {
 			// avoid nil for the tasks field in json output.
-			payload["tasks"] = make([]*DeadTask, 0)
+			payload["tasks"] = make([]*ArchivedTask, 0)
 		} else {
-			payload["tasks"] = toDeadTasks(tasks)
+			payload["tasks"] = toArchivedTasks(tasks)
 		}
 		payload["stats"] = toQueueStateSnapshot(stats)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
@@ -282,7 +282,7 @@ func newRunTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newKillTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newArchiveTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname, key := vars["qname"], vars["task_key"]
@@ -290,7 +290,7 @@ func newKillTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			http.Error(w, "route parameters should not be empty", http.StatusBadRequest)
 			return
 		}
-		if err := inspector.KillTaskByKey(qname, key); err != nil {
+		if err := inspector.ArchiveTaskByKey(qname, key); err != nil {
 			// TODO: Handle task not found error and return 404
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -321,10 +321,10 @@ func newDeleteAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerF
 	}
 }
 
-func newDeleteAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newDeleteAllArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
-		if _, err := inspector.DeleteAllDeadTasks(qname); err != nil {
+		if _, err := inspector.DeleteAllArchivedTasks(qname); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -354,10 +354,10 @@ func newRunAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc
 	}
 }
 
-func newRunAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newRunAllArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
-		if _, err := inspector.RunAllDeadTasks(qname); err != nil {
+		if _, err := inspector.RunAllArchivedTasks(qname); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -365,10 +365,10 @@ func newRunAllDeadTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 	}
 }
 
-func newKillAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newArchiveAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
-		if _, err := inspector.KillAllScheduledTasks(qname); err != nil {
+		if _, err := inspector.ArchiveAllScheduledTasks(qname); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -376,10 +376,10 @@ func newKillAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.Handle
 	}
 }
 
-func newKillAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newArchiveAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
-		if _, err := inspector.KillAllRetryTasks(qname); err != nil {
+		if _, err := inspector.ArchiveAllRetryTasks(qname); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -485,41 +485,41 @@ func newBatchRunTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-type batchKillTasksRequest struct {
+type batchArchiveTasksRequest struct {
 	TaskKeys []string `json:"task_keys"`
 }
 
-type batchKillTasksResponse struct {
-	// task keys that were successfully moved to the dead state.
-	DeadKeys []string `json:"dead_keys"`
-	// task keys that were not able to move to the dead state.
+type batchArchiveTasksResponse struct {
+	// task keys that were successfully moved to the archived state.
+	ArchivedKeys []string `json:"archived_keys"`
+	// task keys that were not able to move to the archived state.
 	ErrorKeys []string `json:"error_keys"`
 }
 
-func newBatchKillTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newBatchArchiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
 
-		var req batchKillTasksRequest
+		var req batchArchiveTasksRequest
 		if err := dec.Decode(&req); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		qname := mux.Vars(r)["qname"]
-		resp := batchKillTasksResponse{
+		resp := batchArchiveTasksResponse{
 			// avoid null in the json response
-			DeadKeys:  make([]string, 0),
-			ErrorKeys: make([]string, 0),
+			ArchivedKeys: make([]string, 0),
+			ErrorKeys:    make([]string, 0),
 		}
 		for _, key := range req.TaskKeys {
-			if err := inspector.KillTaskByKey(qname, key); err != nil {
-				log.Printf("error: could not kill task with key %q: %v", key, err)
+			if err := inspector.ArchiveTaskByKey(qname, key); err != nil {
+				log.Printf("error: could not archive task with key %q: %v", key, err)
 				resp.ErrorKeys = append(resp.ErrorKeys, key)
 			} else {
-				resp.DeadKeys = append(resp.DeadKeys, key)
+				resp.ArchivedKeys = append(resp.ArchivedKeys, key)
 			}
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {

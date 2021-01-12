@@ -20,7 +20,7 @@ interface TaskBreakdown {
   pending: number; // number of pending tasks in the queue.
   scheduled: number; // number of scheduled tasks in the queue.
   retry: number; // number of retry tasks in the queue.
-  dead: number; // number of dead tasks in the queue.
+  archived: number; // number of archived tasks in the queue.
 }
 
 function QueueSizeChart(props: Props) {
@@ -36,7 +36,7 @@ function QueueSizeChart(props: Props) {
         <Bar dataKey="pending" stackId="a" fill="#669df6" />
         <Bar dataKey="scheduled" stackId="a" fill="#fdd663" />
         <Bar dataKey="retry" stackId="a" fill="#f666a9" />
-        <Bar dataKey="dead" stackId="a" fill="#ac4776" />
+        <Bar dataKey="archived" stackId="a" fill="#ac4776" />
       </BarChart>
     </ResponsiveContainer>
   );

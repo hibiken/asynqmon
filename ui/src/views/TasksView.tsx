@@ -29,7 +29,7 @@ interface RouteParams {
   qname: string;
 }
 
-const validStatus = ["active", "pending", "scheduled", "retry", "dead"];
+const validStatus = ["active", "pending", "scheduled", "retry", "archived"];
 const defaultStatus = "active";
 
 function TasksView() {

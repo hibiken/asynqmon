@@ -1,33 +1,33 @@
 import {
   batchCancelActiveTasks,
   BatchCancelTasksResponse,
-  batchDeleteDeadTasks,
+  batchDeleteArchivedTasks,
   batchDeleteRetryTasks,
   batchDeleteScheduledTasks,
   BatchDeleteTasksResponse,
-  batchKillRetryTasks,
-  batchKillScheduledTasks,
-  BatchKillTasksResponse,
-  batchRunDeadTasks,
+  batchArchiveRetryTasks,
+  batchArchiveScheduledTasks,
+  BatchArchiveTasksResponse,
+  batchRunArchivedTasks,
   batchRunRetryTasks,
   batchRunScheduledTasks,
   BatchRunTasksResponse,
   cancelActiveTask,
   cancelAllActiveTasks,
-  deleteAllDeadTasks,
+  deleteAllArchivedTasks,
   deleteAllRetryTasks,
   deleteAllScheduledTasks,
-  deleteDeadTask,
+  deleteArchivedTask,
   deleteRetryTask,
   deleteScheduledTask,
-  killAllRetryTasks,
-  killAllScheduledTasks,
-  killRetryTask,
-  killScheduledTask,
+  archiveAllRetryTasks,
+  archiveAllScheduledTasks,
+  archiveRetryTask,
+  archiveScheduledTask,
   listActiveTasks,
   ListActiveTasksResponse,
-  listDeadTasks,
-  ListDeadTasksResponse,
+  listArchivedTasks,
+  ListArchivedTasksResponse,
   listPendingTasks,
   ListPendingTasksResponse,
   listRetryTasks,
@@ -35,10 +35,10 @@ import {
   listScheduledTasks,
   ListScheduledTasksResponse,
   PaginationOptions,
-  runAllDeadTasks,
+  runAllArchivedTasks,
   runAllRetryTasks,
   runAllScheduledTasks,
-  runDeadTask,
+  runArchivedTask,
   runRetryTask,
   runScheduledTask,
 } from "../api";
@@ -57,9 +57,9 @@ export const LIST_SCHEDULED_TASKS_ERROR = "LIST_SCHEDULED_TASKS_ERROR";
 export const LIST_RETRY_TASKS_BEGIN = "LIST_RETRY_TASKS_BEGIN";
 export const LIST_RETRY_TASKS_SUCCESS = "LIST_RETRY_TASKS_SUCCESS";
 export const LIST_RETRY_TASKS_ERROR = "LIST_RETRY_TASKS_ERROR";
-export const LIST_DEAD_TASKS_BEGIN = "LIST_DEAD_TASKS_BEGIN";
-export const LIST_DEAD_TASKS_SUCCESS = "LIST_DEAD_TASKS_SUCCESS";
-export const LIST_DEAD_TASKS_ERROR = "LIST_DEAD_TASKS_ERROR";
+export const LIST_ARCHIVED_TASKS_BEGIN = "LIST_ARCHIVED_TASKS_BEGIN";
+export const LIST_ARCHIVED_TASKS_SUCCESS = "LIST_ARCHIVED_TASKS_SUCCESS";
+export const LIST_ARCHIVED_TASKS_ERROR = "LIST_ARCHIVED_TASKS_ERROR";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
@@ -73,35 +73,35 @@ export const BATCH_CANCEL_ACTIVE_TASKS_SUCCESS =
   "BATCH_CANCEL_ACTIVE_TASKS_SUCCESS";
 export const BATCH_CANCEL_ACTIVE_TASKS_ERROR =
   "BATCH_CANCEL_ACTIVE_TASKS_ERROR";
-export const RUN_SCHEDULED_TASK_BEGIN = "RUN_DEAD_TASK_BEGIN";
-export const RUN_SCHEDULED_TASK_SUCCESS = "RUN_DEAD_TASK_SUCCESS";
-export const RUN_SCHEDULED_TASK_ERROR = "RUN_DEAD_TASK_ERROR";
+export const RUN_SCHEDULED_TASK_BEGIN = "RUN_ARCHIVED_TASK_BEGIN";
+export const RUN_SCHEDULED_TASK_SUCCESS = "RUN_ARCHIVED_TASK_SUCCESS";
+export const RUN_SCHEDULED_TASK_ERROR = "RUN_ARCHIVED_TASK_ERROR";
 export const RUN_RETRY_TASK_BEGIN = "RUN_RETRY_TASK_BEGIN";
 export const RUN_RETRY_TASK_SUCCESS = "RUN_RETRY_TASK_SUCCESS";
 export const RUN_RETRY_TASK_ERROR = "RUN_RETRY_TASK_ERROR";
-export const RUN_DEAD_TASK_BEGIN = "RUN_DEAD_TASK_BEGIN";
-export const RUN_DEAD_TASK_SUCCESS = "RUN_DEAD_TASK_SUCCESS";
-export const RUN_DEAD_TASK_ERROR = "RUN_DEAD_TASK_ERROR";
+export const RUN_ARCHIVED_TASK_BEGIN = "RUN_ARCHIVED_TASK_BEGIN";
+export const RUN_ARCHIVED_TASK_SUCCESS = "RUN_ARCHIVED_TASK_SUCCESS";
+export const RUN_ARCHIVED_TASK_ERROR = "RUN_ARCHIVED_TASK_ERROR";
 export const DELETE_SCHEDULED_TASK_BEGIN = "DELETE_SCHEDULED_TASK_BEGIN";
 export const DELETE_SCHEDULED_TASK_SUCCESS = "DELETE_SCHEDULED_TASK_SUCCESS";
 export const DELETE_SCHEDULED_TASK_ERROR = "DELETE_SCHEDULED_TASK_ERROR";
-export const KILL_SCHEDULED_TASK_BEGIN = "KILL_DEAD_TASK_BEGIN";
-export const KILL_SCHEDULED_TASK_SUCCESS = "KILL_DEAD_TASK_SUCCESS";
-export const KILL_SCHEDULED_TASK_ERROR = "KILL_DEAD_TASK_ERROR";
-export const KILL_RETRY_TASK_BEGIN = "KILL_RETRY_TASK_BEGIN";
-export const KILL_RETRY_TASK_SUCCESS = "KILL_RETRY_TASK_SUCCESS";
-export const KILL_RETRY_TASK_ERROR = "KILL_RETRY_TASK_ERROR";
+export const ARCHIVE_SCHEDULED_TASK_BEGIN = "ARCHIVE_ARCHIVED_TASK_BEGIN";
+export const ARCHIVE_SCHEDULED_TASK_SUCCESS = "ARCHIVE_ARCHIVED_TASK_SUCCESS";
+export const ARCHIVE_SCHEDULED_TASK_ERROR = "ARCHIVE_ARCHIVED_TASK_ERROR";
+export const ARCHIVE_RETRY_TASK_BEGIN = "ARCHIVE_RETRY_TASK_BEGIN";
+export const ARCHIVE_RETRY_TASK_SUCCESS = "ARCHIVE_RETRY_TASK_SUCCESS";
+export const ARCHIVE_RETRY_TASK_ERROR = "ARCHIVE_RETRY_TASK_ERROR";
 export const BATCH_RUN_SCHEDULED_TASKS_BEGIN =
   "BATCH_RUN_SCHEDULED_TASKS_BEGIN";
 export const BATCH_RUN_SCHEDULED_TASKS_SUCCESS =
   "BATCH_RUN_SCHEDULED_TASKS_SUCCESS";
 export const BATCH_RUN_SCHEDULED_TASKS_ERROR =
   "BATCH_RUN_SCHEDULED_TASKS_ERROR";
-export const BATCH_KILL_SCHEDULED_TASKS_BEGIN =
-  "BATCH_KILL_SCHEDULED_TASKS_BEGIN";
-export const BATCH_KILL_SCHEDULED_TASKS_SUCCESS =
-  "BATCH_KILL_SCHEDULED_TASKS_SUCCESS";
-export const BATCH_KILL_SCHEDULED_TASKS_ERROR =
+export const BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN =
+  "BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN";
+export const BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS =
+  "BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS";
+export const BATCH_ARCHIVE_SCHEDULED_TASKS_ERROR =
   "BATCH_RUN_SCHEDULED_TASKS_ERROR";
 export const BATCH_DELETE_SCHEDULED_TASKS_BEGIN =
   "BATCH_DELETE_SCHEDULED_TASKS_BEGIN";
@@ -113,10 +113,12 @@ export const RUN_ALL_SCHEDULED_TASKS_BEGIN = "RUN_ALL_SCHEDULED_TASKS_BEGIN";
 export const RUN_ALL_SCHEDULED_TASKS_SUCCESS =
   "RUN_ALL_SCHEDULED_TASKS_SUCCESS";
 export const RUN_ALL_SCHEDULED_TASKS_ERROR = "RUN_ALL_SCHEDULED_TASKS_ERROR";
-export const KILL_ALL_SCHEDULED_TASKS_BEGIN = "KILL_ALL_SCHEDULED_TASKS_BEGIN";
-export const KILL_ALL_SCHEDULED_TASKS_SUCCESS =
-  "KILL_ALL_SCHEDULED_TASKS_SUCCESS";
-export const KILL_ALL_SCHEDULED_TASKS_ERROR = "KILL_ALL_SCHEDULED_TASKS_ERROR";
+export const ARCHIVE_ALL_SCHEDULED_TASKS_BEGIN =
+  "ARCHIVE_ALL_SCHEDULED_TASKS_BEGIN";
+export const ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS =
+  "ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS";
+export const ARCHIVE_ALL_SCHEDULED_TASKS_ERROR =
+  "ARCHIVE_ALL_SCHEDULED_TASKS_ERROR";
 export const DELETE_ALL_SCHEDULED_TASKS_BEGIN =
   "DELETE_ALL_SCHEDULED_TASKS_BEGIN";
 export const DELETE_ALL_SCHEDULED_TASKS_SUCCESS =
@@ -129,9 +131,12 @@ export const DELETE_RETRY_TASK_ERROR = "DELETE_RETRY_TASK_ERROR";
 export const BATCH_RUN_RETRY_TASKS_BEGIN = "BATCH_RUN_RETRY_TASKS_BEGIN";
 export const BATCH_RUN_RETRY_TASKS_SUCCESS = "BATCH_RUN_RETRY_TASKS_SUCCESS";
 export const BATCH_RUN_RETRY_TASKS_ERROR = "BATCH_RUN_RETRY_TASKS_ERROR";
-export const BATCH_KILL_RETRY_TASKS_BEGIN = "BATCH_KILL_RETRY_TASKS_BEGIN";
-export const BATCH_KILL_RETRY_TASKS_SUCCESS = "BATCH_KILL_RETRY_TASKS_SUCCESS";
-export const BATCH_KILL_RETRY_TASKS_ERROR = "BATCH_KILL_RETRY_TASKS_ERROR";
+export const BATCH_ARCHIVE_RETRY_TASKS_BEGIN =
+  "BATCH_ARCHIVE_RETRY_TASKS_BEGIN";
+export const BATCH_ARCHIVE_RETRY_TASKS_SUCCESS =
+  "BATCH_ARCHIVE_RETRY_TASKS_SUCCESS";
+export const BATCH_ARCHIVE_RETRY_TASKS_ERROR =
+  "BATCH_ARCHIVE_RETRY_TASKS_ERROR";
 export const BATCH_DELETE_RETRY_TASKS_BEGIN = "BATCH_DELETE_RETRY_TASKS_BEGIN";
 export const BATCH_DELETE_RETRY_TASKS_SUCCESS =
   "BATCH_DELETE_RETRY_TASKS_SUCCESS";
@@ -139,28 +144,35 @@ export const BATCH_DELETE_RETRY_TASKS_ERROR = "BATCH_DELETE_RETRY_TASKS_ERROR";
 export const RUN_ALL_RETRY_TASKS_BEGIN = "RUN_ALL_RETRY_TASKS_BEGIN";
 export const RUN_ALL_RETRY_TASKS_SUCCESS = "RUN_ALL_RETRY_TASKS_SUCCESS";
 export const RUN_ALL_RETRY_TASKS_ERROR = "RUN_ALL_RETRY_TASKS_ERROR";
-export const KILL_ALL_RETRY_TASKS_BEGIN = "KILL_ALL_RETRY_TASKS_BEGIN";
-export const KILL_ALL_RETRY_TASKS_SUCCESS = "KILL_ALL_RETRY_TASKS_SUCCESS";
-export const KILL_ALL_RETRY_TASKS_ERROR = "KILL_ALL_RETRY_TASKS_ERROR";
+export const ARCHIVE_ALL_RETRY_TASKS_BEGIN = "ARCHIVE_ALL_RETRY_TASKS_BEGIN";
+export const ARCHIVE_ALL_RETRY_TASKS_SUCCESS =
+  "ARCHIVE_ALL_RETRY_TASKS_SUCCESS";
+export const ARCHIVE_ALL_RETRY_TASKS_ERROR = "ARCHIVE_ALL_RETRY_TASKS_ERROR";
 export const DELETE_ALL_RETRY_TASKS_BEGIN = "DELETE_ALL_RETRY_TASKS_BEGIN";
 export const DELETE_ALL_RETRY_TASKS_SUCCESS = "DELETE_ALL_RETRY_TASKS_SUCCESS";
 export const DELETE_ALL_RETRY_TASKS_ERROR = "DELETE_ALL_RETRY_TASKS_ERROR";
-export const DELETE_DEAD_TASK_BEGIN = "DELETE_DEAD_TASK_BEGIN";
-export const DELETE_DEAD_TASK_SUCCESS = "DELETE_DEAD_TASK_SUCCESS";
-export const DELETE_DEAD_TASK_ERROR = "DELETE_DEAD_TASK_ERROR";
-export const BATCH_RUN_DEAD_TASKS_BEGIN = "BATCH_RUN_DEAD_TASKS_BEGIN";
-export const BATCH_RUN_DEAD_TASKS_SUCCESS = "BATCH_RUN_DEAD_TASKS_SUCCESS";
-export const BATCH_RUN_DEAD_TASKS_ERROR = "BATCH_RUN_DEAD_TASKS_ERROR";
-export const BATCH_DELETE_DEAD_TASKS_BEGIN = "BATCH_DELETE_DEAD_TASKS_BEGIN";
-export const BATCH_DELETE_DEAD_TASKS_SUCCESS =
-  "BATCH_DELETE_DEAD_TASKS_SUCCESS";
-export const BATCH_DELETE_DEAD_TASKS_ERROR = "BATCH_DELETE_DEAD_TASKS_ERROR";
-export const RUN_ALL_DEAD_TASKS_BEGIN = "RUN_ALL_DEAD_TASKS_BEGIN";
-export const RUN_ALL_DEAD_TASKS_SUCCESS = "RUN_ALL_DEAD_TASKS_SUCCESS";
-export const RUN_ALL_DEAD_TASKS_ERROR = "RUN_ALL_DEAD_TASKS_ERROR";
-export const DELETE_ALL_DEAD_TASKS_BEGIN = "DELETE_ALL_DEAD_TASKS_BEGIN";
-export const DELETE_ALL_DEAD_TASKS_SUCCESS = "DELETE_ALL_DEAD_TASKS_SUCCESS";
-export const DELETE_ALL_DEAD_TASKS_ERROR = "DELETE_ALL_DEAD_TASKS_ERROR";
+export const DELETE_ARCHIVED_TASK_BEGIN = "DELETE_ARCHIVED_TASK_BEGIN";
+export const DELETE_ARCHIVED_TASK_SUCCESS = "DELETE_ARCHIVED_TASK_SUCCESS";
+export const DELETE_ARCHIVED_TASK_ERROR = "DELETE_ARCHIVED_TASK_ERROR";
+export const BATCH_RUN_ARCHIVED_TASKS_BEGIN = "BATCH_RUN_ARCHIVED_TASKS_BEGIN";
+export const BATCH_RUN_ARCHIVED_TASKS_SUCCESS =
+  "BATCH_RUN_ARCHIVED_TASKS_SUCCESS";
+export const BATCH_RUN_ARCHIVED_TASKS_ERROR = "BATCH_RUN_ARCHIVED_TASKS_ERROR";
+export const BATCH_DELETE_ARCHIVED_TASKS_BEGIN =
+  "BATCH_DELETE_ARCHIVED_TASKS_BEGIN";
+export const BATCH_DELETE_ARCHIVED_TASKS_SUCCESS =
+  "BATCH_DELETE_ARCHIVED_TASKS_SUCCESS";
+export const BATCH_DELETE_ARCHIVED_TASKS_ERROR =
+  "BATCH_DELETE_ARCHIVED_TASKS_ERROR";
+export const RUN_ALL_ARCHIVED_TASKS_BEGIN = "RUN_ALL_ARCHIVED_TASKS_BEGIN";
+export const RUN_ALL_ARCHIVED_TASKS_SUCCESS = "RUN_ALL_ARCHIVED_TASKS_SUCCESS";
+export const RUN_ALL_ARCHIVED_TASKS_ERROR = "RUN_ALL_ARCHIVED_TASKS_ERROR";
+export const DELETE_ALL_ARCHIVED_TASKS_BEGIN =
+  "DELETE_ALL_ARCHIVED_TASKS_BEGIN";
+export const DELETE_ALL_ARCHIVED_TASKS_SUCCESS =
+  "DELETE_ALL_ARCHIVED_TASKS_SUCCESS";
+export const DELETE_ALL_ARCHIVED_TASKS_ERROR =
+  "DELETE_ALL_ARCHIVED_TASKS_ERROR";
 
 interface ListActiveTasksBeginAction {
   type: typeof LIST_ACTIVE_TASKS_BEGIN;
@@ -230,19 +242,19 @@ interface ListRetryTasksErrorAction {
   error: string; // error description
 }
 
-interface ListDeadTasksBeginAction {
-  type: typeof LIST_DEAD_TASKS_BEGIN;
+interface ListArchivedTasksBeginAction {
+  type: typeof LIST_ARCHIVED_TASKS_BEGIN;
   queue: string;
 }
 
-interface ListDeadTasksSuccessAction {
-  type: typeof LIST_DEAD_TASKS_SUCCESS;
+interface ListArchivedTasksSuccessAction {
+  type: typeof LIST_ARCHIVED_TASKS_SUCCESS;
   queue: string;
-  payload: ListDeadTasksResponse;
+  payload: ListArchivedTasksResponse;
 }
 
-interface ListDeadTasksErrorAction {
-  type: typeof LIST_DEAD_TASKS_ERROR;
+interface ListArchivedTasksErrorAction {
+  type: typeof LIST_ARCHIVED_TASKS_ERROR;
   queue: string;
   error: string; // error description
 }
@@ -320,20 +332,20 @@ interface RunScheduledTaskErrorAction {
   error: string;
 }
 
-interface KillScheduledTaskBeginAction {
-  type: typeof KILL_SCHEDULED_TASK_BEGIN;
+interface ArchiveScheduledTaskBeginAction {
+  type: typeof ARCHIVE_SCHEDULED_TASK_BEGIN;
   queue: string;
   taskKey: string;
 }
 
-interface KillScheduledTaskSuccessAction {
-  type: typeof KILL_SCHEDULED_TASK_SUCCESS;
+interface ArchiveScheduledTaskSuccessAction {
+  type: typeof ARCHIVE_SCHEDULED_TASK_SUCCESS;
   queue: string;
   taskKey: string;
 }
 
-interface KillScheduledTaskErrorAction {
-  type: typeof KILL_SCHEDULED_TASK_ERROR;
+interface ArchiveScheduledTaskErrorAction {
+  type: typeof ARCHIVE_SCHEDULED_TASK_ERROR;
   queue: string;
   taskKey: string;
   error: string;
@@ -358,39 +370,39 @@ interface RunRetryTaskErrorAction {
   error: string;
 }
 
-interface KillRetryTaskBeginAction {
-  type: typeof KILL_RETRY_TASK_BEGIN;
+interface ArchiveRetryTaskBeginAction {
+  type: typeof ARCHIVE_RETRY_TASK_BEGIN;
   queue: string;
   taskKey: string;
 }
 
-interface KillRetryTaskSuccessAction {
-  type: typeof KILL_RETRY_TASK_SUCCESS;
+interface ArchiveRetryTaskSuccessAction {
+  type: typeof ARCHIVE_RETRY_TASK_SUCCESS;
   queue: string;
   taskKey: string;
 }
 
-interface KillRetryTaskErrorAction {
-  type: typeof KILL_RETRY_TASK_ERROR;
+interface ArchiveRetryTaskErrorAction {
+  type: typeof ARCHIVE_RETRY_TASK_ERROR;
   queue: string;
   taskKey: string;
   error: string;
 }
 
-interface RunDeadTaskBeginAction {
-  type: typeof RUN_DEAD_TASK_BEGIN;
+interface RunArchivedTaskBeginAction {
+  type: typeof RUN_ARCHIVED_TASK_BEGIN;
   queue: string;
   taskKey: string;
 }
 
-interface RunDeadTaskSuccessAction {
-  type: typeof RUN_DEAD_TASK_SUCCESS;
+interface RunArchivedTaskSuccessAction {
+  type: typeof RUN_ARCHIVED_TASK_SUCCESS;
   queue: string;
   taskKey: string;
 }
 
-interface RunDeadTaskErrorAction {
-  type: typeof RUN_DEAD_TASK_ERROR;
+interface RunArchivedTaskErrorAction {
+  type: typeof RUN_ARCHIVED_TASK_ERROR;
   queue: string;
   taskKey: string;
   error: string;
@@ -469,37 +481,37 @@ interface RunAllScheduledTasksErrorAction {
   error: string;
 }
 
-interface BatchKillScheduledTasksBeginAction {
-  type: typeof BATCH_KILL_SCHEDULED_TASKS_BEGIN;
+interface BatchArchiveScheduledTasksBeginAction {
+  type: typeof BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN;
   queue: string;
   taskKeys: string[];
 }
 
-interface BatchKillScheduledTasksSuccessAction {
-  type: typeof BATCH_KILL_SCHEDULED_TASKS_SUCCESS;
+interface BatchArchiveScheduledTasksSuccessAction {
+  type: typeof BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS;
   queue: string;
-  payload: BatchKillTasksResponse;
+  payload: BatchArchiveTasksResponse;
 }
 
-interface BatchKillScheduledTasksErrorAction {
-  type: typeof BATCH_KILL_SCHEDULED_TASKS_ERROR;
+interface BatchArchiveScheduledTasksErrorAction {
+  type: typeof BATCH_ARCHIVE_SCHEDULED_TASKS_ERROR;
   queue: string;
   taskKeys: string[];
   error: string;
 }
 
-interface KillAllScheduledTasksBeginAction {
-  type: typeof KILL_ALL_SCHEDULED_TASKS_BEGIN;
+interface ArchiveAllScheduledTasksBeginAction {
+  type: typeof ARCHIVE_ALL_SCHEDULED_TASKS_BEGIN;
   queue: string;
 }
 
-interface KillAllScheduledTasksSuccessAction {
-  type: typeof KILL_ALL_SCHEDULED_TASKS_SUCCESS;
+interface ArchiveAllScheduledTasksSuccessAction {
+  type: typeof ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS;
   queue: string;
 }
 
-interface KillAllScheduledTasksErrorAction {
-  type: typeof KILL_ALL_SCHEDULED_TASKS_ERROR;
+interface ArchiveAllScheduledTasksErrorAction {
+  type: typeof ARCHIVE_ALL_SCHEDULED_TASKS_ERROR;
   queue: string;
   error: string;
 }
@@ -593,37 +605,37 @@ interface RunAllRetryTasksErrorAction {
   error: string;
 }
 
-interface BatchKillRetryTasksBeginAction {
-  type: typeof BATCH_KILL_RETRY_TASKS_BEGIN;
+interface BatchArchiveRetryTasksBeginAction {
+  type: typeof BATCH_ARCHIVE_RETRY_TASKS_BEGIN;
   queue: string;
   taskKeys: string[];
 }
 
-interface BatchKillRetryTasksSuccessAction {
-  type: typeof BATCH_KILL_RETRY_TASKS_SUCCESS;
+interface BatchArchiveRetryTasksSuccessAction {
+  type: typeof BATCH_ARCHIVE_RETRY_TASKS_SUCCESS;
   queue: string;
-  payload: BatchKillTasksResponse;
+  payload: BatchArchiveTasksResponse;
 }
 
-interface BatchKillRetryTasksErrorAction {
-  type: typeof BATCH_KILL_RETRY_TASKS_ERROR;
+interface BatchArchiveRetryTasksErrorAction {
+  type: typeof BATCH_ARCHIVE_RETRY_TASKS_ERROR;
   queue: string;
   taskKeys: string[];
   error: string;
 }
 
-interface KillAllRetryTasksBeginAction {
-  type: typeof KILL_ALL_RETRY_TASKS_BEGIN;
+interface ArchiveAllRetryTasksBeginAction {
+  type: typeof ARCHIVE_ALL_RETRY_TASKS_BEGIN;
   queue: string;
 }
 
-interface KillAllRetryTasksSuccessAction {
-  type: typeof KILL_ALL_RETRY_TASKS_SUCCESS;
+interface ArchiveAllRetryTasksSuccessAction {
+  type: typeof ARCHIVE_ALL_RETRY_TASKS_SUCCESS;
   queue: string;
 }
 
-interface KillAllRetryTasksErrorAction {
-  type: typeof KILL_ALL_RETRY_TASKS_ERROR;
+interface ArchiveAllRetryTasksErrorAction {
+  type: typeof ARCHIVE_ALL_RETRY_TASKS_ERROR;
   queue: string;
   error: string;
 }
@@ -644,91 +656,91 @@ interface DeleteAllRetryTasksErrorAction {
   error: string;
 }
 
-interface DeleteDeadTaskBeginAction {
-  type: typeof DELETE_DEAD_TASK_BEGIN;
+interface DeleteArchivedTaskBeginAction {
+  type: typeof DELETE_ARCHIVED_TASK_BEGIN;
   queue: string;
   taskKey: string;
 }
 
-interface DeleteDeadTaskSuccessAction {
-  type: typeof DELETE_DEAD_TASK_SUCCESS;
+interface DeleteArchivedTaskSuccessAction {
+  type: typeof DELETE_ARCHIVED_TASK_SUCCESS;
   queue: string;
   taskKey: string;
 }
 
-interface DeleteDeadTaskErrorAction {
-  type: typeof DELETE_DEAD_TASK_ERROR;
+interface DeleteArchivedTaskErrorAction {
+  type: typeof DELETE_ARCHIVED_TASK_ERROR;
   queue: string;
   taskKey: string;
   error: string;
 }
 
-interface BatchDeleteDeadTasksBeginAction {
-  type: typeof BATCH_DELETE_DEAD_TASKS_BEGIN;
+interface BatchDeleteArchivedTasksBeginAction {
+  type: typeof BATCH_DELETE_ARCHIVED_TASKS_BEGIN;
   queue: string;
   taskKeys: string[];
 }
 
-interface BatchDeleteDeadTasksSuccessAction {
-  type: typeof BATCH_DELETE_DEAD_TASKS_SUCCESS;
+interface BatchDeleteArchivedTasksSuccessAction {
+  type: typeof BATCH_DELETE_ARCHIVED_TASKS_SUCCESS;
   queue: string;
   payload: BatchDeleteTasksResponse;
 }
 
-interface BatchDeleteDeadTasksErrorAction {
-  type: typeof BATCH_DELETE_DEAD_TASKS_ERROR;
+interface BatchDeleteArchivedTasksErrorAction {
+  type: typeof BATCH_DELETE_ARCHIVED_TASKS_ERROR;
   queue: string;
   taskKeys: string[];
   error: string;
 }
 
-interface BatchRunDeadTasksBeginAction {
-  type: typeof BATCH_RUN_DEAD_TASKS_BEGIN;
+interface BatchRunArchivedTasksBeginAction {
+  type: typeof BATCH_RUN_ARCHIVED_TASKS_BEGIN;
   queue: string;
   taskKeys: string[];
 }
 
-interface BatchRunDeadTasksSuccessAction {
-  type: typeof BATCH_RUN_DEAD_TASKS_SUCCESS;
+interface BatchRunArchivedTasksSuccessAction {
+  type: typeof BATCH_RUN_ARCHIVED_TASKS_SUCCESS;
   queue: string;
   payload: BatchRunTasksResponse;
 }
 
-interface BatchRunDeadTasksErrorAction {
-  type: typeof BATCH_RUN_DEAD_TASKS_ERROR;
+interface BatchRunArchivedTasksErrorAction {
+  type: typeof BATCH_RUN_ARCHIVED_TASKS_ERROR;
   queue: string;
   taskKeys: string[];
   error: string;
 }
 
-interface RunAllDeadTasksBeginAction {
-  type: typeof RUN_ALL_DEAD_TASKS_BEGIN;
+interface RunAllArchivedTasksBeginAction {
+  type: typeof RUN_ALL_ARCHIVED_TASKS_BEGIN;
   queue: string;
 }
 
-interface RunAllDeadTasksSuccessAction {
-  type: typeof RUN_ALL_DEAD_TASKS_SUCCESS;
+interface RunAllArchivedTasksSuccessAction {
+  type: typeof RUN_ALL_ARCHIVED_TASKS_SUCCESS;
   queue: string;
 }
 
-interface RunAllDeadTasksErrorAction {
-  type: typeof RUN_ALL_DEAD_TASKS_ERROR;
+interface RunAllArchivedTasksErrorAction {
+  type: typeof RUN_ALL_ARCHIVED_TASKS_ERROR;
   queue: string;
   error: string;
 }
 
-interface DeleteAllDeadTasksBeginAction {
-  type: typeof DELETE_ALL_DEAD_TASKS_BEGIN;
+interface DeleteAllArchivedTasksBeginAction {
+  type: typeof DELETE_ALL_ARCHIVED_TASKS_BEGIN;
   queue: string;
 }
 
-interface DeleteAllDeadTasksSuccessAction {
-  type: typeof DELETE_ALL_DEAD_TASKS_SUCCESS;
+interface DeleteAllArchivedTasksSuccessAction {
+  type: typeof DELETE_ALL_ARCHIVED_TASKS_SUCCESS;
   queue: string;
 }
 
-interface DeleteAllDeadTasksErrorAction {
-  type: typeof DELETE_ALL_DEAD_TASKS_ERROR;
+interface DeleteAllArchivedTasksErrorAction {
+  type: typeof DELETE_ALL_ARCHIVED_TASKS_ERROR;
   queue: string;
   error: string;
 }
@@ -747,9 +759,9 @@ export type TasksActionTypes =
   | ListRetryTasksBeginAction
   | ListRetryTasksSuccessAction
   | ListRetryTasksErrorAction
-  | ListDeadTasksBeginAction
-  | ListDeadTasksSuccessAction
-  | ListDeadTasksErrorAction
+  | ListArchivedTasksBeginAction
+  | ListArchivedTasksSuccessAction
+  | ListArchivedTasksErrorAction
   | CancelActiveTaskBeginAction
   | CancelActiveTaskSuccessAction
   | CancelActiveTaskErrorAction
@@ -765,15 +777,15 @@ export type TasksActionTypes =
   | RunRetryTaskBeginAction
   | RunRetryTaskSuccessAction
   | RunRetryTaskErrorAction
-  | RunDeadTaskBeginAction
-  | RunDeadTaskSuccessAction
-  | RunDeadTaskErrorAction
-  | KillScheduledTaskBeginAction
-  | KillScheduledTaskSuccessAction
-  | KillScheduledTaskErrorAction
-  | KillRetryTaskBeginAction
-  | KillRetryTaskSuccessAction
-  | KillRetryTaskErrorAction
+  | RunArchivedTaskBeginAction
+  | RunArchivedTaskSuccessAction
+  | RunArchivedTaskErrorAction
+  | ArchiveScheduledTaskBeginAction
+  | ArchiveScheduledTaskSuccessAction
+  | ArchiveScheduledTaskErrorAction
+  | ArchiveRetryTaskBeginAction
+  | ArchiveRetryTaskSuccessAction
+  | ArchiveRetryTaskErrorAction
   | DeleteScheduledTaskBeginAction
   | DeleteScheduledTaskSuccessAction
   | DeleteScheduledTaskErrorAction
@@ -786,12 +798,12 @@ export type TasksActionTypes =
   | RunAllScheduledTasksBeginAction
   | RunAllScheduledTasksSuccessAction
   | RunAllScheduledTasksErrorAction
-  | BatchKillScheduledTasksBeginAction
-  | BatchKillScheduledTasksSuccessAction
-  | BatchKillScheduledTasksErrorAction
-  | KillAllScheduledTasksBeginAction
-  | KillAllScheduledTasksSuccessAction
-  | KillAllScheduledTasksErrorAction
+  | BatchArchiveScheduledTasksBeginAction
+  | BatchArchiveScheduledTasksSuccessAction
+  | BatchArchiveScheduledTasksErrorAction
+  | ArchiveAllScheduledTasksBeginAction
+  | ArchiveAllScheduledTasksSuccessAction
+  | ArchiveAllScheduledTasksErrorAction
   | DeleteAllScheduledTasksBeginAction
   | DeleteAllScheduledTasksSuccessAction
   | DeleteAllScheduledTasksErrorAction
@@ -807,30 +819,30 @@ export type TasksActionTypes =
   | RunAllRetryTasksBeginAction
   | RunAllRetryTasksSuccessAction
   | RunAllRetryTasksErrorAction
-  | BatchKillRetryTasksBeginAction
-  | BatchKillRetryTasksSuccessAction
-  | BatchKillRetryTasksErrorAction
-  | KillAllRetryTasksBeginAction
-  | KillAllRetryTasksSuccessAction
-  | KillAllRetryTasksErrorAction
+  | BatchArchiveRetryTasksBeginAction
+  | BatchArchiveRetryTasksSuccessAction
+  | BatchArchiveRetryTasksErrorAction
+  | ArchiveAllRetryTasksBeginAction
+  | ArchiveAllRetryTasksSuccessAction
+  | ArchiveAllRetryTasksErrorAction
   | DeleteAllRetryTasksBeginAction
   | DeleteAllRetryTasksSuccessAction
   | DeleteAllRetryTasksErrorAction
-  | DeleteDeadTaskBeginAction
-  | DeleteDeadTaskSuccessAction
-  | DeleteDeadTaskErrorAction
-  | BatchDeleteDeadTasksBeginAction
-  | BatchDeleteDeadTasksSuccessAction
-  | BatchDeleteDeadTasksErrorAction
-  | BatchRunDeadTasksBeginAction
-  | BatchRunDeadTasksSuccessAction
-  | BatchRunDeadTasksErrorAction
-  | RunAllDeadTasksBeginAction
-  | RunAllDeadTasksSuccessAction
-  | RunAllDeadTasksErrorAction
-  | DeleteAllDeadTasksBeginAction
-  | DeleteAllDeadTasksSuccessAction
-  | DeleteAllDeadTasksErrorAction;
+  | DeleteArchivedTaskBeginAction
+  | DeleteArchivedTaskSuccessAction
+  | DeleteArchivedTaskErrorAction
+  | BatchDeleteArchivedTasksBeginAction
+  | BatchDeleteArchivedTasksSuccessAction
+  | BatchDeleteArchivedTasksErrorAction
+  | BatchRunArchivedTasksBeginAction
+  | BatchRunArchivedTasksSuccessAction
+  | BatchRunArchivedTasksErrorAction
+  | RunAllArchivedTasksBeginAction
+  | RunAllArchivedTasksSuccessAction
+  | RunAllArchivedTasksErrorAction
+  | DeleteAllArchivedTasksBeginAction
+  | DeleteAllArchivedTasksSuccessAction
+  | DeleteAllArchivedTasksErrorAction;
 
 export function listActiveTasksAsync(
   qname: string,
@@ -924,24 +936,24 @@ export function listRetryTasksAsync(
   };
 }
 
-export function listDeadTasksAsync(
+export function listArchivedTasksAsync(
   qname: string,
   pageOpts?: PaginationOptions
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: LIST_DEAD_TASKS_BEGIN, queue: qname });
+    dispatch({ type: LIST_ARCHIVED_TASKS_BEGIN, queue: qname });
     try {
-      const response = await listDeadTasks(qname, pageOpts);
+      const response = await listArchivedTasks(qname, pageOpts);
       dispatch({
-        type: LIST_DEAD_TASKS_SUCCESS,
+        type: LIST_ARCHIVED_TASKS_SUCCESS,
         queue: qname,
         payload: response,
       });
     } catch {
       dispatch({
-        type: LIST_DEAD_TASKS_ERROR,
+        type: LIST_ARCHIVED_TASKS_ERROR,
         queue: qname,
-        error: `Could not retreive dead tasks data for queue: ${qname}`,
+        error: `Could not retreive archived tasks data for queue: ${qname}`,
       });
     }
   };
@@ -1039,17 +1051,17 @@ export function runRetryTaskAsync(queue: string, taskKey: string) {
   };
 }
 
-export function killScheduledTaskAsync(queue: string, taskKey: string) {
+export function archiveScheduledTaskAsync(queue: string, taskKey: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: KILL_SCHEDULED_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: ARCHIVE_SCHEDULED_TASK_BEGIN, queue, taskKey });
     try {
-      await killScheduledTask(queue, taskKey);
-      dispatch({ type: KILL_SCHEDULED_TASK_SUCCESS, queue, taskKey });
+      await archiveScheduledTask(queue, taskKey);
+      dispatch({ type: ARCHIVE_SCHEDULED_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("killScheduledTaskAsync: ", error);
+      console.error("archiveScheduledTaskAsync: ", error);
       dispatch({
-        type: KILL_SCHEDULED_TASK_ERROR,
-        error: `Could not kill task: ${taskKey}`,
+        type: ARCHIVE_SCHEDULED_TASK_ERROR,
+        error: `Could not archive task: ${taskKey}`,
         queue,
         taskKey,
       });
@@ -1057,17 +1069,17 @@ export function killScheduledTaskAsync(queue: string, taskKey: string) {
   };
 }
 
-export function killRetryTaskAsync(queue: string, taskKey: string) {
+export function archiveRetryTaskAsync(queue: string, taskKey: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: KILL_RETRY_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: ARCHIVE_RETRY_TASK_BEGIN, queue, taskKey });
     try {
-      await killRetryTask(queue, taskKey);
-      dispatch({ type: KILL_RETRY_TASK_SUCCESS, queue, taskKey });
+      await archiveRetryTask(queue, taskKey);
+      dispatch({ type: ARCHIVE_RETRY_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("killRetryTaskAsync: ", error);
+      console.error("archiveRetryTaskAsync: ", error);
       dispatch({
-        type: KILL_RETRY_TASK_ERROR,
-        error: `Could not kill task: ${taskKey}`,
+        type: ARCHIVE_RETRY_TASK_ERROR,
+        error: `Could not archive task: ${taskKey}`,
         queue,
         taskKey,
       });
@@ -1075,16 +1087,16 @@ export function killRetryTaskAsync(queue: string, taskKey: string) {
   };
 }
 
-export function runDeadTaskAsync(queue: string, taskKey: string) {
+export function runArchivedTaskAsync(queue: string, taskKey: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: RUN_DEAD_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: RUN_ARCHIVED_TASK_BEGIN, queue, taskKey });
     try {
-      await runDeadTask(queue, taskKey);
-      dispatch({ type: RUN_DEAD_TASK_SUCCESS, queue, taskKey });
+      await runArchivedTask(queue, taskKey);
+      dispatch({ type: RUN_ARCHIVED_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("runDeadTaskAsync: ", error);
+      console.error("runArchivedTaskAsync: ", error);
       dispatch({
-        type: RUN_DEAD_TASK_ERROR,
+        type: RUN_ARCHIVED_TASK_ERROR,
         error: `Could not run task: ${taskKey}`,
         queue,
         taskKey,
@@ -1158,24 +1170,24 @@ export function batchRunScheduledTasksAsync(queue: string, taskKeys: string[]) {
   };
 }
 
-export function batchKillScheduledTasksAsync(
+export function batchArchiveScheduledTasksAsync(
   queue: string,
   taskKeys: string[]
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_KILL_SCHEDULED_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN, queue, taskKeys });
     try {
-      const response = await batchKillScheduledTasks(queue, taskKeys);
+      const response = await batchArchiveScheduledTasks(queue, taskKeys);
       dispatch({
-        type: BATCH_KILL_SCHEDULED_TASKS_SUCCESS,
+        type: BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS,
         queue: queue,
         payload: response,
       });
     } catch (error) {
-      console.error("batchKillScheduledTasksAsync: ", error);
+      console.error("batchArchiveScheduledTasksAsync: ", error);
       dispatch({
-        type: BATCH_KILL_SCHEDULED_TASKS_ERROR,
-        error: `Could not batch kill tasks: ${taskKeys}`,
+        type: BATCH_ARCHIVE_SCHEDULED_TASKS_ERROR,
+        error: `Could not batch archive tasks: ${taskKeys}`,
         queue,
         taskKeys,
       });
@@ -1217,17 +1229,17 @@ export function runAllScheduledTasksAsync(queue: string) {
   };
 }
 
-export function killAllScheduledTasksAsync(queue: string) {
+export function archiveAllScheduledTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: RUN_ALL_SCHEDULED_TASKS_BEGIN, queue });
     try {
-      await killAllScheduledTasks(queue);
+      await archiveAllScheduledTasks(queue);
       dispatch({ type: RUN_ALL_SCHEDULED_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("killAllScheduledTasksAsync: ", error);
+      console.error("archiveAllScheduledTasksAsync: ", error);
       dispatch({
         type: RUN_ALL_SCHEDULED_TASKS_ERROR,
-        error: `Could not kill all scheduled tasks`,
+        error: `Could not archive all scheduled tasks`,
         queue,
       });
     }
@@ -1296,21 +1308,21 @@ export function batchRunRetryTasksAsync(queue: string, taskKeys: string[]) {
   };
 }
 
-export function batchKillRetryTasksAsync(queue: string, taskKeys: string[]) {
+export function batchArchiveRetryTasksAsync(queue: string, taskKeys: string[]) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_KILL_RETRY_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_ARCHIVE_RETRY_TASKS_BEGIN, queue, taskKeys });
     try {
-      const response = await batchKillRetryTasks(queue, taskKeys);
+      const response = await batchArchiveRetryTasks(queue, taskKeys);
       dispatch({
-        type: BATCH_KILL_RETRY_TASKS_SUCCESS,
+        type: BATCH_ARCHIVE_RETRY_TASKS_SUCCESS,
         queue: queue,
         payload: response,
       });
     } catch (error) {
-      console.error("batchKillRetryTasksAsync: ", error);
+      console.error("batchArchiveRetryTasksAsync: ", error);
       dispatch({
-        type: BATCH_KILL_RETRY_TASKS_ERROR,
-        error: `Could not batch kill tasks: ${taskKeys}`,
+        type: BATCH_ARCHIVE_RETRY_TASKS_ERROR,
+        error: `Could not batch archive tasks: ${taskKeys}`,
         queue,
         taskKeys,
       });
@@ -1352,33 +1364,33 @@ export function runAllRetryTasksAsync(queue: string) {
   };
 }
 
-export function killAllRetryTasksAsync(queue: string) {
+export function archiveAllRetryTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: KILL_ALL_RETRY_TASKS_BEGIN, queue });
+    dispatch({ type: ARCHIVE_ALL_RETRY_TASKS_BEGIN, queue });
     try {
-      await killAllRetryTasks(queue);
-      dispatch({ type: KILL_ALL_RETRY_TASKS_SUCCESS, queue });
+      await archiveAllRetryTasks(queue);
+      dispatch({ type: ARCHIVE_ALL_RETRY_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("killAllRetryTasksAsync: ", error);
+      console.error("archiveAllRetryTasksAsync: ", error);
       dispatch({
-        type: KILL_ALL_RETRY_TASKS_ERROR,
-        error: `Could not kill all retry tasks`,
+        type: ARCHIVE_ALL_RETRY_TASKS_ERROR,
+        error: `Could not archive all retry tasks`,
         queue,
       });
     }
   };
 }
 
-export function deleteDeadTaskAsync(queue: string, taskKey: string) {
+export function deleteArchivedTaskAsync(queue: string, taskKey: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: DELETE_DEAD_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: DELETE_ARCHIVED_TASK_BEGIN, queue, taskKey });
     try {
-      await deleteDeadTask(queue, taskKey);
-      dispatch({ type: DELETE_DEAD_TASK_SUCCESS, queue, taskKey });
+      await deleteArchivedTask(queue, taskKey);
+      dispatch({ type: DELETE_ARCHIVED_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("deleteDeadTaskAsync: ", error);
+      console.error("deleteArchivedTaskAsync: ", error);
       dispatch({
-        type: DELETE_DEAD_TASK_ERROR,
+        type: DELETE_ARCHIVED_TASK_ERROR,
         error: `Could not delete task: ${taskKey}`,
         queue,
         taskKey,
@@ -1387,20 +1399,23 @@ export function deleteDeadTaskAsync(queue: string, taskKey: string) {
   };
 }
 
-export function batchDeleteDeadTasksAsync(queue: string, taskKeys: string[]) {
+export function batchDeleteArchivedTasksAsync(
+  queue: string,
+  taskKeys: string[]
+) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_DELETE_DEAD_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_DELETE_ARCHIVED_TASKS_BEGIN, queue, taskKeys });
     try {
-      const response = await batchDeleteDeadTasks(queue, taskKeys);
+      const response = await batchDeleteArchivedTasks(queue, taskKeys);
       dispatch({
-        type: BATCH_DELETE_DEAD_TASKS_SUCCESS,
+        type: BATCH_DELETE_ARCHIVED_TASKS_SUCCESS,
         queue: queue,
         payload: response,
       });
     } catch (error) {
-      console.error("batchDeleteDeadTasksAsync: ", error);
+      console.error("batchDeleteArchivedTasksAsync: ", error);
       dispatch({
-        type: BATCH_DELETE_DEAD_TASKS_ERROR,
+        type: BATCH_DELETE_ARCHIVED_TASKS_ERROR,
         error: `Could not batch delete tasks: ${taskKeys}`,
         queue,
         taskKeys,
@@ -1409,20 +1424,20 @@ export function batchDeleteDeadTasksAsync(queue: string, taskKeys: string[]) {
   };
 }
 
-export function batchRunDeadTasksAsync(queue: string, taskKeys: string[]) {
+export function batchRunArchivedTasksAsync(queue: string, taskKeys: string[]) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_RUN_DEAD_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_RUN_ARCHIVED_TASKS_BEGIN, queue, taskKeys });
     try {
-      const response = await batchRunDeadTasks(queue, taskKeys);
+      const response = await batchRunArchivedTasks(queue, taskKeys);
       dispatch({
-        type: BATCH_RUN_DEAD_TASKS_SUCCESS,
+        type: BATCH_RUN_ARCHIVED_TASKS_SUCCESS,
         queue: queue,
         payload: response,
       });
     } catch (error) {
-      console.error("batchRunDeadTasksAsync: ", error);
+      console.error("batchRunArchivedTasksAsync: ", error);
       dispatch({
-        type: BATCH_RUN_DEAD_TASKS_ERROR,
+        type: BATCH_RUN_ARCHIVED_TASKS_ERROR,
         error: `Could not batch run tasks: ${taskKeys}`,
         queue,
         taskKeys,
@@ -1431,34 +1446,34 @@ export function batchRunDeadTasksAsync(queue: string, taskKeys: string[]) {
   };
 }
 
-export function deleteAllDeadTasksAsync(queue: string) {
+export function deleteAllArchivedTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: DELETE_ALL_DEAD_TASKS_BEGIN, queue });
+    dispatch({ type: DELETE_ALL_ARCHIVED_TASKS_BEGIN, queue });
     try {
-      await deleteAllDeadTasks(queue);
-      dispatch({ type: DELETE_ALL_DEAD_TASKS_SUCCESS, queue });
+      await deleteAllArchivedTasks(queue);
+      dispatch({ type: DELETE_ALL_ARCHIVED_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("deleteAllDeadTasksAsync: ", error);
+      console.error("deleteAllArchivedTasksAsync: ", error);
       dispatch({
-        type: DELETE_ALL_DEAD_TASKS_ERROR,
-        error: `Could not delete all dead tasks`,
+        type: DELETE_ALL_ARCHIVED_TASKS_ERROR,
+        error: `Could not delete all archived tasks`,
         queue,
       });
     }
   };
 }
 
-export function runAllDeadTasksAsync(queue: string) {
+export function runAllArchivedTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: RUN_ALL_DEAD_TASKS_BEGIN, queue });
+    dispatch({ type: RUN_ALL_ARCHIVED_TASKS_BEGIN, queue });
     try {
-      await runAllDeadTasks(queue);
-      dispatch({ type: RUN_ALL_DEAD_TASKS_SUCCESS, queue });
+      await runAllArchivedTasks(queue);
+      dispatch({ type: RUN_ALL_ARCHIVED_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("runAllDeadTasksAsync: ", error);
+      console.error("runAllArchivedTasksAsync: ", error);
       dispatch({
-        type: RUN_ALL_DEAD_TASKS_ERROR,
-        error: `Could not run all dead tasks`,
+        type: RUN_ALL_ARCHIVED_TASKS_ERROR,
+        error: `Could not run all archived tasks`,
         queue,
       });
     }

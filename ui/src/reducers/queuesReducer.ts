@@ -14,33 +14,33 @@ import {
   LIST_QUEUES_ERROR,
 } from "../actions/queuesActions";
 import {
-  BATCH_DELETE_DEAD_TASKS_SUCCESS,
+  BATCH_DELETE_ARCHIVED_TASKS_SUCCESS,
   BATCH_DELETE_RETRY_TASKS_SUCCESS,
   BATCH_DELETE_SCHEDULED_TASKS_SUCCESS,
-  BATCH_KILL_RETRY_TASKS_SUCCESS,
-  BATCH_KILL_SCHEDULED_TASKS_SUCCESS,
-  BATCH_RUN_DEAD_TASKS_SUCCESS,
+  BATCH_ARCHIVE_RETRY_TASKS_SUCCESS,
+  BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS,
+  BATCH_RUN_ARCHIVED_TASKS_SUCCESS,
   BATCH_RUN_RETRY_TASKS_SUCCESS,
   BATCH_RUN_SCHEDULED_TASKS_SUCCESS,
-  DELETE_ALL_DEAD_TASKS_SUCCESS,
+  DELETE_ALL_ARCHIVED_TASKS_SUCCESS,
   DELETE_ALL_RETRY_TASKS_SUCCESS,
   DELETE_ALL_SCHEDULED_TASKS_SUCCESS,
-  DELETE_DEAD_TASK_SUCCESS,
+  DELETE_ARCHIVED_TASK_SUCCESS,
   DELETE_RETRY_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_SUCCESS,
-  KILL_ALL_RETRY_TASKS_SUCCESS,
-  KILL_ALL_SCHEDULED_TASKS_SUCCESS,
-  KILL_RETRY_TASK_SUCCESS,
-  KILL_SCHEDULED_TASK_SUCCESS,
+  ARCHIVE_ALL_RETRY_TASKS_SUCCESS,
+  ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS,
+  ARCHIVE_RETRY_TASK_SUCCESS,
+  ARCHIVE_SCHEDULED_TASK_SUCCESS,
   LIST_ACTIVE_TASKS_SUCCESS,
-  LIST_DEAD_TASKS_SUCCESS,
+  LIST_ARCHIVED_TASKS_SUCCESS,
   LIST_PENDING_TASKS_SUCCESS,
   LIST_RETRY_TASKS_SUCCESS,
   LIST_SCHEDULED_TASKS_SUCCESS,
-  RUN_ALL_DEAD_TASKS_SUCCESS,
+  RUN_ALL_ARCHIVED_TASKS_SUCCESS,
   RUN_ALL_RETRY_TASKS_SUCCESS,
   RUN_ALL_SCHEDULED_TASKS_SUCCESS,
-  RUN_DEAD_TASK_SUCCESS,
+  RUN_ARCHIVED_TASK_SUCCESS,
   RUN_RETRY_TASK_SUCCESS,
   RUN_SCHEDULED_TASK_SUCCESS,
   TasksActionTypes,
@@ -155,7 +155,7 @@ function queuesReducer(
     case LIST_PENDING_TASKS_SUCCESS:
     case LIST_SCHEDULED_TASKS_SUCCESS:
     case LIST_RETRY_TASKS_SUCCESS:
-    case LIST_DEAD_TASKS_SUCCESS: {
+    case LIST_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.data
         .filter((queueInfo) => queueInfo.name !== action.queue)
         .concat({
@@ -200,7 +200,7 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
-    case RUN_DEAD_TASK_SUCCESS: {
+    case RUN_ARCHIVED_TASK_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -210,14 +210,14 @@ function queuesReducer(
           currentStats: {
             ...queueInfo.currentStats,
             pending: queueInfo.currentStats.pending + 1,
-            dead: queueInfo.currentStats.dead - 1,
+            archived: queueInfo.currentStats.archived - 1,
           },
         };
       });
       return { ...state, data: newData };
     }
 
-    case KILL_SCHEDULED_TASK_SUCCESS: {
+    case ARCHIVE_SCHEDULED_TASK_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -226,7 +226,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead: queueInfo.currentStats.dead + 1,
+            archived: queueInfo.currentStats.archived + 1,
             scheduled: queueInfo.currentStats.scheduled - 1,
           },
         };
@@ -234,7 +234,7 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
-    case KILL_RETRY_TASK_SUCCESS: {
+    case ARCHIVE_RETRY_TASK_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -243,7 +243,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead: queueInfo.currentStats.dead + 1,
+            archived: queueInfo.currentStats.archived + 1,
             retry: queueInfo.currentStats.retry - 1,
           },
         };
@@ -288,7 +288,7 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
-    case BATCH_KILL_SCHEDULED_TASKS_SUCCESS: {
+    case BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -297,10 +297,12 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead: queueInfo.currentStats.dead + action.payload.dead_keys.length,
+            archived:
+              queueInfo.currentStats.archived +
+              action.payload.archived_keys.length,
             scheduled:
               queueInfo.currentStats.scheduled -
-              action.payload.dead_keys.length,
+              action.payload.archived_keys.length,
           },
         };
       });
@@ -343,7 +345,7 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
-    case KILL_ALL_SCHEDULED_TASKS_SUCCESS: {
+    case ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -352,8 +354,9 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead:
-              queueInfo.currentStats.dead + queueInfo.currentStats.scheduled,
+            archived:
+              queueInfo.currentStats.archived +
+              queueInfo.currentStats.scheduled,
             scheduled: 0,
           },
         };
@@ -413,7 +416,7 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
-    case BATCH_KILL_RETRY_TASKS_SUCCESS: {
+    case BATCH_ARCHIVE_RETRY_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -422,10 +425,12 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead:
-              queueInfo.currentStats.pending + action.payload.dead_keys.length,
+            archived:
+              queueInfo.currentStats.pending +
+              action.payload.archived_keys.length,
             retry:
-              queueInfo.currentStats.retry - action.payload.dead_keys.length,
+              queueInfo.currentStats.retry -
+              action.payload.archived_keys.length,
           },
         };
       });
@@ -467,7 +472,7 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
-    case KILL_ALL_RETRY_TASKS_SUCCESS: {
+    case ARCHIVE_ALL_RETRY_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -476,7 +481,8 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead: queueInfo.currentStats.dead + queueInfo.currentStats.retry,
+            archived:
+              queueInfo.currentStats.archived + queueInfo.currentStats.retry,
             retry: 0,
           },
         };
@@ -500,7 +506,7 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
-    case DELETE_DEAD_TASK_SUCCESS: {
+    case DELETE_ARCHIVED_TASK_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -509,14 +515,14 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead: queueInfo.currentStats.dead - 1,
+            archived: queueInfo.currentStats.archived - 1,
           },
         };
       });
       return { ...state, data: newData };
     }
 
-    case BATCH_RUN_DEAD_TASKS_SUCCESS: {
+    case BATCH_RUN_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -528,15 +534,16 @@ function queuesReducer(
             pending:
               queueInfo.currentStats.pending +
               action.payload.pending_keys.length,
-            dead:
-              queueInfo.currentStats.dead - action.payload.pending_keys.length,
+            archived:
+              queueInfo.currentStats.archived -
+              action.payload.pending_keys.length,
           },
         };
       });
       return { ...state, data: newData };
     }
 
-    case BATCH_DELETE_DEAD_TASKS_SUCCESS: {
+    case BATCH_DELETE_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -545,15 +552,16 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead:
-              queueInfo.currentStats.dead - action.payload.deleted_keys.length,
+            archived:
+              queueInfo.currentStats.archived -
+              action.payload.deleted_keys.length,
           },
         };
       });
       return { ...state, data: newData };
     }
 
-    case RUN_ALL_DEAD_TASKS_SUCCESS: {
+    case RUN_ALL_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -563,15 +571,15 @@ function queuesReducer(
           currentStats: {
             ...queueInfo.currentStats,
             pending:
-              queueInfo.currentStats.pending + queueInfo.currentStats.dead,
-            dead: 0,
+              queueInfo.currentStats.pending + queueInfo.currentStats.archived,
+            archived: 0,
           },
         };
       });
       return { ...state, data: newData };
     }
 
-    case DELETE_ALL_DEAD_TASKS_SUCCESS: {
+    case DELETE_ALL_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
           return queueInfo;
@@ -580,7 +588,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
-            dead: 0,
+            archived: 0,
           },
         };
       });

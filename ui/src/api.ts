@@ -31,8 +31,8 @@ export interface ListRetryTasksResponse {
   stats: Queue;
 }
 
-export interface ListDeadTasksResponse {
-  tasks: DeadTask[];
+export interface ListArchivedTasksResponse {
+  tasks: ArchivedTask[];
   stats: Queue;
 }
 
@@ -63,8 +63,8 @@ export interface BatchRunTasksResponse {
   error_keys: string[];
 }
 
-export interface BatchKillTasksResponse {
-  dead_keys: string[];
+export interface BatchArchiveTasksResponse {
+  archived_keys: string[];
   error_keys: string[];
 }
 
@@ -221,7 +221,7 @@ export interface Queue {
   pending: number;
   scheduled: number;
   retry: number;
-  dead: number;
+  archived: number;
   processed: number;
   failed: number;
   timestamp: string;
@@ -267,7 +267,7 @@ export interface RetryTask extends BaseTask {
   error_message: string;
 }
 
-export interface DeadTask extends BaseTask {
+export interface ArchivedTask extends BaseTask {
   id: string;
   key: string;
   queue: string;
@@ -444,11 +444,11 @@ export async function listRetryTasks(
   return resp.data;
 }
 
-export async function listDeadTasks(
+export async function listArchivedTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListDeadTasksResponse> {
-  let url = `${BASE_URL}/queues/${qname}/dead_tasks`;
+): Promise<ListArchivedTasksResponse> {
+  let url = `${BASE_URL}/queues/${qname}/archived_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
   }
@@ -469,13 +469,13 @@ export async function runScheduledTask(
   });
 }
 
-export async function killScheduledTask(
+export async function archiveScheduledTask(
   qname: string,
   taskKey: string
 ): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/scheduled_tasks/${taskKey}:kill`,
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks/${taskKey}:archive`,
   });
 }
 
@@ -531,13 +531,13 @@ export async function runAllScheduledTasks(qname: string): Promise<void> {
   });
 }
 
-export async function batchKillScheduledTasks(
+export async function batchArchiveScheduledTasks(
   qname: string,
   taskKeys: string[]
-): Promise<BatchKillTasksResponse> {
+): Promise<BatchArchiveTasksResponse> {
   const resp = await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:batch_kill`,
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:batch_archive`,
     data: {
       task_keys: taskKeys,
     },
@@ -545,10 +545,10 @@ export async function batchKillScheduledTasks(
   return resp.data;
 }
 
-export async function killAllScheduledTasks(qname: string): Promise<void> {
+export async function archiveAllScheduledTasks(qname: string): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:kill_all`,
+    url: `${BASE_URL}/queues/${qname}/scheduled_tasks:archive_all`,
   });
 }
 
@@ -562,13 +562,13 @@ export async function runRetryTask(
   });
 }
 
-export async function killRetryTask(
+export async function archiveRetryTask(
   qname: string,
   taskKey: string
 ): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/retry_tasks/${taskKey}:kill`,
+    url: `${BASE_URL}/queues/${qname}/retry_tasks/${taskKey}:archive`,
   });
 }
 
@@ -624,13 +624,13 @@ export async function runAllRetryTasks(qname: string): Promise<void> {
   });
 }
 
-export async function batchKillRetryTasks(
+export async function batchArchiveRetryTasks(
   qname: string,
   taskKeys: string[]
-): Promise<BatchKillTasksResponse> {
+): Promise<BatchArchiveTasksResponse> {
   const resp = await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/retry_tasks:batch_kill`,
+    url: `${BASE_URL}/queues/${qname}/retry_tasks:batch_archive`,
     data: {
       task_keys: taskKeys,
     },
@@ -638,40 +638,40 @@ export async function batchKillRetryTasks(
   return resp.data;
 }
 
-export async function killAllRetryTasks(qname: string): Promise<void> {
+export async function archiveAllRetryTasks(qname: string): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/retry_tasks:kill_all`,
+    url: `${BASE_URL}/queues/${qname}/retry_tasks:archive_all`,
   });
 }
 
-export async function runDeadTask(
+export async function runArchivedTask(
   qname: string,
   taskKey: string
 ): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/dead_tasks/${taskKey}:run`,
+    url: `${BASE_URL}/queues/${qname}/archived_tasks/${taskKey}:run`,
   });
 }
 
-export async function deleteDeadTask(
+export async function deleteArchivedTask(
   qname: string,
   taskKey: string
 ): Promise<void> {
   await axios({
     method: "delete",
-    url: `${BASE_URL}/queues/${qname}/dead_tasks/${taskKey}`,
+    url: `${BASE_URL}/queues/${qname}/archived_tasks/${taskKey}`,
   });
 }
 
-export async function batchDeleteDeadTasks(
+export async function batchDeleteArchivedTasks(
   qname: string,
   taskKeys: string[]
 ): Promise<BatchDeleteTasksResponse> {
   const resp = await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/dead_tasks:batch_delete`,
+    url: `${BASE_URL}/queues/${qname}/archived_tasks:batch_delete`,
     data: {
       task_keys: taskKeys,
     },
@@ -679,20 +679,20 @@ export async function batchDeleteDeadTasks(
   return resp.data;
 }
 
-export async function deleteAllDeadTasks(qname: string): Promise<void> {
+export async function deleteAllArchivedTasks(qname: string): Promise<void> {
   await axios({
     method: "delete",
-    url: `${BASE_URL}/queues/${qname}/dead_tasks:delete_all`,
+    url: `${BASE_URL}/queues/${qname}/archived_tasks:delete_all`,
   });
 }
 
-export async function batchRunDeadTasks(
+export async function batchRunArchivedTasks(
   qname: string,
   taskKeys: string[]
 ): Promise<BatchRunTasksResponse> {
   const resp = await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/dead_tasks:batch_run`,
+    url: `${BASE_URL}/queues/${qname}/archived_tasks:batch_run`,
     data: {
       task_keys: taskKeys,
     },
@@ -700,10 +700,10 @@ export async function batchRunDeadTasks(
   return resp.data;
 }
 
-export async function runAllDeadTasks(qname: string): Promise<void> {
+export async function runAllArchivedTasks(qname: string): Promise<void> {
   await axios({
     method: "post",
-    url: `${BASE_URL}/queues/${qname}/dead_tasks:run_all`,
+    url: `${BASE_URL}/queues/${qname}/archived_tasks:run_all`,
   });
 }
 

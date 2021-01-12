@@ -12,9 +12,9 @@ import {
   LIST_RETRY_TASKS_BEGIN,
   LIST_RETRY_TASKS_SUCCESS,
   LIST_RETRY_TASKS_ERROR,
-  LIST_DEAD_TASKS_BEGIN,
-  LIST_DEAD_TASKS_SUCCESS,
-  LIST_DEAD_TASKS_ERROR,
+  LIST_ARCHIVED_TASKS_BEGIN,
+  LIST_ARCHIVED_TASKS_SUCCESS,
+  LIST_ARCHIVED_TASKS_ERROR,
   CANCEL_ACTIVE_TASK_BEGIN,
   CANCEL_ACTIVE_TASK_SUCCESS,
   CANCEL_ACTIVE_TASK_ERROR,
@@ -24,24 +24,24 @@ import {
   DELETE_SCHEDULED_TASK_BEGIN,
   DELETE_SCHEDULED_TASK_SUCCESS,
   DELETE_SCHEDULED_TASK_ERROR,
-  DELETE_DEAD_TASK_BEGIN,
-  DELETE_DEAD_TASK_SUCCESS,
-  DELETE_DEAD_TASK_ERROR,
-  BATCH_DELETE_DEAD_TASKS_BEGIN,
-  BATCH_DELETE_DEAD_TASKS_SUCCESS,
-  BATCH_DELETE_DEAD_TASKS_ERROR,
-  RUN_DEAD_TASK_BEGIN,
-  RUN_DEAD_TASK_SUCCESS,
-  RUN_DEAD_TASK_ERROR,
-  BATCH_RUN_DEAD_TASKS_BEGIN,
-  BATCH_RUN_DEAD_TASKS_ERROR,
-  BATCH_RUN_DEAD_TASKS_SUCCESS,
-  DELETE_ALL_DEAD_TASKS_BEGIN,
-  DELETE_ALL_DEAD_TASKS_SUCCESS,
-  DELETE_ALL_DEAD_TASKS_ERROR,
-  RUN_ALL_DEAD_TASKS_BEGIN,
-  RUN_ALL_DEAD_TASKS_ERROR,
-  RUN_ALL_DEAD_TASKS_SUCCESS,
+  DELETE_ARCHIVED_TASK_BEGIN,
+  DELETE_ARCHIVED_TASK_SUCCESS,
+  DELETE_ARCHIVED_TASK_ERROR,
+  BATCH_DELETE_ARCHIVED_TASKS_BEGIN,
+  BATCH_DELETE_ARCHIVED_TASKS_SUCCESS,
+  BATCH_DELETE_ARCHIVED_TASKS_ERROR,
+  RUN_ARCHIVED_TASK_BEGIN,
+  RUN_ARCHIVED_TASK_SUCCESS,
+  RUN_ARCHIVED_TASK_ERROR,
+  BATCH_RUN_ARCHIVED_TASKS_BEGIN,
+  BATCH_RUN_ARCHIVED_TASKS_ERROR,
+  BATCH_RUN_ARCHIVED_TASKS_SUCCESS,
+  DELETE_ALL_ARCHIVED_TASKS_BEGIN,
+  DELETE_ALL_ARCHIVED_TASKS_SUCCESS,
+  DELETE_ALL_ARCHIVED_TASKS_ERROR,
+  RUN_ALL_ARCHIVED_TASKS_BEGIN,
+  RUN_ALL_ARCHIVED_TASKS_ERROR,
+  RUN_ALL_ARCHIVED_TASKS_SUCCESS,
   BATCH_DELETE_RETRY_TASKS_ERROR,
   BATCH_RUN_RETRY_TASKS_ERROR,
   BATCH_DELETE_RETRY_TASKS_SUCCESS,
@@ -72,24 +72,24 @@ import {
   RUN_SCHEDULED_TASK_BEGIN,
   RUN_SCHEDULED_TASK_SUCCESS,
   RUN_SCHEDULED_TASK_ERROR,
-  KILL_SCHEDULED_TASK_BEGIN,
-  KILL_SCHEDULED_TASK_SUCCESS,
-  KILL_SCHEDULED_TASK_ERROR,
-  KILL_ALL_SCHEDULED_TASKS_BEGIN,
-  KILL_ALL_SCHEDULED_TASKS_SUCCESS,
-  KILL_ALL_SCHEDULED_TASKS_ERROR,
-  BATCH_KILL_SCHEDULED_TASKS_BEGIN,
-  BATCH_KILL_SCHEDULED_TASKS_ERROR,
-  BATCH_KILL_SCHEDULED_TASKS_SUCCESS,
-  KILL_RETRY_TASK_BEGIN,
-  KILL_RETRY_TASK_SUCCESS,
-  KILL_RETRY_TASK_ERROR,
-  KILL_ALL_RETRY_TASKS_BEGIN,
-  KILL_ALL_RETRY_TASKS_SUCCESS,
-  KILL_ALL_RETRY_TASKS_ERROR,
-  BATCH_KILL_RETRY_TASKS_SUCCESS,
-  BATCH_KILL_RETRY_TASKS_BEGIN,
-  BATCH_KILL_RETRY_TASKS_ERROR,
+  ARCHIVE_SCHEDULED_TASK_BEGIN,
+  ARCHIVE_SCHEDULED_TASK_SUCCESS,
+  ARCHIVE_SCHEDULED_TASK_ERROR,
+  ARCHIVE_ALL_SCHEDULED_TASKS_BEGIN,
+  ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS,
+  ARCHIVE_ALL_SCHEDULED_TASKS_ERROR,
+  BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN,
+  BATCH_ARCHIVE_SCHEDULED_TASKS_ERROR,
+  BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS,
+  ARCHIVE_RETRY_TASK_BEGIN,
+  ARCHIVE_RETRY_TASK_SUCCESS,
+  ARCHIVE_RETRY_TASK_ERROR,
+  ARCHIVE_ALL_RETRY_TASKS_BEGIN,
+  ARCHIVE_ALL_RETRY_TASKS_SUCCESS,
+  ARCHIVE_ALL_RETRY_TASKS_ERROR,
+  BATCH_ARCHIVE_RETRY_TASKS_SUCCESS,
+  BATCH_ARCHIVE_RETRY_TASKS_BEGIN,
+  BATCH_ARCHIVE_RETRY_TASKS_ERROR,
   BATCH_CANCEL_ACTIVE_TASKS_BEGIN,
   BATCH_CANCEL_ACTIVE_TASKS_SUCCESS,
   BATCH_CANCEL_ACTIVE_TASKS_ERROR,
@@ -99,7 +99,7 @@ import {
 } from "../actions/tasksActions";
 import {
   ActiveTask,
-  DeadTask,
+  ArchivedTask,
   PendingTask,
   RetryTask,
   ScheduledTask,
@@ -127,7 +127,7 @@ export interface RetryTaskExtended extends RetryTask {
   requestPending: boolean;
 }
 
-export interface DeadTaskExtended extends DeadTask {
+export interface ArchivedTaskExtended extends ArchivedTask {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;
@@ -160,12 +160,12 @@ interface TasksState {
     error: string;
     data: RetryTaskExtended[];
   };
-  deadTasks: {
+  archivedTasks: {
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: DeadTaskExtended[];
+    data: ArchivedTaskExtended[];
   };
 }
 
@@ -196,7 +196,7 @@ const initialState: TasksState = {
     error: "",
     data: [],
   },
-  deadTasks: {
+  archivedTasks: {
     loading: false,
     batchActionPending: false,
     allActionPending: false,
@@ -343,21 +343,21 @@ function tasksReducer(
         },
       };
 
-    case LIST_DEAD_TASKS_BEGIN:
+    case LIST_ARCHIVED_TASKS_BEGIN:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           error: "",
           loading: true,
         },
       };
 
-    case LIST_DEAD_TASKS_SUCCESS:
+    case LIST_ARCHIVED_TASKS_SUCCESS:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           loading: false,
           error: "",
           data: action.payload.tasks.map((task) => ({
@@ -367,11 +367,11 @@ function tasksReducer(
         },
       };
 
-    case LIST_DEAD_TASKS_ERROR:
+    case LIST_ARCHIVED_TASKS_ERROR:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           loading: false,
           error: action.error,
         },
@@ -522,7 +522,7 @@ function tasksReducer(
     }
 
     case RUN_SCHEDULED_TASK_BEGIN:
-    case KILL_SCHEDULED_TASK_BEGIN:
+    case ARCHIVE_SCHEDULED_TASK_BEGIN:
     case DELETE_SCHEDULED_TASK_BEGIN:
       return {
         ...state,
@@ -538,7 +538,7 @@ function tasksReducer(
       };
 
     case RUN_SCHEDULED_TASK_SUCCESS:
-    case KILL_SCHEDULED_TASK_SUCCESS:
+    case ARCHIVE_SCHEDULED_TASK_SUCCESS:
     case DELETE_SCHEDULED_TASK_SUCCESS:
       return {
         ...state,
@@ -551,7 +551,7 @@ function tasksReducer(
       };
 
     case RUN_SCHEDULED_TASK_ERROR:
-    case KILL_SCHEDULED_TASK_ERROR:
+    case ARCHIVE_SCHEDULED_TASK_ERROR:
     case DELETE_SCHEDULED_TASK_ERROR:
       return {
         ...state,
@@ -567,7 +567,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_SCHEDULED_TASKS_BEGIN:
-    case KILL_ALL_SCHEDULED_TASKS_BEGIN:
+    case ARCHIVE_ALL_SCHEDULED_TASKS_BEGIN:
     case DELETE_ALL_SCHEDULED_TASKS_BEGIN:
       return {
         ...state,
@@ -578,7 +578,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_SCHEDULED_TASKS_SUCCESS:
-    case KILL_ALL_SCHEDULED_TASKS_SUCCESS:
+    case ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS:
     case DELETE_ALL_SCHEDULED_TASKS_SUCCESS:
       return {
         ...state,
@@ -590,7 +590,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_SCHEDULED_TASKS_ERROR:
-    case KILL_ALL_SCHEDULED_TASKS_ERROR:
+    case ARCHIVE_ALL_SCHEDULED_TASKS_ERROR:
     case DELETE_ALL_SCHEDULED_TASKS_ERROR:
       return {
         ...state,
@@ -601,7 +601,7 @@ function tasksReducer(
       };
 
     case BATCH_RUN_SCHEDULED_TASKS_BEGIN:
-    case BATCH_KILL_SCHEDULED_TASKS_BEGIN:
+    case BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN:
     case BATCH_DELETE_SCHEDULED_TASKS_BEGIN:
       return {
         ...state,
@@ -634,9 +634,9 @@ function tasksReducer(
       };
     }
 
-    case BATCH_KILL_SCHEDULED_TASKS_SUCCESS: {
+    case BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS: {
       const newData = state.scheduledTasks.data.filter(
-        (task) => !action.payload.dead_keys.includes(task.key)
+        (task) => !action.payload.archived_keys.includes(task.key)
       );
       return {
         ...state,
@@ -663,7 +663,7 @@ function tasksReducer(
     }
 
     case BATCH_RUN_SCHEDULED_TASKS_ERROR:
-    case BATCH_KILL_SCHEDULED_TASKS_ERROR:
+    case BATCH_ARCHIVE_SCHEDULED_TASKS_ERROR:
     case BATCH_DELETE_SCHEDULED_TASKS_ERROR:
       return {
         ...state,
@@ -683,7 +683,7 @@ function tasksReducer(
       };
 
     case RUN_RETRY_TASK_BEGIN:
-    case KILL_RETRY_TASK_BEGIN:
+    case ARCHIVE_RETRY_TASK_BEGIN:
     case DELETE_RETRY_TASK_BEGIN:
       return {
         ...state,
@@ -699,7 +699,7 @@ function tasksReducer(
       };
 
     case RUN_RETRY_TASK_SUCCESS:
-    case KILL_RETRY_TASK_SUCCESS:
+    case ARCHIVE_RETRY_TASK_SUCCESS:
     case DELETE_RETRY_TASK_SUCCESS:
       return {
         ...state,
@@ -712,7 +712,7 @@ function tasksReducer(
       };
 
     case RUN_RETRY_TASK_ERROR:
-    case KILL_RETRY_TASK_ERROR:
+    case ARCHIVE_RETRY_TASK_ERROR:
     case DELETE_RETRY_TASK_ERROR:
       return {
         ...state,
@@ -728,7 +728,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_RETRY_TASKS_BEGIN:
-    case KILL_ALL_RETRY_TASKS_BEGIN:
+    case ARCHIVE_ALL_RETRY_TASKS_BEGIN:
     case DELETE_ALL_RETRY_TASKS_BEGIN:
       return {
         ...state,
@@ -739,7 +739,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_RETRY_TASKS_SUCCESS:
-    case KILL_ALL_RETRY_TASKS_SUCCESS:
+    case ARCHIVE_ALL_RETRY_TASKS_SUCCESS:
     case DELETE_ALL_RETRY_TASKS_SUCCESS:
       return {
         ...state,
@@ -751,7 +751,7 @@ function tasksReducer(
       };
 
     case RUN_ALL_RETRY_TASKS_ERROR:
-    case KILL_ALL_RETRY_TASKS_ERROR:
+    case ARCHIVE_ALL_RETRY_TASKS_ERROR:
     case DELETE_ALL_RETRY_TASKS_ERROR:
       return {
         ...state,
@@ -762,7 +762,7 @@ function tasksReducer(
       };
 
     case BATCH_RUN_RETRY_TASKS_BEGIN:
-    case BATCH_KILL_RETRY_TASKS_BEGIN:
+    case BATCH_ARCHIVE_RETRY_TASKS_BEGIN:
     case BATCH_DELETE_RETRY_TASKS_BEGIN:
       return {
         ...state,
@@ -795,9 +795,9 @@ function tasksReducer(
       };
     }
 
-    case BATCH_KILL_RETRY_TASKS_SUCCESS: {
+    case BATCH_ARCHIVE_RETRY_TASKS_SUCCESS: {
       const newData = state.retryTasks.data.filter(
-        (task) => !action.payload.dead_keys.includes(task.key)
+        (task) => !action.payload.archived_keys.includes(task.key)
       );
       return {
         ...state,
@@ -824,7 +824,7 @@ function tasksReducer(
     }
 
     case BATCH_RUN_RETRY_TASKS_ERROR:
-    case BATCH_KILL_RETRY_TASKS_ERROR:
+    case BATCH_ARCHIVE_RETRY_TASKS_ERROR:
     case BATCH_DELETE_RETRY_TASKS_ERROR:
       return {
         ...state,
@@ -843,13 +843,13 @@ function tasksReducer(
         },
       };
 
-    case RUN_DEAD_TASK_BEGIN:
-    case DELETE_DEAD_TASK_BEGIN:
+    case RUN_ARCHIVED_TASK_BEGIN:
+    case DELETE_ARCHIVED_TASK_BEGIN:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
-          data: state.deadTasks.data.map((task) => {
+        archivedTasks: {
+          ...state.archivedTasks,
+          data: state.archivedTasks.data.map((task) => {
             if (task.key !== action.taskKey) {
               return task;
             }
@@ -858,25 +858,25 @@ function tasksReducer(
         },
       };
 
-    case RUN_DEAD_TASK_SUCCESS:
-    case DELETE_DEAD_TASK_SUCCESS:
+    case RUN_ARCHIVED_TASK_SUCCESS:
+    case DELETE_ARCHIVED_TASK_SUCCESS:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
-          data: state.deadTasks.data.filter(
+        archivedTasks: {
+          ...state.archivedTasks,
+          data: state.archivedTasks.data.filter(
             (task) => task.key !== action.taskKey
           ),
         },
       };
 
-    case RUN_DEAD_TASK_ERROR:
-    case DELETE_DEAD_TASK_ERROR:
+    case RUN_ARCHIVED_TASK_ERROR:
+    case DELETE_ARCHIVED_TASK_ERROR:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
-          data: state.deadTasks.data.map((task) => {
+        archivedTasks: {
+          ...state.archivedTasks,
+          data: state.archivedTasks.data.map((task) => {
             if (task.key !== action.taskKey) {
               return task;
             }
@@ -885,45 +885,45 @@ function tasksReducer(
         },
       };
 
-    case RUN_ALL_DEAD_TASKS_BEGIN:
-    case DELETE_ALL_DEAD_TASKS_BEGIN:
+    case RUN_ALL_ARCHIVED_TASKS_BEGIN:
+    case DELETE_ALL_ARCHIVED_TASKS_BEGIN:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           allActionPending: true,
         },
       };
 
-    case RUN_ALL_DEAD_TASKS_SUCCESS:
-    case DELETE_ALL_DEAD_TASKS_SUCCESS:
+    case RUN_ALL_ARCHIVED_TASKS_SUCCESS:
+    case DELETE_ALL_ARCHIVED_TASKS_SUCCESS:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           allActionPending: false,
           data: [],
         },
       };
 
-    case RUN_ALL_DEAD_TASKS_ERROR:
-    case DELETE_ALL_DEAD_TASKS_ERROR:
+    case RUN_ALL_ARCHIVED_TASKS_ERROR:
+    case DELETE_ALL_ARCHIVED_TASKS_ERROR:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           allActionPending: false,
         },
       };
 
-    case BATCH_RUN_DEAD_TASKS_BEGIN:
-    case BATCH_DELETE_DEAD_TASKS_BEGIN:
+    case BATCH_RUN_ARCHIVED_TASKS_BEGIN:
+    case BATCH_DELETE_ARCHIVED_TASKS_BEGIN:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           batchActionPending: true,
-          data: state.deadTasks.data.map((task) => {
+          data: state.archivedTasks.data.map((task) => {
             if (!action.taskKeys.includes(task.key)) {
               return task;
             }
@@ -935,42 +935,42 @@ function tasksReducer(
         },
       };
 
-    case BATCH_RUN_DEAD_TASKS_SUCCESS: {
-      const newData = state.deadTasks.data.filter(
+    case BATCH_RUN_ARCHIVED_TASKS_SUCCESS: {
+      const newData = state.archivedTasks.data.filter(
         (task) => !action.payload.pending_keys.includes(task.key)
       );
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           batchActionPending: false,
           data: newData,
         },
       };
     }
 
-    case BATCH_DELETE_DEAD_TASKS_SUCCESS: {
-      const newData = state.deadTasks.data.filter(
+    case BATCH_DELETE_ARCHIVED_TASKS_SUCCESS: {
+      const newData = state.archivedTasks.data.filter(
         (task) => !action.payload.deleted_keys.includes(task.key)
       );
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           batchActionPending: false,
           data: newData,
         },
       };
     }
 
-    case BATCH_RUN_DEAD_TASKS_ERROR:
-    case BATCH_DELETE_DEAD_TASKS_ERROR:
+    case BATCH_RUN_ARCHIVED_TASKS_ERROR:
+    case BATCH_DELETE_ARCHIVED_TASKS_ERROR:
       return {
         ...state,
-        deadTasks: {
-          ...state.deadTasks,
+        archivedTasks: {
+          ...state.archivedTasks,
           batchActionPending: false,
-          data: state.deadTasks.data.map((task) => {
+          data: state.archivedTasks.data.map((task) => {
             if (!action.taskKeys.includes(task.key)) {
               return task;
             }

@@ -29,14 +29,14 @@ import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/
 import {
   batchDeleteRetryTasksAsync,
   batchRunRetryTasksAsync,
-  batchKillRetryTasksAsync,
+  batchArchiveRetryTasksAsync,
   deleteAllRetryTasksAsync,
   runAllRetryTasksAsync,
-  killAllRetryTasksAsync,
+  archiveAllRetryTasksAsync,
   listRetryTasksAsync,
   deleteRetryTaskAsync,
   runRetryTaskAsync,
-  killRetryTaskAsync,
+  archiveRetryTaskAsync,
 } from "../actions/tasksActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
@@ -69,14 +69,14 @@ function mapStateToProps(state: AppState) {
 const mapDispatchToProps = {
   batchDeleteRetryTasksAsync,
   batchRunRetryTasksAsync,
-  batchKillRetryTasksAsync,
+  batchArchiveRetryTasksAsync,
   deleteAllRetryTasksAsync,
   runAllRetryTasksAsync,
-  killAllRetryTasksAsync,
+  archiveAllRetryTasksAsync,
   listRetryTasksAsync,
   deleteRetryTaskAsync,
   runRetryTaskAsync,
-  killRetryTaskAsync,
+  archiveRetryTaskAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -127,8 +127,8 @@ function RetryTasksTable(props: Props & ReduxProps) {
     props.deleteAllRetryTasksAsync(queue);
   };
 
-  const handleKillAllClick = () => {
-    props.killAllRetryTasksAsync(queue);
+  const handleArchiveAllClick = () => {
+    props.archiveAllRetryTasksAsync(queue);
   };
 
   const handleBatchRunClick = () => {
@@ -143,9 +143,9 @@ function RetryTasksTable(props: Props & ReduxProps) {
       .then(() => setSelectedKeys([]));
   };
 
-  const handleBatchKillClick = () => {
+  const handleBatchArchiveClick = () => {
     props
-      .batchKillRetryTasksAsync(queue, selectedKeys)
+      .batchArchiveRetryTasksAsync(queue, selectedKeys)
       .then(() => setSelectedKeys([]));
   };
 
@@ -190,9 +190,9 @@ function RetryTasksTable(props: Props & ReduxProps) {
             disabled: props.batchActionPending,
           },
           {
-            tooltip: "Kill",
+            tooltip: "Archive",
             icon: <ArchiveIcon />,
-            onClick: handleBatchKillClick,
+            onClick: handleBatchArchiveClick,
             disabled: props.batchActionPending,
           },
           {
@@ -209,8 +209,8 @@ function RetryTasksTable(props: Props & ReduxProps) {
             disabled: props.allActionPending,
           },
           {
-            label: "Kill All",
-            onClick: handleKillAllClick,
+            label: "Archive All",
+            onClick: handleArchiveAllClick,
             disabled: props.allActionPending,
           },
           {
@@ -268,8 +268,8 @@ function RetryTasksTable(props: Props & ReduxProps) {
                 onDeleteClick={() => {
                   props.deleteRetryTaskAsync(task.queue, task.key);
                 }}
-                onKillClick={() => {
-                  props.killRetryTaskAsync(task.queue, task.key);
+                onArchiveClick={() => {
+                  props.archiveRetryTaskAsync(task.queue, task.key);
                 }}
                 onActionCellEnter={() => setActiveTaskId(task.id)}
                 onActionCellLeave={() => setActiveTaskId("")}
@@ -322,7 +322,7 @@ interface RowProps {
   onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;
   onRunClick: () => void;
-  onKillClick: () => void;
+  onArchiveClick: () => void;
   allActionPending: boolean;
   showActions: boolean;
   onActionCellEnter: () => void;
@@ -387,9 +387,9 @@ function Row(props: RowProps) {
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Kill">
+              <Tooltip title="Archive">
                 <IconButton
-                  onClick={props.onKillClick}
+                  onClick={props.onArchiveClick}
                   disabled={task.requestPending || props.allActionPending}
                   size="small"
                 >

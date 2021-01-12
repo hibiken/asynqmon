@@ -8,7 +8,7 @@ import ActiveTasksTable from "./ActiveTasksTable";
 import PendingTasksTable from "./PendingTasksTable";
 import ScheduledTasksTable from "./ScheduledTasksTable";
 import RetryTasksTable from "./RetryTasksTable";
-import DeadTasksTable from "./DeadTasksTable";
+import ArchivedTasksTable from "./ArchivedTasksTable";
 import { useHistory } from "react-router-dom";
 import { queueDetailsPath } from "../paths";
 import { Typography } from "@material-ui/core";
@@ -166,7 +166,7 @@ function mapStatetoProps(state: AppState, ownProps: Props) {
         pending: 0,
         scheduled: 0,
         retry: 0,
-        dead: 0,
+        archived: 0,
         processed: 0,
         failed: 0,
         timestamp: "n/a",
@@ -246,15 +246,15 @@ function TasksTable(props: Props & ReduxProps) {
             {...a11yProps("retry")}
           />
           <Tab
-            value="dead"
-            label="Dead"
-            icon={<TaskCount>{currentStats.dead}</TaskCount>}
+            value="archived"
+            label="Archived"
+            icon={<TaskCount>{currentStats.archived}</TaskCount>}
             classes={{
               root: classes.tabroot,
               wrapper: classes.tabwrapper,
               selected: classes.tabSelected,
             }}
-            {...a11yProps("dead")}
+            {...a11yProps("archived")}
           />
         </Tabs>
       </TabsContainer>
@@ -311,7 +311,7 @@ function TasksTable(props: Props & ReduxProps) {
           />
         </PanelContainer>
       </TabPanel>
-      <TabPanel value="dead" selected={props.selected}>
+      <TabPanel value="archived" selected={props.selected}>
         <PanelContainer>
           <PanelHeading
             queue={props.queue}
@@ -319,9 +319,9 @@ function TasksTable(props: Props & ReduxProps) {
             failed={currentStats.failed}
             paused={currentStats.paused}
           />
-          <DeadTasksTable
+          <ArchivedTasksTable
             queue={props.queue}
-            totalTaskCount={currentStats.dead}
+            totalTaskCount={currentStats.archived}
           />
         </PanelContainer>
       </TabPanel>
