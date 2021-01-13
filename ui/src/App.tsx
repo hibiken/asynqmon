@@ -26,7 +26,7 @@ import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 import CloseIcon from "@material-ui/icons/Close";
 import { AppState } from "./store";
 import { paths } from "./paths";
-import { makeTheme } from "./theme";
+import { useTheme } from "./theme";
 import { closeSnackbar } from "./actions/snackbarActions";
 import ListItemLink from "./components/ListItemLink";
 import SchedulersView from "./views/SchedulersView";
@@ -146,7 +146,7 @@ function SlideUpTransition(props: TransitionProps) {
 }
 
 function App(props: ConnectedProps<typeof connector>) {
-  const theme = makeTheme(props.themePreference);
+  const theme = useTheme(props.themePreference);
   const classes = useStyles(theme)();
   const [open, setOpen] = useState(true);
   const toggleDrawer = () => setOpen(!open);
