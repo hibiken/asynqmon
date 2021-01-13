@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme, Theme } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
@@ -19,7 +19,8 @@ import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
+import syntaxHighlightStyleDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
+import syntaxHighlightStyleLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
 import { ServerInfo } from "../api";
 import { SortDirection, SortableTableColumn } from "../types/table";
 import { timeAgo, uuidPrefix } from "../utils";
@@ -34,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
     position: "sticky",
     zIndex: 1,
     left: 0,
-    background: theme.palette.common.white,
+    background: theme.palette.background.paper,
   },
 }));
 
@@ -208,10 +209,15 @@ const useRowStyles = makeStyles((theme) => ({
   noBorder: {
     border: "none",
   },
+  link: {
+    color: theme.palette.text.primary,
+  },
 }));
 
 function Row(props: RowProps) {
   const classes = useRowStyles();
+  const theme = useTheme<Theme>();
+  const isDarkTheme = theme.palette.type === "dark";
   const { server } = props;
   const [open, setOpen] = useState<boolean>(false);
   const qnames = Object.keys(server.queue_priorities);
@@ -226,7 +232,9 @@ function Row(props: RowProps) {
         <TableCell>
           {qnames.map((qname, idx) => (
             <span key={qname}>
-              <Link to={queueDetailsPath(qname)}>{qname}</Link>
+              <Link to={queueDetailsPath(qname)} className={classes.link}>
+                {qname}
+              </Link>
               {idx === qnames.length - 1 ? "" : ", "}
             </span>
           ))}
@@ -276,7 +284,11 @@ function Row(props: RowProps) {
                         <TableCell>
                           <SyntaxHighlighter
                             language="json"
-                            style={syntaxHighlightStyle}
+                            style={
+                              isDarkTheme
+                                ? syntaxHighlightStyleDark
+                                : syntaxHighlightStyleLight
+                            }
                             customStyle={{ margin: 0 }}
                           >
                             {JSON.stringify(worker.task.payload)}
@@ -308,7 +320,12 @@ function Row(props: RowProps) {
                     {qnames.map((qname) => (
                       <TableRow key={qname}>
                         <TableCell>
-                          <Link to={queueDetailsPath(qname)}>{qname}</Link>
+                          <Link
+                            to={queueDetailsPath(qname)}
+                            className={classes.link}
+                          >
+                            {qname}
+                          </Link>
                         </TableCell>
                         <TableCell align="right">
                           {server.queue_priorities[qname]}

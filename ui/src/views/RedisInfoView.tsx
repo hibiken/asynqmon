@@ -9,7 +9,8 @@ import CardContent from "@material-ui/core/CardContent";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
+import syntaxHighlightStyleDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
+import syntaxHighlightStyleLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
 import { getRedisInfoAsync } from "../actions/redisInfoActions";
 import { usePolling } from "../hooks";
 import { AppState } from "../store";
@@ -30,6 +31,7 @@ function mapStateToProps(state: AppState) {
     redisAddress: state.redis.address,
     redisInfoRaw: state.redis.rawData,
     pollInterval: state.settings.pollInterval,
+    isDarkTheme: state.settings.isDarkTheme,
   };
 }
 
@@ -38,7 +40,13 @@ type Props = ConnectedProps<typeof connector>;
 
 function RedisInfoView(props: Props) {
   const classes = useStyles();
-  const { pollInterval, getRedisInfoAsync, redisInfo, redisInfoRaw } = props;
+  const {
+    pollInterval,
+    getRedisInfoAsync,
+    redisInfo,
+    redisInfoRaw,
+    isDarkTheme,
+  } = props;
 
   usePolling(getRedisInfoAsync, pollInterval);
 
@@ -56,7 +64,9 @@ function RedisInfoView(props: Props) {
         {props.error === "" ? (
           <>
             <Grid item xs={12}>
-              <Typography variant="h5">Redis Info</Typography>
+              <Typography variant="h5" color="textPrimary">
+                Redis Info
+              </Typography>
               <Typography variant="subtitle1" color="textSecondary">
                 Connected to: {props.redisAddress}
               </Typography>
@@ -153,7 +163,11 @@ function RedisInfoView(props: Props) {
                   </Typography>
                   <SyntaxHighlighter
                     language="yaml"
-                    style={syntaxHighlightStyle}
+                    style={
+                      isDarkTheme
+                        ? syntaxHighlightStyleDark
+                        : syntaxHighlightStyleLight
+                    }
                   >
                     {redisInfoRaw}
                   </SyntaxHighlighter>

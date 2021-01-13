@@ -60,7 +60,9 @@ function SettingsView(props: PropsFromRedux) {
     <Container maxWidth="lg" className={classes.container}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Typography variant="h5">Settings</Typography>
+          <Typography variant="h5" color="textPrimary">
+            Settings
+          </Typography>
         </Grid>
         <Grid item xs={5}>
           <Paper className={classes.paper} variant="outlined">

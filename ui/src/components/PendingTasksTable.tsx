@@ -32,11 +32,14 @@ import { usePolling } from "../hooks";
 import { uuidPrefix } from "../utils";
 import { TableColumn } from "../types/table";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   table: {
     minWidth: 650,
   },
-});
+  stickyHeaderCell: {
+    background: theme.palette.background.paper,
+  },
+}));
 
 function mapStateToProps(state: AppState) {
   return {
@@ -110,7 +113,11 @@ function PendingTasksTable(props: Props & ReduxProps) {
         <TableHead>
           <TableRow>
             {columns.map((col) => (
-              <TableCell key={col.key} align={col.align}>
+              <TableCell
+                key={col.key}
+                align={col.align}
+                classes={{ stickyHeader: classes.stickyHeaderCell }}
+              >
                 {col.label}
               </TableCell>
             ))}

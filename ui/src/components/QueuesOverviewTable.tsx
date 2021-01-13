@@ -27,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
   },
   linkCell: {
     textDecoration: "none",
+    color: theme.palette.text.primary,
   },
   footerCell: {
     fontWeight: 600,
@@ -40,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
     position: "sticky",
     zIndex: 1,
     left: 0,
-    background: theme.palette.common.white,
+    background: theme.palette.background.paper,
   },
   actionIconsContainer: {
     display: "flex",
@@ -211,7 +212,10 @@ export default function QueuesOverviewTable(props: Props) {
                   scope="row"
                   className={clsx(classes.boldCell, classes.fixedCell)}
                 >
-                  <Link to={queueDetailsPath(q.queue)}>
+                  <Link
+                    to={queueDetailsPath(q.queue)}
+                    className={classes.linkCell}
+                  >
                     {q.queue}
                     {q.paused ? " (paused)" : ""}
                   </Link>

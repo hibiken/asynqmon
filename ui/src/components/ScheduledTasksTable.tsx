@@ -50,11 +50,14 @@ import { usePolling } from "../hooks";
 import { ScheduledTaskExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   table: {
     minWidth: 650,
   },
-});
+  stickyHeaderCell: {
+    background: theme.palette.background.paper,
+  },
+}));
 
 function mapStateToProps(state: AppState) {
   return {
@@ -226,7 +229,10 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
         >
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
+              <TableCell
+                padding="checkbox"
+                classes={{ stickyHeader: classes.stickyHeaderCell }}
+              >
                 <Checkbox
                   indeterminate={numSelected > 0 && numSelected < rowCount}
                   checked={rowCount > 0 && numSelected === rowCount}
@@ -237,7 +243,11 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
                 />
               </TableCell>
               {columns.map((col) => (
-                <TableCell key={col.label} align={col.align}>
+                <TableCell
+                  key={col.label}
+                  align={col.align}
+                  classes={{ stickyHeader: classes.stickyHeaderCell }}
+                >
                   {col.label}
                 </TableCell>
               ))}

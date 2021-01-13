@@ -46,11 +46,14 @@ import { usePolling } from "../hooks";
 import { ArchivedTaskExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   table: {
     minWidth: 650,
   },
-});
+  stickyHeaderCell: {
+    background: theme.palette.background.paper,
+  },
+}));
 
 const useRowStyles = makeStyles({
   root: {
@@ -214,7 +217,10 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
         >
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
+              <TableCell
+                padding="checkbox"
+                classes={{ stickyHeader: classes.stickyHeaderCell }}
+              >
                 <Checkbox
                   indeterminate={numSelected > 0 && numSelected < rowCount}
                   checked={rowCount > 0 && numSelected === rowCount}
@@ -225,7 +231,11 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
                 />
               </TableCell>
               {columns.map((col) => (
-                <TableCell key={col.key} align={col.align}>
+                <TableCell
+                  key={col.key}
+                  align={col.align}
+                  classes={{ stickyHeader: classes.stickyHeaderCell }}
+                >
                   {col.label}
                 </TableCell>
               ))}
