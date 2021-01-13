@@ -1,17 +1,22 @@
 import {
   POLL_INTERVAL_CHANGE,
   SettingsActionTypes,
-  TOGGLE_DARK_THEME,
+  THEME_PREFERENCE_CHANGE,
 } from "../actions/settingsActions";
 
+export enum ThemePreference {
+  SystemDefault,
+  Always,
+  Never,
+}
 interface SettingsState {
   pollInterval: number;
-  isDarkTheme: boolean;
+  themePreference: ThemePreference;
 }
 
 const initialState: SettingsState = {
   pollInterval: 8,
-  isDarkTheme: true,
+  themePreference: ThemePreference.SystemDefault,
 };
 
 function settingsReducer(
@@ -21,10 +26,10 @@ function settingsReducer(
   switch (action.type) {
     case POLL_INTERVAL_CHANGE:
       return { ...state, pollInterval: action.value };
-    case TOGGLE_DARK_THEME:
+    case THEME_PREFERENCE_CHANGE:
       return {
         ...state,
-        isDarkTheme: !state.isDarkTheme,
+        themePreference: action.value,
       };
     default:
       return state;

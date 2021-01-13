@@ -131,7 +131,7 @@ const useStyles = (theme: Theme) =>
 function mapStateToProps(state: AppState) {
   return {
     snackbar: state.snackbar,
-    isDarkTheme: state.settings.isDarkTheme,
+    themePreference: state.settings.themePreference,
   };
 }
 
@@ -146,7 +146,7 @@ function SlideUpTransition(props: TransitionProps) {
 }
 
 function App(props: ConnectedProps<typeof connector>) {
-  const theme = makeTheme(props.isDarkTheme);
+  const theme = makeTheme(props.themePreference);
   const classes = useStyles(theme)();
   const [open, setOpen] = useState(true);
   const toggleDrawer = () => setOpen(!open);

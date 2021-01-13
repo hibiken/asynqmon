@@ -1,6 +1,15 @@
 import { createMuiTheme, Theme } from "@material-ui/core/styles";
+import { ThemePreference } from "./reducers/settingsReducer";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
 
-export function makeTheme(isDarkTheme: boolean): Theme {
+export function makeTheme(themePreference: ThemePreference): Theme {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  let prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  if (themePreference === ThemePreference.Always) {
+    prefersDarkMode = true;
+  } else if (themePreference === ThemePreference.Never) {
+    prefersDarkMode = false;
+  }
   return createMuiTheme({
     // Got color palette from https://htmlcolors.com/palette/31/stripe
     palette: {
@@ -13,7 +22,7 @@ export function makeTheme(isDarkTheme: boolean): Theme {
       background: {
         default: "#f5f7f9",
       },
-      type: isDarkTheme ? "dark" : "light",
+      type: prefersDarkMode ? "dark" : "light",
     },
   });
 }

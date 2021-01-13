@@ -1,7 +1,7 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import Container from "@material-ui/core/Container";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme, Theme } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import Card from "@material-ui/core/Card";
@@ -31,7 +31,7 @@ function mapStateToProps(state: AppState) {
     redisAddress: state.redis.address,
     redisInfoRaw: state.redis.rawData,
     pollInterval: state.settings.pollInterval,
-    isDarkTheme: state.settings.isDarkTheme,
+    themePreference: state.settings.themePreference,
   };
 }
 
@@ -40,14 +40,9 @@ type Props = ConnectedProps<typeof connector>;
 
 function RedisInfoView(props: Props) {
   const classes = useStyles();
-  const {
-    pollInterval,
-    getRedisInfoAsync,
-    redisInfo,
-    redisInfoRaw,
-    isDarkTheme,
-  } = props;
-
+  const { pollInterval, getRedisInfoAsync, redisInfo, redisInfoRaw } = props;
+  const theme = useTheme<Theme>();
+  const isDarkTheme = theme.palette.type === "dark";
   usePolling(getRedisInfoAsync, pollInterval);
 
   // Metrics to show

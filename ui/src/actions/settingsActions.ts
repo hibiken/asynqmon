@@ -1,6 +1,8 @@
+import { ThemePreference } from "../reducers/settingsReducer";
+
 // List of settings related action types.
-export const POLL_INTERVAL_CHANGE = 'POLL_INTERVAL_CHANGE';
-export const TOGGLE_DARK_THEME = 'TOGGLE_DARK_THEME';
+export const POLL_INTERVAL_CHANGE = "POLL_INTERVAL_CHANGE";
+export const THEME_PREFERENCE_CHANGE = "THEME_PREFERENCE_CHANGE";
 
 interface PollIntervalChangeAction {
   type: typeof POLL_INTERVAL_CHANGE;
@@ -8,11 +10,14 @@ interface PollIntervalChangeAction {
 }
 
 interface ToggleDarkThemeAction {
-  type: typeof TOGGLE_DARK_THEME;
+  type: typeof THEME_PREFERENCE_CHANGE;
+  value: ThemePreference;
 }
 
 // Union of all settings related action types.
-export type SettingsActionTypes = PollIntervalChangeAction | ToggleDarkThemeAction;
+export type SettingsActionTypes =
+  | PollIntervalChangeAction
+  | ToggleDarkThemeAction;
 
 export function pollIntervalChange(value: number) {
   return {
@@ -21,9 +26,9 @@ export function pollIntervalChange(value: number) {
   };
 }
 
-export function toggleDarkTheme() {
+export function selectTheme(value: ThemePreference) {
   return {
-    type: TOGGLE_DARK_THEME
-  }
+    type: THEME_PREFERENCE_CHANGE,
+    value,
+  };
 }
-
