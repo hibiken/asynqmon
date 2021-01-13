@@ -5,15 +5,14 @@ import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import Switch from "@material-ui/core/Switch";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormGroup from "@material-ui/core/FormGroup";
 import Slider from "@material-ui/core/Slider";
-import {
-  pollIntervalChange,
-  toggleDarkTheme,
-} from "../actions/settingsActions";
+import { pollIntervalChange, selectTheme } from "../actions/settingsActions";
 import { AppState } from "../store";
+import FormControl from "@material-ui/core/FormControl/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+import { themeKind } from "../reducers/settingsReducer";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -26,16 +25,23 @@ const useStyles = makeStyles((theme) => ({
     overflow: "auto",
     flexDirection: "column",
   },
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120,
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2),
+  },
 }));
 
 function mapStateToProps(state: AppState) {
   return {
     pollInterval: state.settings.pollInterval,
-    isDarkTheme: state.settings.isDarkTheme,
+    themePreference: state.settings.themePreference,
   };
 }
 
-const mapDispatchToProps = { pollIntervalChange, toggleDarkTheme };
+const mapDispatchToProps = { pollIntervalChange, selectTheme };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -53,8 +59,8 @@ function SettingsView(props: PropsFromRedux) {
     props.pollIntervalChange(val as number);
   };
 
-  const handleThemeChange = (event: React.ChangeEvent<HTMLElement>) => {
-    props.toggleDarkTheme();
+  const handleThemeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    props.selectTheme(event.target.value as themeKind);
   };
   return (
     <Container maxWidth="lg" className={classes.container}>
@@ -87,23 +93,22 @@ function SettingsView(props: PropsFromRedux) {
             />
           </Paper>
         </Grid>
-        <Grid item xs={5}>
-          <Paper>
-            <Typography color="textPrimary">theme switch</Typography>
-            <FormGroup row>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={props.isDarkTheme}
-                    onChange={handleThemeChange}
-                    name="DarkTheme"
-                  />
-                }
-                label="🌛"
-              />
-            </FormGroup>
-          </Paper>
-        </Grid>
+        <FormControl variant="outlined" className={classes.formControl}>
+          <InputLabel id="demo-simple-select-outlined-label">
+            Dark theme
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-outlined-label"
+            id="demo-simple-select-outlined"
+            value={props.themePreference}
+            onChange={handleThemeChange}
+            label="theme preference"
+          >
+            <MenuItem value={themeKind.SystemDefault}>System Default</MenuItem>
+            <MenuItem value={themeKind.Always}>Always</MenuItem>
+            <MenuItem value={themeKind.Never}>Never</MenuItem>
+          </Select>
+        </FormControl>
       </Grid>
     </Container>
   );
