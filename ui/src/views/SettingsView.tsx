@@ -12,7 +12,7 @@ import FormControl from "@material-ui/core/FormControl/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import { themeKind } from "../reducers/settingsReducer";
+import { ThemePreference } from "../reducers/settingsReducer";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -60,7 +60,7 @@ function SettingsView(props: PropsFromRedux) {
   };
 
   const handleThemeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    props.selectTheme(event.target.value as themeKind);
+    props.selectTheme(event.target.value as ThemePreference);
   };
   return (
     <Container maxWidth="lg" className={classes.container}>
@@ -94,19 +94,19 @@ function SettingsView(props: PropsFromRedux) {
           </Paper>
         </Grid>
         <FormControl variant="outlined" className={classes.formControl}>
-          <InputLabel id="demo-simple-select-outlined-label">
-            Dark theme
-          </InputLabel>
+          <InputLabel id="theme-label">Dark theme</InputLabel>
           <Select
-            labelId="demo-simple-select-outlined-label"
-            id="demo-simple-select-outlined"
+            labelId="theme-label"
+            id="theme-selected"
             value={props.themePreference}
             onChange={handleThemeChange}
             label="theme preference"
           >
-            <MenuItem value={themeKind.SystemDefault}>System Default</MenuItem>
-            <MenuItem value={themeKind.Always}>Always</MenuItem>
-            <MenuItem value={themeKind.Never}>Never</MenuItem>
+            <MenuItem value={ThemePreference.SystemDefault}>
+              System Default
+            </MenuItem>
+            <MenuItem value={ThemePreference.Always}>Always</MenuItem>
+            <MenuItem value={ThemePreference.Never}>Never</MenuItem>
           </Select>
         </FormControl>
       </Grid>

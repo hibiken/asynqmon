@@ -1,13 +1,13 @@
 import { createMuiTheme, Theme } from "@material-ui/core/styles";
-import { themeKind } from "./reducers/settingsReducer";
+import { ThemePreference } from "./reducers/settingsReducer";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 
-export function makeTheme(themePreference: themeKind): Theme {
+export function makeTheme(themePreference: ThemePreference): Theme {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  if (themePreference === "ALWAYS") {
+  if (themePreference === ThemePreference.Always) {
     prefersDarkMode = true;
-  } else if (themePreference === "NEVER") {
+  } else if (themePreference === ThemePreference.Never) {
     prefersDarkMode = false;
   }
   return createMuiTheme({
