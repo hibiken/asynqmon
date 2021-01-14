@@ -63,14 +63,14 @@ function SettingsView(props: PropsFromRedux) {
     props.selectTheme(event.target.value as ThemePreference);
   };
   return (
-    <Container maxWidth="lg" className={classes.container}>
+    <Container maxWidth="md" className={classes.container}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Typography variant="h5" color="textPrimary">
             Settings
           </Typography>
         </Grid>
-        <Grid item xs={5}>
+        <Grid item xs={6}>
           <Paper className={classes.paper} variant="outlined">
             <Typography color="textPrimary">Polling Interval</Typography>
             <Typography gutterBottom color="textSecondary" variant="subtitle1">
@@ -93,22 +93,26 @@ function SettingsView(props: PropsFromRedux) {
             />
           </Paper>
         </Grid>
-        <FormControl variant="outlined" className={classes.formControl}>
-          <InputLabel id="theme-label">Dark theme</InputLabel>
-          <Select
-            labelId="theme-label"
-            id="theme-selected"
-            value={props.themePreference}
-            onChange={handleThemeChange}
-            label="theme preference"
-          >
-            <MenuItem value={ThemePreference.SystemDefault}>
-              System Default
-            </MenuItem>
-            <MenuItem value={ThemePreference.Always}>Always</MenuItem>
-            <MenuItem value={ThemePreference.Never}>Never</MenuItem>
-          </Select>
-        </FormControl>
+        <Grid item>
+          <Paper className={classes.paper} variant="outlined">
+            <FormControl variant="outlined" className={classes.formControl}>
+              <InputLabel id="theme-label">Dark theme</InputLabel>
+              <Select
+                labelId="theme-label"
+                id="theme-selected"
+                value={props.themePreference}
+                onChange={handleThemeChange}
+                label="theme preference"
+              >
+                <MenuItem value={ThemePreference.SystemDefault}>
+                  System Default
+                </MenuItem>
+                <MenuItem value={ThemePreference.Always}>Always</MenuItem>
+                <MenuItem value={ThemePreference.Never}>Never</MenuItem>
+              </Select>
+            </FormControl>
+          </Paper>
+        </Grid>
       </Grid>
     </Container>
   );
