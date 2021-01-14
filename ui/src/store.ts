@@ -7,6 +7,7 @@ import schedulerEntriesReducer from "./reducers/schedulerEntriesReducer";
 import snackbarReducer from "./reducers/snackbarReducer";
 import queueStatsReducer from "./reducers/queueStatsReducer";
 import redisInfoReducer from "./reducers/redisInfoReducer";
+import { loadState } from "./localStorage";
 
 const rootReducer = combineReducers({
   settings: settingsReducer,
@@ -19,9 +20,14 @@ const rootReducer = combineReducers({
   redis: redisInfoReducer,
 });
 
+const preloadedState = loadState();
+
 // AppState is the top-level application state maintained by redux store.
 export type AppState = ReturnType<typeof rootReducer>;
 
-export default configureStore({
+const store = configureStore({
   reducer: rootReducer,
+  preloadedState,
 });
+
+export default store;
