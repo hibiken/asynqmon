@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
     position: "sticky",
     zIndex: 1,
     left: 0,
-    background: theme.palette.common.white,
+    background: theme.palette.background.paper,
   },
   modal: {
     display: "flex",

@@ -26,10 +26,16 @@ const useStyles = makeStyles((theme) => ({
   },
   formControl: {
     margin: theme.spacing(1),
-    minWidth: 120,
+    display: "flex",
+    justifyContent: "space-between",
+    flexDirection: "row",
+    alignItems: "center",
   },
   selectEmpty: {
     marginTop: theme.spacing(2),
+  },
+  select: {
+    width: "200px",
   },
 }));
 
@@ -102,15 +108,14 @@ function SettingsView(props: PropsFromRedux) {
         <Grid item xs={6}>
           <Paper className={classes.paper} variant="outlined">
             <FormControl variant="outlined" className={classes.formControl}>
-              <Typography color="textPrimary" gutterBottom>
-                Dark theme
-              </Typography>
+              <Typography color="textPrimary">Dark Theme</Typography>
               <Select
                 labelId="theme-label"
                 id="theme-selected"
                 value={props.themePreference}
                 onChange={handleThemeChange}
                 label="theme preference"
+                className={classes.select}
               >
                 <MenuItem value={ThemePreference.SystemDefault}>
                   System Default

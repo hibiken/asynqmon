@@ -129,23 +129,28 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     width: "100%",
     height: "100%",
+    background: theme.palette.background.paper,
   },
   heading: {
-    opacity: 0.7,
     fontSize: "1.7rem",
     fontWeight: 500,
-    backgroundColor: theme.palette.background.paper,
     paddingLeft: "28px", // TODO: maybe use theme.spacing(3),
     paddingTop: "28px",
     paddingBottom: "28px",
     color: theme.palette.text.primary,
   },
   tabsContainer: {
-    background: theme.palette.background.paper,
+    background:
+      theme.palette.type === "dark"
+        ? "#303030"
+        : theme.palette.background.default,
   },
   tabsRoot: {
     paddingLeft: theme.spacing(2),
-    background: theme.palette.background.paper,
+    background:
+      theme.palette.type === "dark"
+        ? "#303030"
+        : theme.palette.background.default,
   },
   tabsIndicator: {
     right: "auto",
@@ -161,12 +166,11 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.text.primary,
   },
   tabSelected: {
-    background: theme.palette.action.selected,
+    background: theme.palette.background.paper,
     boxShadow: theme.shadows[1],
   },
   panelContainer: {
     padding: "24px",
-    background: theme.palette.background.paper,
   },
   taskCount: {
     fontSize: "2rem",

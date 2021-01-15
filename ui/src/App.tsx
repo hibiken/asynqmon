@@ -63,7 +63,10 @@ const useStyles = (theme: Theme) =>
     },
     menuButton: {
       marginRight: theme.spacing(2),
-      color: theme.palette.grey[700],
+      color:
+        theme.palette.type === "dark"
+          ? theme.palette.grey[100]
+          : theme.palette.grey[700],
     },
     menuButtonHidden: {
       display: "none",
