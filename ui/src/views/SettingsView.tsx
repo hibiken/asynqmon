@@ -9,7 +9,6 @@ import Slider from "@material-ui/core/Slider";
 import { pollIntervalChange, selectTheme } from "../actions/settingsActions";
 import { AppState } from "../store";
 import FormControl from "@material-ui/core/FormControl/FormControl";
-import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import { ThemePreference } from "../reducers/settingsReducer";
@@ -63,13 +62,17 @@ function SettingsView(props: PropsFromRedux) {
     props.selectTheme(event.target.value as ThemePreference);
   };
   return (
-    <Container maxWidth="md" className={classes.container}>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
+    <Container maxWidth="lg" className={classes.container}>
+      <Grid container spacing={3} justify="center">
+        <Grid item xs={1} />
+        <Grid item xs={6}>
           <Typography variant="h5" color="textPrimary">
             Settings
           </Typography>
         </Grid>
+        <Grid item xs={5} />
+
+        <Grid item xs={1} />
         <Grid item xs={6}>
           <Paper className={classes.paper} variant="outlined">
             <Typography color="textPrimary">Polling Interval</Typography>
@@ -93,10 +96,15 @@ function SettingsView(props: PropsFromRedux) {
             />
           </Paper>
         </Grid>
-        <Grid item>
+        <Grid xs={5} />
+
+        <Grid item xs={1} />
+        <Grid item xs={6}>
           <Paper className={classes.paper} variant="outlined">
             <FormControl variant="outlined" className={classes.formControl}>
-              <InputLabel id="theme-label">Dark theme</InputLabel>
+              <Typography color="textPrimary" gutterBottom>
+                Dark theme
+              </Typography>
               <Select
                 labelId="theme-label"
                 id="theme-selected"
@@ -113,6 +121,7 @@ function SettingsView(props: PropsFromRedux) {
             </FormControl>
           </Paper>
         </Grid>
+        <Grid item xs={5} />
       </Grid>
     </Container>
   );
