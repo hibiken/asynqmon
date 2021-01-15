@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
-import { makeStyles, useTheme, Theme } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import Collapse from "@material-ui/core/Collapse";
@@ -18,9 +18,7 @@ import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import syntaxHighlightStyleDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
-import syntaxHighlightStyleLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
+import SyntaxHighlighter from "./SyntaxHighlighter";
 import { ServerInfo } from "../api";
 import { SortDirection, SortableTableColumn } from "../types/table";
 import { timeAgo, uuidPrefix } from "../utils";
@@ -216,8 +214,6 @@ const useRowStyles = makeStyles((theme) => ({
 
 function Row(props: RowProps) {
   const classes = useRowStyles();
-  const theme = useTheme<Theme>();
-  const isDarkTheme = theme.palette.type === "dark";
   const { server } = props;
   const [open, setOpen] = useState<boolean>(false);
   const qnames = Object.keys(server.queue_priorities);
@@ -284,11 +280,6 @@ function Row(props: RowProps) {
                         <TableCell>
                           <SyntaxHighlighter
                             language="json"
-                            style={
-                              isDarkTheme
-                                ? syntaxHighlightStyleDark
-                                : syntaxHighlightStyleLight
-                            }
                             customStyle={{ margin: 0 }}
                           >
                             {JSON.stringify(worker.task.payload)}

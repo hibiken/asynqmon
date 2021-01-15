@@ -24,8 +24,7 @@ import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
+import SyntaxHighlighter from "./SyntaxHighlighter";
 import { AppState } from "../store";
 import {
   batchDeleteArchivedTasksAsync,
@@ -375,7 +374,7 @@ function Row(props: RowProps) {
               <Typography variant="h6" gutterBottom component="div">
                 Payload
               </Typography>
-              <SyntaxHighlighter language="json" style={syntaxHighlightStyle}>
+              <SyntaxHighlighter language="json">
                 {JSON.stringify(task.payload, null, 2)}
               </SyntaxHighlighter>
             </Box>

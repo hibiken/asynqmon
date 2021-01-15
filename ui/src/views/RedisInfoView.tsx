@@ -1,16 +1,14 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import Container from "@material-ui/core/Container";
-import { makeStyles, useTheme, Theme } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import syntaxHighlightStyleDark from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark";
-import syntaxHighlightStyleLight from "react-syntax-highlighter/dist/esm/styles/hljs/atom-one-light";
+import SyntaxHighlighter from "../components/SyntaxHighlighter";
 import { getRedisInfoAsync } from "../actions/redisInfoActions";
 import { usePolling } from "../hooks";
 import { AppState } from "../store";
@@ -41,8 +39,6 @@ type Props = ConnectedProps<typeof connector>;
 function RedisInfoView(props: Props) {
   const classes = useStyles();
   const { pollInterval, getRedisInfoAsync, redisInfo, redisInfoRaw } = props;
-  const theme = useTheme<Theme>();
-  const isDarkTheme = theme.palette.type === "dark";
   usePolling(getRedisInfoAsync, pollInterval);
 
   // Metrics to show
@@ -156,14 +152,7 @@ function RedisInfoView(props: Props) {
                   <Typography variant="h6" color="textSecondary">
                     INFO Command Output
                   </Typography>
-                  <SyntaxHighlighter
-                    language="yaml"
-                    style={
-                      isDarkTheme
-                        ? syntaxHighlightStyleDark
-                        : syntaxHighlightStyleLight
-                    }
-                  >
+                  <SyntaxHighlighter language="yaml">
                     {redisInfoRaw}
                   </SyntaxHighlighter>
                 </Grid>

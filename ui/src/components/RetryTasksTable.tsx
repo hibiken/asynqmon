@@ -25,7 +25,6 @@ import Typography from "@material-ui/core/Typography";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
 import {
   batchDeleteRetryTasksAsync,
   batchRunRetryTasksAsync,
@@ -430,7 +429,7 @@ function Row(props: RowProps) {
               <Typography variant="h6" gutterBottom component="div">
                 Payload
               </Typography>
-              <SyntaxHighlighter language="json" style={syntaxHighlightStyle}>
+              <SyntaxHighlighter language="json">
                 {JSON.stringify(task.payload, null, 2)}
               </SyntaxHighlighter>
             </Box>

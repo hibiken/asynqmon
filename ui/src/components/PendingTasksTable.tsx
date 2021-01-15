@@ -20,7 +20,6 @@ import Typography from "@material-ui/core/Typography";
 import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
 import TablePaginationActions, {
   defaultPageSize,
   rowsPerPageOptions,
@@ -189,7 +188,7 @@ function Row(props: { task: PendingTask }) {
               <Typography variant="h6" gutterBottom component="div">
                 Payload
               </Typography>
-              <SyntaxHighlighter language="json" style={syntaxHighlightStyle}>
+              <SyntaxHighlighter language="json">
                 {JSON.stringify(task.payload, null, 2)}
               </SyntaxHighlighter>
             </Box>

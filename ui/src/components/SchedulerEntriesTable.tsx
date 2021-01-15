@@ -14,10 +14,9 @@ import Tooltip from "@material-ui/core/Tooltip";
 import HistoryIcon from "@material-ui/icons/History";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import syntaxHighlightStyle from "react-syntax-highlighter/dist/esm/styles/hljs/github";
 import { SortDirection, SortableTableColumn } from "../types/table";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
+import SyntaxHighlighter from "./SyntaxHighlighter";
 import { SchedulerEntry } from "../api";
 import { timeAgo, durationBefore } from "../utils";
 import SchedulerEnqueueEventsTable from "./SchedulerEnqueueEventsTable";
@@ -288,12 +287,12 @@ function Row(props: RowProps) {
         {entry.task_type}
       </TableCell>
       <TableCell className={clsx(isLastRow && classes.noBorder)}>
-        <SyntaxHighlighter language="json" style={syntaxHighlightStyle}>
+        <SyntaxHighlighter language="json">
           {JSON.stringify(entry.task_payload)}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell className={clsx(isLastRow && classes.noBorder)}>
-        <SyntaxHighlighter language="go" style={syntaxHighlightStyle}>
+        <SyntaxHighlighter language="go">
           {entry.options.length > 0 ? entry.options.join(", ") : "No options"}
         </SyntaxHighlighter>
       </TableCell>
