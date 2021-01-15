@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
   },
   modalContent: {
-    background: theme.palette.common.white,
+    background: theme.palette.background.paper,
     padding: theme.spacing(2),
     width: "540px",
     outline: "none",
@@ -240,7 +240,7 @@ export default function SchedulerEntriesTable(props: Props) {
           className={classes.modal}
         >
           <div className={classes.modalContent}>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom color="textPrimary">
               Recent History
             </Typography>
             <SchedulerEnqueueEventsTable entryId={activeEntryId} />

@@ -19,7 +19,7 @@ import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
 import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
-import SyntaxHighlighter from "react-syntax-highlighter";
+import SyntaxHighlighter from "./SyntaxHighlighter";
 import TablePaginationActions, {
   defaultPageSize,
   rowsPerPageOptions,

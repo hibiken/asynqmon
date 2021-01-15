@@ -16,6 +16,9 @@ const useStyles = makeStyles((theme) => ({
   table: {
     height: "80vh",
   },
+  stickyHeaderCell: {
+    background: theme.palette.background.paper,
+  },
 }));
 
 function mapStateToProps(state: AppState, ownProps: Props) {
@@ -53,8 +56,12 @@ function SchedulerEnqueueEventsTable(props: Props & ReduxProps) {
       >
         <TableHead>
           <TableRow>
-            <TableCell>Enqueued</TableCell>
-            <TableCell>Task ID</TableCell>
+            <TableCell classes={{ stickyHeader: classes.stickyHeaderCell }}>
+              Enqueued
+            </TableCell>
+            <TableCell classes={{ stickyHeader: classes.stickyHeaderCell }}>
+              Task ID
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

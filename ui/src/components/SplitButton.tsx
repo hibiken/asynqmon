@@ -21,11 +21,21 @@ interface Props {
   onSelect: (key: string) => void;
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   popper: {
     zIndex: 2,
   },
-});
+  buttonContained: {
+    backgroundColor:
+      theme.palette.type === "dark"
+        ? "#303030"
+        : theme.palette.background.default,
+    color: theme.palette.text.primary,
+    "&:hover": {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+}));
 
 export default function SplitButton(props: Props) {
   const classes = useStyles();
@@ -69,7 +79,9 @@ export default function SplitButton(props: Props) {
         size="small"
         disableElevation
       >
-        <Button>{selectedOpt ? selectedOpt.label : "Select Option"}</Button>
+        <Button classes={{ contained: classes.buttonContained }}>
+          {selectedOpt ? selectedOpt.label : "Select Option"}
+        </Button>
         <Button
           size="small"
           aria-controls={open ? "split-button-menu" : undefined}
@@ -77,6 +89,7 @@ export default function SplitButton(props: Props) {
           aria-label="select option"
           aria-haspopup="menu"
           onClick={handleToggle}
+          classes={{ contained: classes.buttonContained }}
         >
           <ArrowDropDownIcon />
         </Button>

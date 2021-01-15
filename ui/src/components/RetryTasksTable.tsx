@@ -24,7 +24,7 @@ import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import Typography from "@material-ui/core/Typography";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
-import SyntaxHighlighter from "react-syntax-highlighter";
+import SyntaxHighlighter from "./SyntaxHighlighter";
 import {
   batchDeleteRetryTasksAsync,
   batchRunRetryTasksAsync,
