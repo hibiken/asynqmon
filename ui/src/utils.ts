@@ -27,6 +27,10 @@ function durationBetween(start: number, end: number): Duration {
 }
 
 function stringifyDuration(d: Duration): string {
+  if (d.hour > 24) {
+    const n = Math.floor(d.hour / 24);
+    return n + (n === 1 ? " day" : " days");
+  }
   return (
     (d.hour !== 0 ? `${d.hour}h` : "") +
     (d.minute !== 0 ? `${d.minute}m` : "") +
