@@ -247,6 +247,7 @@ export interface ActiveTask extends BaseTask {
 
 export interface PendingTask extends BaseTask {
   id: string;
+  key: string;
   queue: string;
 }
 
@@ -457,6 +458,68 @@ export async function listArchivedTasks(
     url,
   });
   return resp.data;
+}
+
+export async function archivePendingTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/pending_tasks/${taskKey}:archive`,
+  });
+}
+
+export async function batchArchivePendingTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchArchiveTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/pending_tasks:batch_archive`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  return resp.data;
+}
+
+export async function archiveAllPendingTasks(qname: string): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/pending_tasks:archive_all`,
+  });
+}
+
+export async function deletePendingTask(
+  qname: string,
+  taskKey: string
+): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/pending_tasks/${taskKey}`,
+  });
+}
+
+export async function batchDeletePendingTasks(
+  qname: string,
+  taskKeys: string[]
+): Promise<BatchDeleteTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/pending_tasks:batch_delete`,
+    data: {
+      task_keys: taskKeys,
+    },
+  });
+  return resp.data;
+}
+
+export async function deleteAllPendingTasks(qname: string): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/pending_tasks:delete_all`,
+  });
 }
 
 export async function runScheduledTask(

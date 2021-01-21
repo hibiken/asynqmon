@@ -30,6 +30,12 @@ import {
   RUN_RETRY_TASK_SUCCESS,
   RUN_SCHEDULED_TASK_SUCCESS,
   TasksActionTypes,
+  ARCHIVE_PENDING_TASK_SUCCESS,
+  DELETE_PENDING_TASK_SUCCESS,
+  BATCH_ARCHIVE_PENDING_TASKS_SUCCESS,
+  BATCH_DELETE_PENDING_TASKS_SUCCESS,
+  ARCHIVE_ALL_PENDING_TASKS_SUCCESS,
+  DELETE_ALL_PENDING_TASKS_SUCCESS,
 } from "../actions/tasksActions";
 
 interface SnackbarState {
@@ -89,6 +95,12 @@ function snackbarReducer(
         message: `Archived task is now pending`,
       };
 
+    case ARCHIVE_PENDING_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        message: `Pending task is now archived`,
+      };
+
     case ARCHIVE_SCHEDULED_TASK_SUCCESS:
       return {
         isOpen: true,
@@ -99,6 +111,12 @@ function snackbarReducer(
       return {
         isOpen: true,
         message: `Retry task is now archived`,
+      };
+
+    case DELETE_PENDING_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        message: `Pending task deleted`,
       };
 
     case DELETE_SCHEDULED_TASK_SUCCESS:
@@ -114,6 +132,24 @@ function snackbarReducer(
         message: `${n} scheduled ${
           n === 1 ? "task is" : "tasks are"
         } now pending`,
+      };
+    }
+
+    case BATCH_ARCHIVE_PENDING_TASKS_SUCCESS: {
+      const n = action.payload.archived_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} pending ${
+          n === 1 ? "task is" : "tasks are"
+        } now archived`,
+      };
+    }
+
+    case BATCH_DELETE_PENDING_TASKS_SUCCESS: {
+      const n = action.payload.deleted_keys.length;
+      return {
+        isOpen: true,
+        message: `${n} pending ${n === 1 ? "task" : "tasks"} deleted`,
       };
     }
 
@@ -134,6 +170,18 @@ function snackbarReducer(
         message: `${n} scheduled ${n === 1 ? "task" : "tasks"} deleted`,
       };
     }
+
+    case ARCHIVE_ALL_PENDING_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All pending tasks are now archived",
+      };
+
+    case DELETE_ALL_PENDING_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All pending tasks deleted",
+      };
 
     case RUN_ALL_SCHEDULED_TASKS_SUCCESS:
       return {

@@ -96,6 +96,24 @@ import {
   CANCEL_ALL_ACTIVE_TASKS_BEGIN,
   CANCEL_ALL_ACTIVE_TASKS_SUCCESS,
   CANCEL_ALL_ACTIVE_TASKS_ERROR,
+  ARCHIVE_PENDING_TASK_BEGIN,
+  DELETE_PENDING_TASK_BEGIN,
+  ARCHIVE_PENDING_TASK_SUCCESS,
+  DELETE_PENDING_TASK_SUCCESS,
+  ARCHIVE_PENDING_TASK_ERROR,
+  DELETE_PENDING_TASK_ERROR,
+  ARCHIVE_ALL_PENDING_TASKS_BEGIN,
+  DELETE_ALL_PENDING_TASKS_BEGIN,
+  ARCHIVE_ALL_PENDING_TASKS_SUCCESS,
+  DELETE_ALL_PENDING_TASKS_SUCCESS,
+  ARCHIVE_ALL_PENDING_TASKS_ERROR,
+  DELETE_ALL_PENDING_TASKS_ERROR,
+  BATCH_ARCHIVE_PENDING_TASKS_BEGIN,
+  BATCH_DELETE_PENDING_TASKS_BEGIN,
+  BATCH_ARCHIVE_PENDING_TASKS_SUCCESS,
+  BATCH_DELETE_PENDING_TASKS_SUCCESS,
+  BATCH_ARCHIVE_PENDING_TASKS_ERROR,
+  BATCH_DELETE_PENDING_TASKS_ERROR,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -143,6 +161,8 @@ interface TasksState {
   };
   pendingTasks: {
     loading: boolean;
+    batchActionPending: boolean;
+    allActionPending: boolean;
     error: string;
     data: PendingTask[];
   };
@@ -179,6 +199,8 @@ const initialState: TasksState = {
   },
   pendingTasks: {
     loading: false,
+    batchActionPending: false,
+    allActionPending: false,
     error: "",
     data: [],
   },
@@ -259,6 +281,7 @@ function tasksReducer(
       return {
         ...state,
         pendingTasks: {
+          ...state.pendingTasks,
           loading: false,
           error: "",
           data: action.payload.tasks,
@@ -520,6 +543,145 @@ function tasksReducer(
         },
       };
     }
+
+    case ARCHIVE_PENDING_TASK_BEGIN:
+    case DELETE_PENDING_TASK_BEGIN:
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          data: state.pendingTasks.data.map((task) => {
+            if (task.key !== action.taskKey) {
+              return task;
+            }
+            return { ...task, requestPending: true };
+          }),
+        },
+      };
+
+    case ARCHIVE_PENDING_TASK_SUCCESS:
+    case DELETE_PENDING_TASK_SUCCESS:
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          data: state.pendingTasks.data.filter(
+            (task) => task.key !== action.taskKey
+          ),
+        },
+      };
+
+    case ARCHIVE_PENDING_TASK_ERROR:
+    case DELETE_PENDING_TASK_ERROR:
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          data: state.pendingTasks.data.map((task) => {
+            if (task.key !== action.taskKey) {
+              return task;
+            }
+            return { ...task, requestPending: false };
+          }),
+        },
+      };
+
+    case ARCHIVE_ALL_PENDING_TASKS_BEGIN:
+    case DELETE_ALL_PENDING_TASKS_BEGIN:
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          allActionPending: true,
+        },
+      };
+
+    case ARCHIVE_ALL_PENDING_TASKS_SUCCESS:
+    case DELETE_ALL_PENDING_TASKS_SUCCESS:
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          allActionPending: false,
+          data: [],
+        },
+      };
+
+    case ARCHIVE_ALL_PENDING_TASKS_ERROR:
+    case DELETE_ALL_PENDING_TASKS_ERROR:
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          allActionPending: false,
+        },
+      };
+
+    case BATCH_ARCHIVE_PENDING_TASKS_BEGIN:
+    case BATCH_DELETE_PENDING_TASKS_BEGIN:
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          batchActionPending: true,
+          data: state.pendingTasks.data.map((task) => {
+            if (!action.taskKeys.includes(task.key)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: true,
+            };
+          }),
+        },
+      };
+
+    case BATCH_ARCHIVE_PENDING_TASKS_SUCCESS: {
+      const newData = state.pendingTasks.data.filter(
+        (task) => !action.payload.archived_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_DELETE_PENDING_TASKS_SUCCESS: {
+      const newData = state.pendingTasks.data.filter(
+        (task) => !action.payload.deleted_keys.includes(task.key)
+      );
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_ARCHIVE_PENDING_TASKS_ERROR:
+    case BATCH_DELETE_PENDING_TASKS_ERROR:
+      return {
+        ...state,
+        pendingTasks: {
+          ...state.pendingTasks,
+          batchActionPending: false,
+          data: state.pendingTasks.data.map((task) => {
+            if (!action.taskKeys.includes(task.key)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: false,
+            };
+          }),
+        },
+      };
 
     case RUN_SCHEDULED_TASK_BEGIN:
     case ARCHIVE_SCHEDULED_TASK_BEGIN:

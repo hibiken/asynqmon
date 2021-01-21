@@ -41,6 +41,12 @@ import {
   runArchivedTask,
   runRetryTask,
   runScheduledTask,
+  deletePendingTask,
+  batchDeletePendingTasks,
+  deleteAllPendingTasks,
+  archivePendingTask,
+  batchArchivePendingTasks,
+  archiveAllPendingTasks,
 } from "../api";
 import { Dispatch } from "redux";
 
@@ -82,6 +88,12 @@ export const RUN_RETRY_TASK_ERROR = "RUN_RETRY_TASK_ERROR";
 export const RUN_ARCHIVED_TASK_BEGIN = "RUN_ARCHIVED_TASK_BEGIN";
 export const RUN_ARCHIVED_TASK_SUCCESS = "RUN_ARCHIVED_TASK_SUCCESS";
 export const RUN_ARCHIVED_TASK_ERROR = "RUN_ARCHIVED_TASK_ERROR";
+export const DELETE_PENDING_TASK_BEGIN = "DELETE_PENDING_TASK_BEGIN";
+export const DELETE_PENDING_TASK_SUCCESS = "DELETE_PENDING_TASK_SUCCESS";
+export const DELETE_PENDING_TASK_ERROR = "DELETE_PENDING_TASK_ERROR";
+export const ARCHIVE_PENDING_TASK_BEGIN = "ARCHIVE_PENDING_TASK_BEGIN";
+export const ARCHIVE_PENDING_TASK_SUCCESS = "ARCHIVE_PENDING_TASK_SUCCESS";
+export const ARCHIVE_PENDING_TASK_ERROR = "ARCHIVE_PENDING_TASK_ERROR";
 export const DELETE_SCHEDULED_TASK_BEGIN = "DELETE_SCHEDULED_TASK_BEGIN";
 export const DELETE_SCHEDULED_TASK_SUCCESS = "DELETE_SCHEDULED_TASK_SUCCESS";
 export const DELETE_SCHEDULED_TASK_ERROR = "DELETE_SCHEDULED_TASK_ERROR";
@@ -91,6 +103,28 @@ export const ARCHIVE_SCHEDULED_TASK_ERROR = "ARCHIVE_SCHEDULED_TASK_ERROR";
 export const ARCHIVE_RETRY_TASK_BEGIN = "ARCHIVE_RETRY_TASK_BEGIN";
 export const ARCHIVE_RETRY_TASK_SUCCESS = "ARCHIVE_RETRY_TASK_SUCCESS";
 export const ARCHIVE_RETRY_TASK_ERROR = "ARCHIVE_RETRY_TASK_ERROR";
+export const BATCH_ARCHIVE_PENDING_TASKS_BEGIN =
+  "BATCH_ARCHIVE_PENDING_TASKS_BEGIN";
+export const BATCH_ARCHIVE_PENDING_TASKS_SUCCESS =
+  "BATCH_ARCHIVE_PENDING_TASKS_SUCCESS";
+export const BATCH_ARCHIVE_PENDING_TASKS_ERROR =
+  "BATCH_RUN_PENDING_TASKS_ERROR";
+export const BATCH_DELETE_PENDING_TASKS_BEGIN =
+  "BATCH_DELETE_PENDING_TASKS_BEGIN";
+export const BATCH_DELETE_PENDING_TASKS_SUCCESS =
+  "BATCH_DELETE_PENDING_TASKS_SUCCESS";
+export const BATCH_DELETE_PENDING_TASKS_ERROR =
+  "BATCH_DELETE_PENDING_TASKS_ERROR";
+export const DELETE_ALL_PENDING_TASKS_BEGIN = "DELETE_ALL_PENDING_TASKS_BEGIN";
+export const DELETE_ALL_PENDING_TASKS_SUCCESS =
+  "DELETE_ALL_PENDING_TASKS_SUCCESS";
+export const DELETE_ALL_PENDING_TASKS_ERROR = "DELETE_ALL_PENDING_TASKS_ERROR";
+export const ARCHIVE_ALL_PENDING_TASKS_BEGIN =
+  "ARCHIVE_ALL_PENDING_TASKS_BEGIN";
+export const ARCHIVE_ALL_PENDING_TASKS_SUCCESS =
+  "ARCHIVE_ALL_PENDING_TASKS_SUCCESS";
+export const ARCHIVE_ALL_PENDING_TASKS_ERROR =
+  "ARCHIVE_ALL_PENDING_TASKS_ERROR";
 export const BATCH_RUN_SCHEDULED_TASKS_BEGIN =
   "BATCH_RUN_SCHEDULED_TASKS_BEGIN";
 export const BATCH_RUN_SCHEDULED_TASKS_SUCCESS =
@@ -310,6 +344,114 @@ interface BatchCancelActiveTasksErrorAction {
   type: typeof BATCH_CANCEL_ACTIVE_TASKS_ERROR;
   queue: string;
   taskIds: string[];
+  error: string;
+}
+
+interface DeletePendingTaskBeginAction {
+  type: typeof DELETE_PENDING_TASK_BEGIN;
+  queue: string;
+  taskKey: string;
+}
+
+interface DeletePendingTaskSuccessAction {
+  type: typeof DELETE_PENDING_TASK_SUCCESS;
+  queue: string;
+  taskKey: string;
+}
+
+interface DeletePendingTaskErrorAction {
+  type: typeof DELETE_PENDING_TASK_ERROR;
+  queue: string;
+  taskKey: string;
+  error: string;
+}
+
+interface BatchDeletePendingTasksBeginAction {
+  type: typeof BATCH_DELETE_PENDING_TASKS_BEGIN;
+  queue: string;
+  taskKeys: string[];
+}
+
+interface BatchDeletePendingTasksSuccessAction {
+  type: typeof BATCH_DELETE_PENDING_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchDeleteTasksResponse;
+}
+
+interface BatchDeletePendingTasksErrorAction {
+  type: typeof BATCH_DELETE_PENDING_TASKS_ERROR;
+  queue: string;
+  taskKeys: string[];
+  error: string;
+}
+
+interface DeleteAllPendingTasksBeginAction {
+  type: typeof DELETE_ALL_PENDING_TASKS_BEGIN;
+  queue: string;
+}
+
+interface DeleteAllPendingTasksSuccessAction {
+  type: typeof DELETE_ALL_PENDING_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface DeleteAllPendingTasksErrorAction {
+  type: typeof DELETE_ALL_PENDING_TASKS_ERROR;
+  queue: string;
+  error: string;
+}
+
+interface ArchivePendingTaskBeginAction {
+  type: typeof ARCHIVE_PENDING_TASK_BEGIN;
+  queue: string;
+  taskKey: string;
+}
+
+interface ArchivePendingTaskSuccessAction {
+  type: typeof ARCHIVE_PENDING_TASK_SUCCESS;
+  queue: string;
+  taskKey: string;
+}
+
+interface ArchivePendingTaskErrorAction {
+  type: typeof ARCHIVE_PENDING_TASK_ERROR;
+  queue: string;
+  taskKey: string;
+  error: string;
+}
+
+interface BatchArchivePendingTasksBeginAction {
+  type: typeof BATCH_ARCHIVE_PENDING_TASKS_BEGIN;
+  queue: string;
+  taskKeys: string[];
+}
+
+interface BatchArchivePendingTasksSuccessAction {
+  type: typeof BATCH_ARCHIVE_PENDING_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchArchiveTasksResponse;
+}
+
+interface BatchArchivePendingTasksErrorAction {
+  type: typeof BATCH_ARCHIVE_PENDING_TASKS_ERROR;
+  queue: string;
+  taskKeys: string[];
+  error: string;
+}
+
+interface ArchiveAllPendingTasksBeginAction {
+  type: typeof ARCHIVE_ALL_PENDING_TASKS_BEGIN;
+  queue: string;
+}
+
+interface ArchiveAllPendingTasksSuccessAction {
+  type: typeof ARCHIVE_ALL_PENDING_TASKS_SUCCESS;
+  queue: string;
+}
+
+interface ArchiveAllPendingTasksErrorAction {
+  type: typeof ARCHIVE_ALL_PENDING_TASKS_ERROR;
+  queue: string;
   error: string;
 }
 
@@ -771,6 +913,24 @@ export type TasksActionTypes =
   | BatchCancelActiveTasksBeginAction
   | BatchCancelActiveTasksSuccessAction
   | BatchCancelActiveTasksErrorAction
+  | DeletePendingTaskBeginAction
+  | DeletePendingTaskSuccessAction
+  | DeletePendingTaskErrorAction
+  | BatchDeletePendingTasksBeginAction
+  | BatchDeletePendingTasksSuccessAction
+  | BatchDeletePendingTasksErrorAction
+  | DeleteAllPendingTasksBeginAction
+  | DeleteAllPendingTasksSuccessAction
+  | DeleteAllPendingTasksErrorAction
+  | ArchivePendingTaskBeginAction
+  | ArchivePendingTaskSuccessAction
+  | ArchivePendingTaskErrorAction
+  | BatchArchivePendingTasksBeginAction
+  | BatchArchivePendingTasksSuccessAction
+  | BatchArchivePendingTasksErrorAction
+  | ArchiveAllPendingTasksBeginAction
+  | ArchiveAllPendingTasksSuccessAction
+  | ArchiveAllPendingTasksErrorAction
   | RunScheduledTaskBeginAction
   | RunScheduledTaskSuccessAction
   | RunScheduledTaskErrorAction
@@ -1051,6 +1211,24 @@ export function runRetryTaskAsync(queue: string, taskKey: string) {
   };
 }
 
+export function archivePendingTaskAsync(queue: string, taskKey: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: ARCHIVE_PENDING_TASK_BEGIN, queue, taskKey });
+    try {
+      await archivePendingTask(queue, taskKey);
+      dispatch({ type: ARCHIVE_PENDING_TASK_SUCCESS, queue, taskKey });
+    } catch (error) {
+      console.error("archivePendingTaskAsync: ", error);
+      dispatch({
+        type: ARCHIVE_PENDING_TASK_ERROR,
+        error: `Could not archive task: ${taskKey}`,
+        queue,
+        taskKey,
+      });
+    }
+  };
+}
+
 export function archiveScheduledTaskAsync(queue: string, taskKey: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: ARCHIVE_SCHEDULED_TASK_BEGIN, queue, taskKey });
@@ -1100,6 +1278,49 @@ export function runArchivedTaskAsync(queue: string, taskKey: string) {
         error: `Could not run task: ${taskKey}`,
         queue,
         taskKey,
+      });
+    }
+  };
+}
+
+export function deletePendingTaskAsync(queue: string, taskKey: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_PENDING_TASK_BEGIN, queue, taskKey });
+    try {
+      await deletePendingTask(queue, taskKey);
+      dispatch({ type: DELETE_PENDING_TASK_SUCCESS, queue, taskKey });
+    } catch (error) {
+      console.error("deletePendingTaskAsync: ", error);
+      dispatch({
+        type: DELETE_PENDING_TASK_ERROR,
+        error: `Could not delete task: ${taskKey}`,
+        queue,
+        taskKey,
+      });
+    }
+  };
+}
+
+export function batchDeletePendingTasksAsync(
+  queue: string,
+  taskKeys: string[]
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: BATCH_DELETE_PENDING_TASKS_BEGIN, queue, taskKeys });
+    try {
+      const response = await batchDeletePendingTasks(queue, taskKeys);
+      dispatch({
+        type: BATCH_DELETE_PENDING_TASKS_SUCCESS,
+        queue: queue,
+        payload: response,
+      });
+    } catch (error) {
+      console.error("batchDeletePendingTasksAsync: ", error);
+      dispatch({
+        type: BATCH_DELETE_PENDING_TASKS_ERROR,
+        error: `Could not batch delete tasks: ${taskKeys}`,
+        queue,
+        taskKeys,
       });
     }
   };
@@ -1195,6 +1416,65 @@ export function batchArchiveScheduledTasksAsync(
   };
 }
 
+export function batchArchivePendingTasksAsync(
+  queue: string,
+  taskKeys: string[]
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: BATCH_ARCHIVE_PENDING_TASKS_BEGIN, queue, taskKeys });
+    try {
+      const response = await batchArchivePendingTasks(queue, taskKeys);
+      dispatch({
+        type: BATCH_ARCHIVE_PENDING_TASKS_SUCCESS,
+        queue: queue,
+        payload: response,
+      });
+    } catch (error) {
+      console.error("batchArchivePendingTasksAsync: ", error);
+      dispatch({
+        type: BATCH_ARCHIVE_PENDING_TASKS_ERROR,
+        error: `Could not batch archive tasks: ${taskKeys}`,
+        queue,
+        taskKeys,
+      });
+    }
+  };
+}
+
+export function archiveAllPendingTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: ARCHIVE_ALL_PENDING_TASKS_BEGIN, queue });
+    try {
+      await archiveAllPendingTasks(queue);
+      dispatch({ type: ARCHIVE_ALL_PENDING_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("archiveAllPendingTasksAsync: ", error);
+      dispatch({
+        type: ARCHIVE_ALL_PENDING_TASKS_ERROR,
+        error: `Could not archive all pending tasks`,
+        queue,
+      });
+    }
+  };
+}
+
+export function deleteAllPendingTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_ALL_PENDING_TASKS_BEGIN, queue });
+    try {
+      await deleteAllPendingTasks(queue);
+      dispatch({ type: DELETE_ALL_PENDING_TASKS_SUCCESS, queue });
+    } catch (error) {
+      console.error("deleteAllPendingTasksAsync: ", error);
+      dispatch({
+        type: DELETE_ALL_PENDING_TASKS_ERROR,
+        error: `Could not delete all pending tasks`,
+        queue,
+      });
+    }
+  };
+}
+
 export function deleteAllScheduledTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: DELETE_ALL_SCHEDULED_TASKS_BEGIN, queue });
@@ -1231,14 +1511,14 @@ export function runAllScheduledTasksAsync(queue: string) {
 
 export function archiveAllScheduledTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: RUN_ALL_SCHEDULED_TASKS_BEGIN, queue });
+    dispatch({ type: ARCHIVE_ALL_SCHEDULED_TASKS_BEGIN, queue });
     try {
       await archiveAllScheduledTasks(queue);
-      dispatch({ type: RUN_ALL_SCHEDULED_TASKS_SUCCESS, queue });
+      dispatch({ type: ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS, queue });
     } catch (error) {
       console.error("archiveAllScheduledTasksAsync: ", error);
       dispatch({
-        type: RUN_ALL_SCHEDULED_TASKS_ERROR,
+        type: ARCHIVE_ALL_SCHEDULED_TASKS_ERROR,
         error: `Could not archive all scheduled tasks`,
         queue,
       });
