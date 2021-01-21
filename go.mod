@@ -8,3 +8,5 @@ require (
 	github.com/hibiken/asynq v0.14.0
 	github.com/rs/cors v1.7.0
 )
+
+replace github.com/hibiken/asynq => ../../../database/Redis/go/asynq

@@ -299,6 +299,17 @@ func newArchiveTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
+func newDeleteAllPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qname := mux.Vars(r)["qname"]
+		if _, err := inspector.DeleteAllPendingTasks(qname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 func newDeleteAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
@@ -358,6 +369,17 @@ func newRunAllArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerF
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.RunAllArchivedTasks(qname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func newArchiveAllPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qname := mux.Vars(r)["qname"]
+		if _, err := inspector.ArchiveAllPendingTasks(qname); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
