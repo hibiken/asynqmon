@@ -111,6 +111,7 @@ func toActiveTasks(in []*asynq.ActiveTask) []*ActiveTask {
 
 type PendingTask struct {
 	*BaseTask
+	Key string `json:"key"`
 }
 
 func toPendingTask(t *asynq.PendingTask) *PendingTask {
@@ -120,7 +121,10 @@ func toPendingTask(t *asynq.PendingTask) *PendingTask {
 		Payload: t.Payload,
 		Queue:   t.Queue,
 	}
-	return &PendingTask{base}
+	return &PendingTask{
+		BaseTask: base,
+		Key:      t.Key(),
+	}
 }
 
 func toPendingTasks(in []*asynq.PendingTask) []*PendingTask {
