@@ -133,6 +133,12 @@ export interface ActiveTaskExtended extends ActiveTask {
   canceling: boolean;
 }
 
+export interface PendingTaskExtended extends PendingTask {
+  // Indicates that a request has been sent for this
+  // task and awaiting for a response.
+  requestPending: boolean;
+}
+
 export interface ScheduledTaskExtended extends ScheduledTask {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
@@ -164,7 +170,7 @@ interface TasksState {
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: PendingTask[];
+    data: PendingTaskExtended[];
   };
   scheduledTasks: {
     loading: boolean;
@@ -284,7 +290,10 @@ function tasksReducer(
           ...state.pendingTasks,
           loading: false,
           error: "",
-          data: action.payload.tasks,
+          data: action.payload.tasks.map((task) => ({
+            ...task,
+            requestPending: false,
+          })),
         },
       };
 

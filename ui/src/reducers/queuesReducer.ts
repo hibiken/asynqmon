@@ -44,6 +44,12 @@ import {
   RUN_RETRY_TASK_SUCCESS,
   RUN_SCHEDULED_TASK_SUCCESS,
   TasksActionTypes,
+  ARCHIVE_PENDING_TASK_SUCCESS,
+  DELETE_PENDING_TASK_SUCCESS,
+  BATCH_ARCHIVE_PENDING_TASKS_SUCCESS,
+  BATCH_DELETE_PENDING_TASKS_SUCCESS,
+  ARCHIVE_ALL_PENDING_TASKS_SUCCESS,
+  DELETE_ALL_PENDING_TASKS_SUCCESS,
 } from "../actions/tasksActions";
 import { Queue } from "../api";
 
@@ -217,6 +223,23 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
+    case ARCHIVE_PENDING_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            archived: queueInfo.currentStats.archived + 1,
+            pending: queueInfo.currentStats.pending - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
     case ARCHIVE_SCHEDULED_TASK_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
@@ -251,6 +274,22 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
+    case DELETE_PENDING_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending: queueInfo.currentStats.pending - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
     case DELETE_SCHEDULED_TASK_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
@@ -261,6 +300,79 @@ function queuesReducer(
           currentStats: {
             ...queueInfo.currentStats,
             scheduled: queueInfo.currentStats.scheduled - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case BATCH_ARCHIVE_PENDING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            archived:
+              queueInfo.currentStats.archived +
+              action.payload.archived_keys.length,
+            pending:
+              queueInfo.currentStats.pending -
+              action.payload.archived_keys.length,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case BATCH_DELETE_PENDING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending:
+              queueInfo.currentStats.pending -
+              action.payload.deleted_keys.length,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case ARCHIVE_ALL_PENDING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            archived:
+              queueInfo.currentStats.archived + queueInfo.currentStats.pending,
+            pending: 0,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case DELETE_ALL_PENDING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending: 0,
           },
         };
       });
