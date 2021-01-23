@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import clsx from "clsx";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
@@ -28,6 +28,7 @@ import { AppState } from "./store";
 import { paths } from "./paths";
 import { useTheme } from "./theme";
 import { closeSnackbar } from "./actions/snackbarActions";
+import { toggleDrawer } from "./actions/settingsActions";
 import ListItemLink from "./components/ListItemLink";
 import SchedulersView from "./views/SchedulersView";
 import DashboardView from "./views/DashboardView";
@@ -135,11 +136,13 @@ function mapStateToProps(state: AppState) {
   return {
     snackbar: state.snackbar,
     themePreference: state.settings.themePreference,
+    isDrawerOpen: state.settings.isDrawerOpen,
   };
 }
 
 const mapDispatchToProps = {
   closeSnackbar,
+  toggleDrawer,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -151,8 +154,6 @@ function SlideUpTransition(props: TransitionProps) {
 function App(props: ConnectedProps<typeof connector>) {
   const theme = useTheme(props.themePreference);
   const classes = useStyles(theme)();
-  const [open, setOpen] = useState(true);
-  const toggleDrawer = () => setOpen(!open);
   return (
     <ThemeProvider theme={theme}>
       <Router>
@@ -167,7 +168,7 @@ function App(props: ConnectedProps<typeof connector>) {
                 edge="start"
                 color="inherit"
                 aria-label="open drawer"
-                onClick={toggleDrawer}
+                onClick={props.toggleDrawer}
                 className={classes.menuButton}
               >
                 <MenuIcon />
@@ -189,10 +190,10 @@ function App(props: ConnectedProps<typeof connector>) {
               classes={{
                 paper: clsx(
                   classes.drawerPaper,
-                  !open && classes.drawerPaperClose
+                  !props.isDrawerOpen && classes.drawerPaperClose
                 ),
               }}
-              open={open}
+              open={props.isDrawerOpen}
             >
               <Snackbar
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
