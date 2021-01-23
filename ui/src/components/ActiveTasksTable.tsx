@@ -37,7 +37,7 @@ import TablePaginationActions, {
 import TableActions from "./TableActions";
 import { usePolling } from "../hooks";
 import { ActiveTaskExtended } from "../reducers/tasksReducer";
-import { uuidPrefix } from "../utils";
+import { timeAgo, uuidPrefix } from "../utils";
 import { TableColumn } from "../types/table";
 
 const useStyles = makeStyles((theme) => ({
@@ -65,6 +65,15 @@ const mapDispatchToProps = {
   batchCancelActiveTasksAsync,
   cancelAllActiveTasksAsync,
 };
+
+const columns: TableColumn[] = [
+  { key: "icon", label: "", align: "left" },
+  { key: "id", label: "ID", align: "left" },
+  { key: "type", label: "Type", align: "left" },
+  { key: "status", label: "Status", align: "left" },
+  { key: "start-time", label: "Started", align: "left" },
+  { key: "actions", label: "Actions", align: "center" },
+];
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
@@ -130,14 +139,6 @@ function ActiveTasksTable(props: Props & ReduxProps) {
       </Alert>
     );
   }
-
-  const columns: TableColumn[] = [
-    { key: "icon", label: "", align: "left" },
-    { key: "id", label: "ID", align: "left" },
-    { key: "type", label: "Type", align: "left" },
-    { key: "status", label: "Status", align: "left" },
-    { key: "actions", label: "Actions", align: "center" },
-  ];
 
   const rowCount = props.tasks.length;
   const numSelected = selectedIds.length;
@@ -294,6 +295,9 @@ function Row(props: RowProps) {
         </TableCell>
         <TableCell>{task.type}</TableCell>
         <TableCell>{task.canceling ? "Canceling" : "Running"}</TableCell>
+        <TableCell>
+          {task.start_time === "-" ? "just now" : timeAgo(task.start_time)}
+        </TableCell>
         <TableCell
           align="center"
           onMouseEnter={props.onActionCellEnter}
@@ -319,7 +323,10 @@ function Row(props: RowProps) {
         </TableCell>
       </TableRow>
       <TableRow selected={props.isSelected}>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell
+          style={{ paddingBottom: 0, paddingTop: 0 }}
+          colSpan={columns.length + 1}
+        >
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="h6" gutterBottom component="div">

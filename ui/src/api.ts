@@ -243,6 +243,7 @@ interface BaseTask {
 export interface ActiveTask extends BaseTask {
   id: string;
   queue: string;
+  start_time: string;
 }
 
 export interface PendingTask extends BaseTask {

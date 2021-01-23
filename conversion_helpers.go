@@ -89,6 +89,13 @@ type BaseTask struct {
 
 type ActiveTask struct {
 	*BaseTask
+
+	// Started time indicates when a worker started working on ths task.
+	//
+	// Value is either time formatted in RFC3339 format, or "-" which indicates
+	// a worker started working on the task only a few moments ago, and started time
+	// data is not available.
+	Started string `json:"start_time"`
 }
 
 func toActiveTask(t *asynq.ActiveTask) *ActiveTask {
@@ -98,7 +105,7 @@ func toActiveTask(t *asynq.ActiveTask) *ActiveTask {
 		Payload: t.Payload,
 		Queue:   t.Queue,
 	}
-	return &ActiveTask{base}
+	return &ActiveTask{BaseTask: base}
 }
 
 func toActiveTasks(in []*asynq.ActiveTask) []*ActiveTask {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/hibiken/asynq"
@@ -15,11 +16,17 @@ import (
 //   - http.Handler(s) for task related endpoints
 // ****************************************************************************
 
+type ListActiveTasksResponse struct {
+	Tasks []*ActiveTask       `json:"tasks"`
+	Stats *QueueStateSnapshot `json:"stats"`
+}
+
 func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		pageSize, pageNum := getPageOptions(r)
+
 		tasks, err := inspector.ListActiveTasks(
 			qname, asynq.PageSize(pageSize), asynq.Page(pageNum))
 		if err != nil {
@@ -31,15 +38,35 @@ func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		payload := make(map[string]interface{})
-		if len(tasks) == 0 {
-			// avoid nil for the tasks field in json output.
-			payload["tasks"] = make([]*ActiveTask, 0)
-		} else {
-			payload["tasks"] = toActiveTasks(tasks)
+		servers, err := inspector.Servers()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		payload["stats"] = toQueueStateSnapshot(stats)
-		if err := json.NewEncoder(w).Encode(payload); err != nil {
+		// m maps taskID to started time.
+		m := make(map[string]time.Time)
+		for _, srv := range servers {
+			for _, w := range srv.ActiveWorkers {
+				if w.Task.Queue == qname {
+					m[w.Task.ID] = w.Started
+				}
+			}
+		}
+		activeTasks := toActiveTasks(tasks)
+		for _, t := range activeTasks {
+			started, ok := m[t.ID]
+			if ok {
+				t.Started = started.Format(time.RFC3339)
+			} else {
+				t.Started = "-"
+			}
+		}
+
+		resp := ListActiveTasksResponse{
+			Tasks: activeTasks,
+			Stats: toQueueStateSnapshot(stats),
+		}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
