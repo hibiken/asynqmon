@@ -9,7 +9,8 @@ export enum ThemePreference {
   Always,
   Never,
 }
-interface SettingsState {
+
+export interface SettingsState {
   pollInterval: number;
   themePreference: ThemePreference;
 }

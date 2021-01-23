@@ -6,9 +6,17 @@ import App from "./App";
 import store from "./store";
 import * as serviceWorker from "./serviceWorker";
 import { saveState } from "./localStorage";
+import { SettingsState } from "./reducers/settingsReducer";
 
+let currentSettings: SettingsState | undefined = undefined;
 store.subscribe(() => {
-  saveState(store.getState());
+  const prevSettings = currentSettings;
+  currentSettings = store.getState().settings;
+
+  // Write to local-storage only when settings have changed.
+  if (prevSettings !== currentSettings) {
+    saveState(store.getState());
+  }
 });
 
 ReactDOM.render(
