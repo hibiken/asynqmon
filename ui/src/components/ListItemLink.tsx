@@ -17,14 +17,23 @@ const useStyles = makeStyles((theme) => ({
     borderBottomRightRadius: "24px",
   },
   selected: {
-    backgroundColor: `${theme.palette.primary.main}30`,
+    backgroundColor:
+      theme.palette.type === "dark"
+        ? `${theme.palette.secondary.main}30`
+        : `${theme.palette.primary.main}30`,
   },
   selectedText: {
     fontWeight: 600,
-    color: theme.palette.primary.main,
+    color:
+      theme.palette.type === "dark"
+        ? theme.palette.secondary.main
+        : theme.palette.primary.main,
   },
   selectedIcon: {
-    color: theme.palette.primary.main,
+    color:
+      theme.palette.type === "dark"
+        ? theme.palette.secondary.main
+        : theme.palette.primary.main,
   },
 }));
 
