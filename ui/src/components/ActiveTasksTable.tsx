@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { connect, ConnectedProps } from "react-redux";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme, Theme } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -13,7 +13,7 @@ import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
 import Tooltip from "@material-ui/core/Tooltip";
 import Paper from "@material-ui/core/Paper";
-import Box from "@material-ui/core/Box";
+import Grid from "@material-ui/core/Grid";
 import Checkbox from "@material-ui/core/Checkbox";
 import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
@@ -47,6 +47,9 @@ const useStyles = makeStyles((theme) => ({
   stickyHeaderCell: {
     background: theme.palette.background.paper,
   },
+  iconCell: {
+    width: "70px",
+  },
 }));
 
 function mapStateToProps(state: AppState) {
@@ -67,7 +70,6 @@ const mapDispatchToProps = {
 };
 
 const columns: TableColumn[] = [
-  { key: "icon", label: "", align: "left" },
   { key: "id", label: "ID", align: "left" },
   { key: "type", label: "Type", align: "left" },
   { key: "status", label: "Status", align: "left" },
@@ -184,6 +186,12 @@ function ActiveTasksTable(props: Props & ReduxProps) {
                   }}
                 />
               </TableCell>
+              <TableCell
+                classes={{
+                  root: classes.iconCell,
+                  stickyHeader: classes.stickyHeaderCell,
+                }}
+              />
               {columns.map((col) => (
                 <TableCell
                   key={col.key}
@@ -222,7 +230,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
             <TableRow>
               <TablePagination
                 rowsPerPageOptions={rowsPerPageOptions}
-                colSpan={columns.length + 1}
+                colSpan={columns.length + 2}
                 count={props.tasks.length}
                 rowsPerPage={pageSize}
                 page={page}
@@ -242,13 +250,26 @@ function ActiveTasksTable(props: Props & ReduxProps) {
   );
 }
 
-const useRowStyles = makeStyles({
+const useRowStyles = makeStyles((theme) => ({
   root: {
     "& > *": {
       borderBottom: "unset",
     },
   },
-});
+  taskDetails: {
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+  },
+  detailHeading: {
+    paddingLeft: theme.spacing(1),
+  },
+  payloadContainer: {
+    paddingRight: theme.spacing(2),
+  },
+  noBottomBorder: {
+    borderBottom: "none",
+  },
+}));
 
 interface RowProps {
   task: ActiveTaskExtended;
@@ -263,6 +284,7 @@ interface RowProps {
 function Row(props: RowProps) {
   const { task } = props;
   const [open, setOpen] = React.useState(false);
+  const theme = useTheme<Theme>();
   const classes = useRowStyles();
   return (
     <React.Fragment>
@@ -325,17 +347,62 @@ function Row(props: RowProps) {
       <TableRow selected={props.isSelected}>
         <TableCell
           style={{ paddingBottom: 0, paddingTop: 0 }}
-          colSpan={columns.length + 1}
+          colSpan={columns.length + 2}
         >
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box margin={1}>
-              <Typography variant="h6" gutterBottom component="div">
-                Payload
-              </Typography>
-              <SyntaxHighlighter language="json">
-                {JSON.stringify(task.payload, null, 2)}
-              </SyntaxHighlighter>
-            </Box>
+            <Grid container className={classes.taskDetails}>
+              <Grid item xs={8} className={classes.payloadContainer}>
+                <Typography
+                  variant="subtitle2"
+                  color="textSecondary"
+                  gutterBottom
+                  component="div"
+                  className={classes.detailHeading}
+                >
+                  Payload
+                </Typography>
+                <SyntaxHighlighter
+                  language="json"
+                  customStyle={{ borderRadius: theme.shape.borderRadius }}
+                >
+                  {JSON.stringify(task.payload, null, 2)}
+                </SyntaxHighlighter>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="subtitle2"
+                  color="textSecondary"
+                  gutterBottom
+                  component="div"
+                  className={classes.detailHeading}
+                >
+                  Task Info
+                </Typography>
+                <Table size="small" aria-label="active workers">
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Retry</TableCell>
+                      <TableCell align="right">2/25</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Deadline</TableCell>
+                      <TableCell align="right">In 30s</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className={classes.noBottomBorder}>
+                        Unique
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className={classes.noBottomBorder}
+                      >
+                        5m30s remaining
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </Grid>
+            </Grid>
           </Collapse>
         </TableCell>
       </TableRow>
