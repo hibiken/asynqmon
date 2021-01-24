@@ -3,21 +3,18 @@ import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import TasksTable from "../components/TasksTable";
+import QueueInfoBanner from "../components/QueueInfoBanner";
 import { useParams, useLocation } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   container: {
-    paddingLeft: 0,
-    marginLeft: 0,
-    height: "100%",
+    paddingTop: theme.spacing(2),
   },
-  gridContainer: {
-    height: "100%",
-    paddingBottom: 0,
+  bannerContainer: {
+    marginBottom: theme.spacing(2),
   },
-  gridItem: {
-    height: "100%",
-    paddingBottom: 0,
+  taskTableContainer: {
+    marginBottom: theme.spacing(4),
   },
 }));
 
@@ -42,9 +39,12 @@ function TasksView() {
   }
 
   return (
-    <Container maxWidth="lg" className={classes.container}>
-      <Grid container spacing={0} className={classes.gridContainer}>
-        <Grid item xs={12} className={classes.gridItem}>
+    <Container maxWidth="lg">
+      <Grid container spacing={0} className={classes.container}>
+        <Grid item xs={12} className={classes.bannerContainer}>
+          <QueueInfoBanner qname={qname} />
+        </Grid>
+        <Grid item xs={12} className={classes.taskTableContainer}>
           <TasksTable queue={qname} selected={selected} />
         </Grid>
       </Grid>
