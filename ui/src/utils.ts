@@ -79,3 +79,8 @@ export function uuidPrefix(uuid: string): string {
   }
   return uuid.substr(0, idx);
 }
+
+export function percentage(numerator: number, denominator: number): string {
+  const perc = ((numerator / denominator) * 100).toFixed(2);
+  return `${perc} %`;
+}

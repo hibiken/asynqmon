@@ -3,6 +3,7 @@ import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { AppState } from "../store";
+import { percentage } from "../utils";
 
 const useStyles = makeStyles((theme) => ({
   banner: {
@@ -92,7 +93,9 @@ function QueueInfoBanner(props: Props & ReduxProps) {
         <Typography variant="subtitle2" color="textPrimary" gutterBottom>
           Error rate
         </Typography>
-        <Typography color="textSecondary">0.3 %</Typography>
+        <Typography color="textSecondary">
+          {queue ? percentage(queue.failed, queue.processed) : "-"}
+        </Typography>
       </div>
     </div>
   );
