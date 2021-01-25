@@ -1,10 +1,9 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
+import Chip from "@material-ui/core/Chip";
 import ActiveTasksTable from "./ActiveTasksTable";
 import PendingTasksTable from "./PendingTasksTable";
 import ScheduledTasksTable from "./ScheduledTasksTable";
@@ -36,13 +35,6 @@ function TabPanel(props: TabPanelProps) {
       {value === selected && children}
     </div>
   );
-}
-
-function a11yProps(value: string) {
-  return {
-    id: `scrollable-auto-tab-${value}`,
-    "aria-controls": `scrollable-auto-tabpanel-${value}`,
-  };
 }
 
 function mapStatetoProps(state: AppState, ownProps: Props) {
@@ -83,46 +75,31 @@ const useStyles = makeStyles((theme) => ({
     height: "100%",
     background: theme.palette.background.paper,
   },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    paddingTop: theme.spacing(1),
+  },
   heading: {
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
-    borderBottom: `1px solid ${theme.palette.divider}`,
   },
-  tabsContainer: {
-    // background:
-    //   theme.palette.type === "dark"
-    //     ? "#303030"
-    //     : theme.palette.background.default,
+  chip: {
+    marginLeft: theme.spacing(1),
   },
-  tabsRoot: {
-    // background:
-    //   theme.palette.type === "dark"
-    //     ? "#303030"
-    //     : theme.palette.background.default,
-  },
-  tabsIndicator: {
-    right: "auto",
-    left: "0",
-  },
-  tabroot: {
-    flexGrow: 1,
+  taskcount: {
+    fontSize: "12px",
+    color: theme.palette.text.secondary,
+    background:
+      theme.palette.type === "dark"
+        ? "#303030"
+        : theme.palette.background.default,
     textAlign: "center",
-    padding: theme.spacing(2),
-  },
-  tabwrapper: {
-    alignItems: "center",
-    color: theme.palette.text.primary,
-  },
-  tabSelected: {
-    background: theme.palette.background.paper,
-  },
-  panelContainer: {},
-  taskCount: {
-    fontSize: "2rem",
-    fontWeight: 600,
-    margin: 0,
+    padding: "3px 6px",
+    borderRadius: "10px",
+    marginLeft: "2px",
   },
 }));
 
@@ -130,109 +107,62 @@ function TasksTable(props: Props & ReduxProps) {
   const { currentStats } = props;
   const classes = useStyles();
   const history = useHistory();
+  const chips = [
+    { key: "active", label: "Active", count: currentStats.active },
+    { key: "pending", label: "Pending", count: currentStats.pending },
+    { key: "scheduled", label: "Scheduled", count: currentStats.scheduled },
+    { key: "retry", label: "Retry", count: currentStats.retry },
+    { key: "archived", label: "Archived", count: currentStats.archived },
+  ];
 
   return (
     <Paper variant="outlined" className={classes.container}>
-      <Typography color="textPrimary" className={classes.heading}>
-        Tasks list
-      </Typography>
-      <div className={classes.tabsContainer}>
-        <Tabs
-          value={props.selected}
-          onChange={(_, value: string) =>
-            history.push(queueDetailsPath(props.queue, value))
-          }
-          aria-label="tasks table"
-          classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-        >
-          <Tab
-            value="active"
-            label={`Active (${currentStats.active})`}
-            classes={{
-              root: classes.tabroot,
-              wrapper: classes.tabwrapper,
-              selected: classes.tabSelected,
-            }}
-            {...a11yProps("active")}
-          />
-          <Tab
-            value="pending"
-            label={`Pending (${currentStats.pending})`}
-            classes={{
-              root: classes.tabroot,
-              wrapper: classes.tabwrapper,
-              selected: classes.tabSelected,
-            }}
-            {...a11yProps("pending")}
-          />
-          <Tab
-            value="scheduled"
-            label={`Scheduled (${currentStats.scheduled})`}
-            classes={{
-              root: classes.tabroot,
-              wrapper: classes.tabwrapper,
-              selected: classes.tabSelected,
-            }}
-            {...a11yProps("scheduled")}
-          />
-          <Tab
-            value="retry"
-            label={`Retry (${currentStats.retry})`}
-            classes={{
-              root: classes.tabroot,
-              wrapper: classes.tabwrapper,
-              selected: classes.tabSelected,
-            }}
-            {...a11yProps("retry")}
-          />
-          <Tab
-            value="archived"
-            label={`Archived (${currentStats.archived})`}
-            classes={{
-              root: classes.tabroot,
-              wrapper: classes.tabwrapper,
-              selected: classes.tabSelected,
-            }}
-            {...a11yProps("archived")}
-          />
-        </Tabs>
+      <div className={classes.header}>
+        <Typography color="textPrimary" className={classes.heading}>
+          Tasks
+        </Typography>
+        <div>
+          {chips.map((c) => (
+            <Chip
+              className={classes.chip}
+              label={
+                <div>
+                  {c.label} <span className={classes.taskcount}>{c.count}</span>
+                </div>
+              }
+              variant="outlined"
+              color={props.selected === c.key ? "primary" : "default"}
+              onClick={() => history.push(queueDetailsPath(props.queue, c.key))}
+            />
+          ))}
+        </div>
       </div>
       <TabPanel value="active" selected={props.selected}>
-        <div className={classes.panelContainer}>
-          <ActiveTasksTable queue={props.queue} />
-        </div>
+        <ActiveTasksTable queue={props.queue} />
       </TabPanel>
       <TabPanel value="pending" selected={props.selected}>
-        <div className={classes.panelContainer}>
-          <PendingTasksTable
-            queue={props.queue}
-            totalTaskCount={currentStats.pending}
-          />
-        </div>
+        <PendingTasksTable
+          queue={props.queue}
+          totalTaskCount={currentStats.pending}
+        />
       </TabPanel>
       <TabPanel value="scheduled" selected={props.selected}>
-        <div className={classes.panelContainer}>
-          <ScheduledTasksTable
-            queue={props.queue}
-            totalTaskCount={currentStats.scheduled}
-          />
-        </div>
+        <ScheduledTasksTable
+          queue={props.queue}
+          totalTaskCount={currentStats.scheduled}
+        />
       </TabPanel>
       <TabPanel value="retry" selected={props.selected}>
-        <div className={classes.panelContainer}>
-          <RetryTasksTable
-            queue={props.queue}
-            totalTaskCount={currentStats.retry}
-          />
-        </div>
+        <RetryTasksTable
+          queue={props.queue}
+          totalTaskCount={currentStats.retry}
+        />
       </TabPanel>
       <TabPanel value="archived" selected={props.selected}>
-        <div className={classes.panelContainer}>
-          <ArchivedTasksTable
-            queue={props.queue}
-            totalTaskCount={currentStats.archived}
-          />
-        </div>
+        <ArchivedTasksTable
+          queue={props.queue}
+          totalTaskCount={currentStats.archived}
+        />
       </TabPanel>
     </Paper>
   );
