@@ -217,6 +217,7 @@ export interface Queue {
   queue: string;
   paused: boolean;
   size: number;
+  memory_usage_bytes: number;
   active: number;
   pending: number;
   scheduled: number;

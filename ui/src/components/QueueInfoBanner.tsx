@@ -2,6 +2,7 @@ import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
+import prettyBytes from "pretty-bytes";
 import { AppState } from "../store";
 import { percentage } from "../utils";
 
@@ -68,7 +69,9 @@ function QueueInfoBanner(props: Props & ReduxProps) {
         <Typography variant="subtitle2" color="textPrimary" gutterBottom>
           Memory usage
         </Typography>
-        <Typography color="textSecondary">1.2MB</Typography>
+        <Typography color="textSecondary">
+          {queue ? prettyBytes(queue.memory_usage_bytes) : "-"}
+        </Typography>
       </div>
 
       <div className={classes.bannerItem}>

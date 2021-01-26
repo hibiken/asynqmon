@@ -15,6 +15,8 @@ import (
 type QueueStateSnapshot struct {
 	// Name of the queue.
 	Queue string `json:"queue"`
+	// Total number of bytes the queue and its tasks require to be stored in redis.
+	MemoryUsage int64 `json:"memory_usage_bytes"`
 	// Total number of tasks in the queue.
 	Size int `json:"size"`
 	// Number of tasks in each state.
@@ -39,18 +41,19 @@ type QueueStateSnapshot struct {
 
 func toQueueStateSnapshot(s *asynq.QueueStats) *QueueStateSnapshot {
 	return &QueueStateSnapshot{
-		Queue:     s.Queue,
-		Size:      s.Size,
-		Active:    s.Active,
-		Pending:   s.Pending,
-		Scheduled: s.Scheduled,
-		Retry:     s.Retry,
-		Archived:  s.Archived,
-		Processed: s.Processed,
-		Succeeded: s.Processed - s.Failed,
-		Failed:    s.Failed,
-		Paused:    s.Paused,
-		Timestamp: s.Timestamp,
+		Queue:       s.Queue,
+		MemoryUsage: s.MemoryUsage,
+		Size:        s.Size,
+		Active:      s.Active,
+		Pending:     s.Pending,
+		Scheduled:   s.Scheduled,
+		Retry:       s.Retry,
+		Archived:    s.Archived,
+		Processed:   s.Processed,
+		Succeeded:   s.Processed - s.Failed,
+		Failed:      s.Failed,
+		Paused:      s.Paused,
+		Timestamp:   s.Timestamp,
 	}
 }
 
