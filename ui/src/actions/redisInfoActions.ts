@@ -1,6 +1,6 @@
 import { Dispatch } from "redux";
 import { getRedisInfo, RedisInfoResponse } from "../api";
-import { toErrorString } from "../utils";
+import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 
 // List of redis-info related action types.
 export const GET_REDIS_INFO_BEGIN = "GET_REDIS_INFO_BEGIN";
@@ -34,10 +34,10 @@ export function getRedisInfoAsync() {
       const response = await getRedisInfo();
       dispatch({ type: GET_REDIS_INFO_SUCCESS, payload: response });
     } catch (error) {
-      console.error(`getRedisInfoAsync: ${toErrorString(error)}`);
+      console.error(`getRedisInfoAsync: ${toErrorStringWithHttpStatus(error)}`);
       dispatch({
         type: GET_REDIS_INFO_ERROR,
-        error: error.response.data,
+        error: toErrorString(error),
       });
     }
   };

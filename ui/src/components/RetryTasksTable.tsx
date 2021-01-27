@@ -61,6 +61,7 @@ const useStyles = makeStyles((theme) => ({
 function mapStateToProps(state: AppState) {
   return {
     loading: state.tasks.retryTasks.loading,
+    error: state.tasks.retryTasks.error,
     tasks: state.tasks.retryTasks.data,
     batchActionPending: state.tasks.retryTasks.batchActionPending,
     allActionPending: state.tasks.retryTasks.allActionPending,
@@ -158,6 +159,14 @@ function RetryTasksTable(props: Props & ReduxProps) {
 
   usePolling(fetchData, pollInterval);
 
+  if (props.error.length > 0) {
+    return (
+      <Alert severity="error">
+        <AlertTitle>Error</AlertTitle>
+        {props.error}
+      </Alert>
+    );
+  }
   if (props.tasks.length === 0) {
     return (
       <Alert severity="info">

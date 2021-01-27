@@ -61,6 +61,7 @@ const useStyles = makeStyles((theme) => ({
 function mapStateToProps(state: AppState) {
   return {
     loading: state.tasks.scheduledTasks.loading,
+    error: state.tasks.scheduledTasks.error,
     tasks: state.tasks.scheduledTasks.data,
     batchActionPending: state.tasks.scheduledTasks.batchActionPending,
     allActionPending: state.tasks.scheduledTasks.allActionPending,
@@ -158,6 +159,14 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
 
   usePolling(fetchData, pollInterval);
 
+  if (props.error.length > 0) {
+    return (
+      <Alert severity="error">
+        <AlertTitle>Error</AlertTitle>
+        {props.error}
+      </Alert>
+    );
+  }
   if (props.tasks.length === 0) {
     return (
       <Alert severity="info">

@@ -6,7 +6,7 @@ import {
   pauseQueue,
   resumeQueue,
 } from "../api";
-import { toErrorString } from "../utils";
+import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 
 // List of queue related action types.
 export const LIST_QUEUES_BEGIN = "LIST_QUEUES_BEGIN";
@@ -109,10 +109,10 @@ export function listQueuesAsync() {
         payload: response,
       });
     } catch (error) {
-      console.error(`listQueuesAsync: ${toErrorString(error)}`);
+      console.error(`listQueuesAsync: ${toErrorStringWithHttpStatus(error)}`);
       dispatch({
         type: LIST_QUEUES_ERROR,
-        error: error.response.data,
+        error: toErrorString(error),
       });
     }
   };
@@ -136,7 +136,7 @@ export function deleteQueueAsync(qname: string) {
       dispatch({
         type: DELETE_QUEUE_ERROR,
         queue: qname,
-        error: `Could not delete queue: ${qname}`,
+        error: toErrorString(error),
       });
     }
   };
@@ -148,11 +148,12 @@ export function pauseQueueAsync(qname: string) {
     try {
       await pauseQueue(qname);
       dispatch({ type: PAUSE_QUEUE_SUCCESS, queue: qname });
-    } catch {
+    } catch (error) {
+      console.error("pauseQueueAsynq: ", toErrorStringWithHttpStatus(error));
       dispatch({
         type: PAUSE_QUEUE_ERROR,
         queue: qname,
-        error: `Could not pause queue: ${qname}`,
+        error: toErrorString(error),
       });
     }
   };
@@ -164,11 +165,12 @@ export function resumeQueueAsync(qname: string) {
     try {
       await resumeQueue(qname);
       dispatch({ type: RESUME_QUEUE_SUCCESS, queue: qname });
-    } catch {
+    } catch (error) {
+      console.error("resumeQueueAsync: ", toErrorStringWithHttpStatus(error));
       dispatch({
         type: RESUME_QUEUE_ERROR,
         queue: qname,
-        error: `Could not resume queue: ${qname}`,
+        error: toErrorString(error),
       });
     }
   };

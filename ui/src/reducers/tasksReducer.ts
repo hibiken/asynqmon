@@ -243,7 +243,6 @@ function tasksReducer(
         ...state,
         activeTasks: {
           ...state.activeTasks,
-          error: "",
           loading: true,
         },
       };
@@ -270,6 +269,7 @@ function tasksReducer(
           ...state.activeTasks,
           loading: false,
           error: action.error,
+          data: [],
         },
       };
 
@@ -278,7 +278,6 @@ function tasksReducer(
         ...state,
         pendingTasks: {
           ...state.pendingTasks,
-          error: "",
           loading: true,
         },
       };
@@ -304,6 +303,7 @@ function tasksReducer(
           ...state.pendingTasks,
           loading: false,
           error: action.error,
+          data: [],
         },
       };
 
@@ -312,7 +312,6 @@ function tasksReducer(
         ...state,
         scheduledTasks: {
           ...state.scheduledTasks,
-          error: "",
           loading: true,
         },
       };
@@ -338,6 +337,7 @@ function tasksReducer(
           ...state.scheduledTasks,
           loading: false,
           error: action.error,
+          data: [],
         },
       };
 
@@ -346,7 +346,6 @@ function tasksReducer(
         ...state,
         retryTasks: {
           ...state.retryTasks,
-          error: "",
           loading: true,
         },
       };
@@ -372,6 +371,7 @@ function tasksReducer(
           ...state.retryTasks,
           loading: false,
           error: action.error,
+          data: [],
         },
       };
 
@@ -380,7 +380,6 @@ function tasksReducer(
         ...state,
         archivedTasks: {
           ...state.archivedTasks,
-          error: "",
           loading: true,
         },
       };
@@ -406,6 +405,7 @@ function tasksReducer(
           ...state.archivedTasks,
           loading: false,
           error: action.error,
+          data: [],
         },
       };
 

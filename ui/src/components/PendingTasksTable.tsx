@@ -57,6 +57,7 @@ const useStyles = makeStyles((theme) => ({
 function mapStateToProps(state: AppState) {
   return {
     loading: state.tasks.pendingTasks.loading,
+    error: state.tasks.pendingTasks.error,
     tasks: state.tasks.pendingTasks.data,
     batchActionPending: state.tasks.pendingTasks.batchActionPending,
     allActionPending: state.tasks.pendingTasks.allActionPending,
@@ -141,6 +142,14 @@ function PendingTasksTable(props: Props & ReduxProps) {
 
   usePolling(fetchData, pollInterval);
 
+  if (props.error.length > 0) {
+    return (
+      <Alert severity="error">
+        <AlertTitle>Error</AlertTitle>
+        {props.error}
+      </Alert>
+    );
+  }
   if (props.tasks.length === 0) {
     return (
       <Alert severity="info">

@@ -1,5 +1,6 @@
 import { Dispatch } from "redux";
 import { listQueueStats, ListQueueStatsResponse } from "../api";
+import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 
 export const LIST_QUEUE_STATS_BEGIN = "LIST_QUEUE_STATS_BEGIN";
 export const LIST_QUEUE_STATS_SUCCESS = "LIST_QUEUE_STATS_SUCCESS";
@@ -35,10 +36,13 @@ export function listQueueStatsAsync() {
         payload: response,
       });
     } catch (error) {
-      console.error("listQueueStatsAsync: ", error);
+      console.error(
+        "listQueueStatsAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: LIST_QUEUE_STATS_ERROR,
-        error: "Could not fetch queue stats",
+        error: toErrorString(error),
       });
     }
   };

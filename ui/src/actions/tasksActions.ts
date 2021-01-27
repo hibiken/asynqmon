@@ -49,6 +49,7 @@ import {
   archiveAllPendingTasks,
 } from "../api";
 import { Dispatch } from "redux";
+import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 
 // List of tasks related action types.
 export const LIST_ACTIVE_TASKS_BEGIN = "LIST_ACTIVE_TASKS_BEGIN";
@@ -1017,11 +1018,15 @@ export function listActiveTasksAsync(
         queue: qname,
         payload: response,
       });
-    } catch {
+    } catch (error) {
+      console.error(
+        "listActiveTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: LIST_ACTIVE_TASKS_ERROR,
         queue: qname,
-        error: `Could not retreive active tasks data for queue: ${qname}`,
+        error: toErrorString(error),
       });
     }
   };
@@ -1040,11 +1045,15 @@ export function listPendingTasksAsync(
         queue: qname,
         payload: response,
       });
-    } catch {
+    } catch (error) {
+      console.error(
+        "listPendingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: LIST_PENDING_TASKS_ERROR,
         queue: qname,
-        error: `Could not retreive pending tasks data for queue: ${qname}`,
+        error: toErrorString(error),
       });
     }
   };
@@ -1063,11 +1072,15 @@ export function listScheduledTasksAsync(
         queue: qname,
         payload: response,
       });
-    } catch {
+    } catch (error) {
+      console.error(
+        "listScheduledTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: LIST_SCHEDULED_TASKS_ERROR,
         queue: qname,
-        error: `Could not retreive scheduled tasks data for queue: ${qname}`,
+        error: toErrorString(error),
       });
     }
   };
@@ -1086,11 +1099,15 @@ export function listRetryTasksAsync(
         queue: qname,
         payload: response,
       });
-    } catch {
+    } catch (error) {
+      console.error(
+        "listRetryTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: LIST_RETRY_TASKS_ERROR,
         queue: qname,
-        error: `Could not retreive retry tasks data for queue: ${qname}`,
+        error: toErrorString(error),
       });
     }
   };
@@ -1109,11 +1126,15 @@ export function listArchivedTasksAsync(
         queue: qname,
         payload: response,
       });
-    } catch {
+    } catch (error) {
+      console.error(
+        "listArchivedTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: LIST_ARCHIVED_TASKS_ERROR,
         queue: qname,
-        error: `Could not retreive archived tasks data for queue: ${qname}`,
+        error: toErrorString(error),
       });
     }
   };
@@ -1125,10 +1146,14 @@ export function cancelActiveTaskAsync(queue: string, taskId: string) {
     try {
       await cancelActiveTask(queue, taskId);
       dispatch({ type: CANCEL_ACTIVE_TASK_SUCCESS, queue, taskId });
-    } catch {
+    } catch (error) {
+      console.error(
+        "cancelActiveTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: CANCEL_ACTIVE_TASK_ERROR,
-        error: `Could not cancel task: ${taskId}`,
+        error: toErrorString(error),
         queue,
         taskId,
       });
@@ -1143,10 +1168,13 @@ export function cancelAllActiveTasksAsync(queue: string) {
       await cancelAllActiveTasks(queue);
       dispatch({ type: CANCEL_ALL_ACTIVE_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("cancelAllActiveTasksAsync: ", error);
+      console.error(
+        "cancelAllActiveTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: CANCEL_ALL_ACTIVE_TASKS_ERROR,
-        error: "Could not cancel all tasks",
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1164,10 +1192,13 @@ export function batchCancelActiveTasksAsync(queue: string, taskIds: string[]) {
         payload: response,
       });
     } catch (error) {
-      console.error("batchCancelActiveTasksAsync: ", error);
+      console.error(
+        "batchCancelActiveTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_CANCEL_ACTIVE_TASKS_ERROR,
-        error: `Could not batch cancel tasks: ${taskIds}`,
+        error: toErrorString(error),
         queue,
         taskIds,
       });
@@ -1182,10 +1213,13 @@ export function runScheduledTaskAsync(queue: string, taskKey: string) {
       await runScheduledTask(queue, taskKey);
       dispatch({ type: RUN_SCHEDULED_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("runScheduledTaskAsync: ", error);
+      console.error(
+        "runScheduledTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: RUN_SCHEDULED_TASK_ERROR,
-        error: `Could not run task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1200,10 +1234,10 @@ export function runRetryTaskAsync(queue: string, taskKey: string) {
       await runRetryTask(queue, taskKey);
       dispatch({ type: RUN_RETRY_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("runRetryTaskAsync: ", error);
+      console.error("runRetryTaskAsync: ", toErrorStringWithHttpStatus(error));
       dispatch({
         type: RUN_RETRY_TASK_ERROR,
-        error: `Could not run task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1218,10 +1252,13 @@ export function archivePendingTaskAsync(queue: string, taskKey: string) {
       await archivePendingTask(queue, taskKey);
       dispatch({ type: ARCHIVE_PENDING_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("archivePendingTaskAsync: ", error);
+      console.error(
+        "archivePendingTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: ARCHIVE_PENDING_TASK_ERROR,
-        error: `Could not archive task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1236,10 +1273,13 @@ export function archiveScheduledTaskAsync(queue: string, taskKey: string) {
       await archiveScheduledTask(queue, taskKey);
       dispatch({ type: ARCHIVE_SCHEDULED_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("archiveScheduledTaskAsync: ", error);
+      console.error(
+        "archiveScheduledTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: ARCHIVE_SCHEDULED_TASK_ERROR,
-        error: `Could not archive task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1254,10 +1294,13 @@ export function archiveRetryTaskAsync(queue: string, taskKey: string) {
       await archiveRetryTask(queue, taskKey);
       dispatch({ type: ARCHIVE_RETRY_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("archiveRetryTaskAsync: ", error);
+      console.error(
+        "archiveRetryTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: ARCHIVE_RETRY_TASK_ERROR,
-        error: `Could not archive task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1272,10 +1315,13 @@ export function runArchivedTaskAsync(queue: string, taskKey: string) {
       await runArchivedTask(queue, taskKey);
       dispatch({ type: RUN_ARCHIVED_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("runArchivedTaskAsync: ", error);
+      console.error(
+        "runArchivedTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: RUN_ARCHIVED_TASK_ERROR,
-        error: `Could not run task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1290,10 +1336,13 @@ export function deletePendingTaskAsync(queue: string, taskKey: string) {
       await deletePendingTask(queue, taskKey);
       dispatch({ type: DELETE_PENDING_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("deletePendingTaskAsync: ", error);
+      console.error(
+        "deletePendingTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: DELETE_PENDING_TASK_ERROR,
-        error: `Could not delete task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1315,10 +1364,13 @@ export function batchDeletePendingTasksAsync(
         payload: response,
       });
     } catch (error) {
-      console.error("batchDeletePendingTasksAsync: ", error);
+      console.error(
+        "batchDeletePendingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_DELETE_PENDING_TASKS_ERROR,
-        error: `Could not batch delete tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1333,10 +1385,13 @@ export function deleteScheduledTaskAsync(queue: string, taskKey: string) {
       await deleteScheduledTask(queue, taskKey);
       dispatch({ type: DELETE_SCHEDULED_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("deleteScheduledTaskAsync: ", error);
+      console.error(
+        "deleteScheduledTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: DELETE_SCHEDULED_TASK_ERROR,
-        error: `Could not delete task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1358,10 +1413,13 @@ export function batchDeleteScheduledTasksAsync(
         payload: response,
       });
     } catch (error) {
-      console.error("batchDeleteScheduledTasksAsync: ", error);
+      console.error(
+        "batchDeleteScheduledTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_DELETE_SCHEDULED_TASKS_ERROR,
-        error: `Could not batch delete tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1380,10 +1438,13 @@ export function batchRunScheduledTasksAsync(queue: string, taskKeys: string[]) {
         payload: response,
       });
     } catch (error) {
-      console.error("batchRunScheduledTasksAsync: ", error);
+      console.error(
+        "batchRunScheduledTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_RUN_SCHEDULED_TASKS_ERROR,
-        error: `Could not batch run tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1405,10 +1466,13 @@ export function batchArchiveScheduledTasksAsync(
         payload: response,
       });
     } catch (error) {
-      console.error("batchArchiveScheduledTasksAsync: ", error);
+      console.error(
+        "batchArchiveScheduledTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_ARCHIVE_SCHEDULED_TASKS_ERROR,
-        error: `Could not batch archive tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1430,10 +1494,13 @@ export function batchArchivePendingTasksAsync(
         payload: response,
       });
     } catch (error) {
-      console.error("batchArchivePendingTasksAsync: ", error);
+      console.error(
+        "batchArchivePendingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_ARCHIVE_PENDING_TASKS_ERROR,
-        error: `Could not batch archive tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1448,10 +1515,13 @@ export function archiveAllPendingTasksAsync(queue: string) {
       await archiveAllPendingTasks(queue);
       dispatch({ type: ARCHIVE_ALL_PENDING_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("archiveAllPendingTasksAsync: ", error);
+      console.error(
+        "archiveAllPendingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: ARCHIVE_ALL_PENDING_TASKS_ERROR,
-        error: `Could not archive all pending tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1465,10 +1535,13 @@ export function deleteAllPendingTasksAsync(queue: string) {
       await deleteAllPendingTasks(queue);
       dispatch({ type: DELETE_ALL_PENDING_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("deleteAllPendingTasksAsync: ", error);
+      console.error(
+        "deleteAllPendingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: DELETE_ALL_PENDING_TASKS_ERROR,
-        error: `Could not delete all pending tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1482,10 +1555,13 @@ export function deleteAllScheduledTasksAsync(queue: string) {
       await deleteAllScheduledTasks(queue);
       dispatch({ type: DELETE_ALL_SCHEDULED_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("deleteAllScheduledTasksAsync: ", error);
+      console.error(
+        "deleteAllScheduledTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: DELETE_ALL_SCHEDULED_TASKS_ERROR,
-        error: `Could not delete all scheduled tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1499,10 +1575,13 @@ export function runAllScheduledTasksAsync(queue: string) {
       await runAllScheduledTasks(queue);
       dispatch({ type: RUN_ALL_SCHEDULED_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("runAllScheduledTasksAsync: ", error);
+      console.error(
+        "runAllScheduledTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: RUN_ALL_SCHEDULED_TASKS_ERROR,
-        error: `Could not run all scheduled tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1516,10 +1595,13 @@ export function archiveAllScheduledTasksAsync(queue: string) {
       await archiveAllScheduledTasks(queue);
       dispatch({ type: ARCHIVE_ALL_SCHEDULED_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("archiveAllScheduledTasksAsync: ", error);
+      console.error(
+        "archiveAllScheduledTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: ARCHIVE_ALL_SCHEDULED_TASKS_ERROR,
-        error: `Could not archive all scheduled tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1533,10 +1615,13 @@ export function deleteRetryTaskAsync(queue: string, taskKey: string) {
       await deleteRetryTask(queue, taskKey);
       dispatch({ type: DELETE_RETRY_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("deleteRetryTaskAsync: ", error);
+      console.error(
+        "deleteRetryTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: DELETE_RETRY_TASK_ERROR,
-        error: `Could not delete task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1555,10 +1640,13 @@ export function batchDeleteRetryTasksAsync(queue: string, taskKeys: string[]) {
         payload: response,
       });
     } catch (error) {
-      console.error("batchDeleteRetryTasksAsync: ", error);
+      console.error(
+        "batchDeleteRetryTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_DELETE_RETRY_TASKS_ERROR,
-        error: `Could not batch delete tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1577,10 +1665,13 @@ export function batchRunRetryTasksAsync(queue: string, taskKeys: string[]) {
         payload: response,
       });
     } catch (error) {
-      console.error("batchRunRetryTasksAsync: ", error);
+      console.error(
+        "batchRunRetryTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_RUN_RETRY_TASKS_ERROR,
-        error: `Could not batch run tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1599,10 +1690,13 @@ export function batchArchiveRetryTasksAsync(queue: string, taskKeys: string[]) {
         payload: response,
       });
     } catch (error) {
-      console.error("batchArchiveRetryTasksAsync: ", error);
+      console.error(
+        "batchArchiveRetryTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_ARCHIVE_RETRY_TASKS_ERROR,
-        error: `Could not batch archive tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1617,10 +1711,13 @@ export function deleteAllRetryTasksAsync(queue: string) {
       await deleteAllRetryTasks(queue);
       dispatch({ type: DELETE_ALL_RETRY_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("deleteAllRetryTasksAsync: ", error);
+      console.error(
+        "deleteAllRetryTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: DELETE_ALL_RETRY_TASKS_ERROR,
-        error: `Could not delete all retry tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1634,10 +1731,13 @@ export function runAllRetryTasksAsync(queue: string) {
       await runAllRetryTasks(queue);
       dispatch({ type: RUN_ALL_RETRY_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("runAllRetryTasksAsync: ", error);
+      console.error(
+        "runAllRetryTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: RUN_ALL_RETRY_TASKS_ERROR,
-        error: `Could not run all retry tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1651,10 +1751,13 @@ export function archiveAllRetryTasksAsync(queue: string) {
       await archiveAllRetryTasks(queue);
       dispatch({ type: ARCHIVE_ALL_RETRY_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("archiveAllRetryTasksAsync: ", error);
+      console.error(
+        "archiveAllRetryTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: ARCHIVE_ALL_RETRY_TASKS_ERROR,
-        error: `Could not archive all retry tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1668,10 +1771,13 @@ export function deleteArchivedTaskAsync(queue: string, taskKey: string) {
       await deleteArchivedTask(queue, taskKey);
       dispatch({ type: DELETE_ARCHIVED_TASK_SUCCESS, queue, taskKey });
     } catch (error) {
-      console.error("deleteArchivedTaskAsync: ", error);
+      console.error(
+        "deleteArchivedTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: DELETE_ARCHIVED_TASK_ERROR,
-        error: `Could not delete task: ${taskKey}`,
+        error: toErrorString(error),
         queue,
         taskKey,
       });
@@ -1693,10 +1799,13 @@ export function batchDeleteArchivedTasksAsync(
         payload: response,
       });
     } catch (error) {
-      console.error("batchDeleteArchivedTasksAsync: ", error);
+      console.error(
+        "batchDeleteArchivedTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_DELETE_ARCHIVED_TASKS_ERROR,
-        error: `Could not batch delete tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1715,10 +1824,13 @@ export function batchRunArchivedTasksAsync(queue: string, taskKeys: string[]) {
         payload: response,
       });
     } catch (error) {
-      console.error("batchRunArchivedTasksAsync: ", error);
+      console.error(
+        "batchRunArchivedTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: BATCH_RUN_ARCHIVED_TASKS_ERROR,
-        error: `Could not batch run tasks: ${taskKeys}`,
+        error: toErrorString(error),
         queue,
         taskKeys,
       });
@@ -1733,10 +1845,13 @@ export function deleteAllArchivedTasksAsync(queue: string) {
       await deleteAllArchivedTasks(queue);
       dispatch({ type: DELETE_ALL_ARCHIVED_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("deleteAllArchivedTasksAsync: ", error);
+      console.error(
+        "deleteAllArchivedTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: DELETE_ALL_ARCHIVED_TASKS_ERROR,
-        error: `Could not delete all archived tasks`,
+        error: toErrorString(error),
         queue,
       });
     }
@@ -1750,10 +1865,13 @@ export function runAllArchivedTasksAsync(queue: string) {
       await runAllArchivedTasks(queue);
       dispatch({ type: RUN_ALL_ARCHIVED_TASKS_SUCCESS, queue });
     } catch (error) {
-      console.error("runAllArchivedTasksAsync: ", error);
+      console.error(
+        "runAllArchivedTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: RUN_ALL_ARCHIVED_TASKS_ERROR,
-        error: `Could not run all archived tasks`,
+        error: toErrorString(error),
         queue,
       });
     }

@@ -5,7 +5,7 @@ import {
   listSchedulerEntries,
   ListSchedulerEntriesResponse,
 } from "../api";
-import { toErrorString } from "../utils";
+import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 
 // List of scheduler-entry related action types.
 export const LIST_SCHEDULER_ENTRIES_BEGIN = "LIST_SCHEDULER_ENTRIES_BEGIN";
@@ -68,10 +68,12 @@ export function listSchedulerEntriesAsync() {
         payload: response,
       });
     } catch (error) {
-      console.error(`listSchedulerEnqueueEventsAsync: ${toErrorString(error)}`);
+      console.error(
+        `listSchedulerEnqueueEventsAsync: ${toErrorStringWithHttpStatus(error)}`
+      );
       dispatch({
         type: LIST_SCHEDULER_ENTRIES_ERROR,
-        error: error.response.data,
+        error: toErrorString(error),
       });
     }
   };
@@ -88,10 +90,13 @@ export function listSchedulerEnqueueEventsAsync(entryId: string) {
         entryId,
       });
     } catch (error) {
-      console.error("listSchedulerEnqueueEventsAsync: ", error);
+      console.error(
+        "listSchedulerEnqueueEventsAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
       dispatch({
         type: LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR,
-        error: `Could not get enqueue events for entry: ${entryId}`,
+        error: toErrorString(error),
         entryId,
       });
     }

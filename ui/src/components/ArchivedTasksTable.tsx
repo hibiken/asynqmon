@@ -72,6 +72,7 @@ const useRowStyles = makeStyles({
 function mapStateToProps(state: AppState) {
   return {
     loading: state.tasks.archivedTasks.loading,
+    error: state.tasks.archivedTasks.error,
     tasks: state.tasks.archivedTasks.data,
     batchActionPending: state.tasks.archivedTasks.batchActionPending,
     allActionPending: state.tasks.archivedTasks.allActionPending,
@@ -156,6 +157,14 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
 
   usePolling(fetchData, pollInterval);
 
+  if (props.error.length > 0) {
+    return (
+      <Alert severity="error">
+        <AlertTitle>Error</AlertTitle>
+        {props.error}
+      </Alert>
+    );
+  }
   if (props.tasks.length === 0) {
     return (
       <Alert severity="info">

@@ -1,12 +1,21 @@
 import { AxiosError } from "axios";
 
-// toErrorString returns a string representaion of axios error.
-export function toErrorString(error: AxiosError<string>): string {
+// toErrorStringWithHttpStatus returns a string representaion of axios error with HTTP status.
+export function toErrorStringWithHttpStatus(error: AxiosError<string>): string {
   const { response } = error;
   if (!response) {
     return "error: no error response data available";
   }
   return `${response.status} (${response.statusText}): ${response.data}`;
+}
+
+// toErrorString returns a string representaion of axios error.
+export function toErrorString(error: AxiosError<string>): string {
+  const { response } = error;
+  if (!response) {
+    return "Unknown error occurred. See the logs for details.";
+  }
+  return response.data;
 }
 
 interface Duration {
