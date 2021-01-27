@@ -68,6 +68,10 @@ export interface BatchArchiveTasksResponse {
   error_keys: string[];
 }
 
+export interface DeleteAllTasksResponse {
+  deleted: number;
+}
+
 export interface ListQueueStatsResponse {
   stats: { [qname: string]: DailyStat[] };
 }
@@ -517,11 +521,14 @@ export async function batchDeletePendingTasks(
   return resp.data;
 }
 
-export async function deleteAllPendingTasks(qname: string): Promise<void> {
-  await axios({
+export async function deleteAllPendingTasks(
+  qname: string
+): Promise<DeleteAllTasksResponse> {
+  const resp = await axios({
     method: "delete",
     url: `${BASE_URL}/queues/${qname}/pending_tasks:delete_all`,
   });
+  return resp.data;
 }
 
 export async function runScheduledTask(
@@ -568,11 +575,14 @@ export async function batchDeleteScheduledTasks(
   return resp.data;
 }
 
-export async function deleteAllScheduledTasks(qname: string): Promise<void> {
-  await axios({
+export async function deleteAllScheduledTasks(
+  qname: string
+): Promise<DeleteAllTasksResponse> {
+  const resp = await axios({
     method: "delete",
     url: `${BASE_URL}/queues/${qname}/scheduled_tasks:delete_all`,
   });
+  return resp.data;
 }
 
 export async function batchRunScheduledTasks(
@@ -661,11 +671,14 @@ export async function batchDeleteRetryTasks(
   return resp.data;
 }
 
-export async function deleteAllRetryTasks(qname: string): Promise<void> {
-  await axios({
+export async function deleteAllRetryTasks(
+  qname: string
+): Promise<DeleteAllTasksResponse> {
+  const resp = await axios({
     method: "delete",
     url: `${BASE_URL}/queues/${qname}/retry_tasks:delete_all`,
   });
+  return resp.data;
 }
 
 export async function batchRunRetryTasks(
@@ -744,11 +757,14 @@ export async function batchDeleteArchivedTasks(
   return resp.data;
 }
 
-export async function deleteAllArchivedTasks(qname: string): Promise<void> {
-  await axios({
+export async function deleteAllArchivedTasks(
+  qname: string
+): Promise<DeleteAllTasksResponse> {
+  const resp = await axios({
     method: "delete",
     url: `${BASE_URL}/queues/${qname}/archived_tasks:delete_all`,
   });
+  return resp.data;
 }
 
 export async function batchRunArchivedTasks(

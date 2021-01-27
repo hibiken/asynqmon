@@ -283,6 +283,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - 1,
             pending: queueInfo.currentStats.pending - 1,
           },
         };
@@ -299,6 +300,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - 1,
             scheduled: queueInfo.currentStats.scheduled - 1,
           },
         };
@@ -336,6 +338,8 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size:
+              queueInfo.currentStats.size - action.payload.deleted_keys.length,
             pending:
               queueInfo.currentStats.pending -
               action.payload.deleted_keys.length,
@@ -372,6 +376,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - action.deleted,
             pending: 0,
           },
         };
@@ -430,6 +435,8 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size:
+              queueInfo.currentStats.size - action.payload.deleted_keys.length,
             scheduled:
               queueInfo.currentStats.scheduled -
               action.payload.deleted_keys.length,
@@ -485,6 +492,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - action.deleted,
             scheduled: 0,
           },
         };
@@ -501,6 +509,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - 1,
             retry: queueInfo.currentStats.retry - 1,
           },
         };
@@ -558,6 +567,8 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size:
+              queueInfo.currentStats.size - action.payload.deleted_keys.length,
             retry:
               queueInfo.currentStats.retry - action.payload.deleted_keys.length,
           },
@@ -611,6 +622,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - action.deleted,
             retry: 0,
           },
         };
@@ -627,6 +639,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - 1,
             archived: queueInfo.currentStats.archived - 1,
           },
         };
@@ -664,6 +677,8 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size:
+              queueInfo.currentStats.size - action.payload.deleted_keys.length,
             archived:
               queueInfo.currentStats.archived -
               action.payload.deleted_keys.length,
@@ -700,6 +715,7 @@ function queuesReducer(
           ...queueInfo,
           currentStats: {
             ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - action.deleted,
             archived: 0,
           },
         };

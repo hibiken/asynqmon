@@ -394,6 +394,7 @@ interface DeleteAllPendingTasksBeginAction {
 interface DeleteAllPendingTasksSuccessAction {
   type: typeof DELETE_ALL_PENDING_TASKS_SUCCESS;
   queue: string;
+  deleted: number;
 }
 
 interface DeleteAllPendingTasksErrorAction {
@@ -667,6 +668,7 @@ interface DeleteAllScheduledTasksBeginAction {
 interface DeleteAllScheduledTasksSuccessAction {
   type: typeof DELETE_ALL_SCHEDULED_TASKS_SUCCESS;
   queue: string;
+  deleted: number;
 }
 
 interface DeleteAllScheduledTasksErrorAction {
@@ -791,6 +793,7 @@ interface DeleteAllRetryTasksBeginAction {
 interface DeleteAllRetryTasksSuccessAction {
   type: typeof DELETE_ALL_RETRY_TASKS_SUCCESS;
   queue: string;
+  deleted: number;
 }
 
 interface DeleteAllRetryTasksErrorAction {
@@ -880,6 +883,7 @@ interface DeleteAllArchivedTasksBeginAction {
 interface DeleteAllArchivedTasksSuccessAction {
   type: typeof DELETE_ALL_ARCHIVED_TASKS_SUCCESS;
   queue: string;
+  deleted: number;
 }
 
 interface DeleteAllArchivedTasksErrorAction {
@@ -1532,8 +1536,12 @@ export function deleteAllPendingTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: DELETE_ALL_PENDING_TASKS_BEGIN, queue });
     try {
-      await deleteAllPendingTasks(queue);
-      dispatch({ type: DELETE_ALL_PENDING_TASKS_SUCCESS, queue });
+      const response = await deleteAllPendingTasks(queue);
+      dispatch({
+        type: DELETE_ALL_PENDING_TASKS_SUCCESS,
+        deleted: response.deleted,
+        queue,
+      });
     } catch (error) {
       console.error(
         "deleteAllPendingTasksAsync: ",
@@ -1552,8 +1560,12 @@ export function deleteAllScheduledTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: DELETE_ALL_SCHEDULED_TASKS_BEGIN, queue });
     try {
-      await deleteAllScheduledTasks(queue);
-      dispatch({ type: DELETE_ALL_SCHEDULED_TASKS_SUCCESS, queue });
+      const response = await deleteAllScheduledTasks(queue);
+      dispatch({
+        type: DELETE_ALL_SCHEDULED_TASKS_SUCCESS,
+        deleted: response.deleted,
+        queue,
+      });
     } catch (error) {
       console.error(
         "deleteAllScheduledTasksAsync: ",
@@ -1708,8 +1720,12 @@ export function deleteAllRetryTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: DELETE_ALL_RETRY_TASKS_BEGIN, queue });
     try {
-      await deleteAllRetryTasks(queue);
-      dispatch({ type: DELETE_ALL_RETRY_TASKS_SUCCESS, queue });
+      const response = await deleteAllRetryTasks(queue);
+      dispatch({
+        type: DELETE_ALL_RETRY_TASKS_SUCCESS,
+        deleted: response.deleted,
+        queue,
+      });
     } catch (error) {
       console.error(
         "deleteAllRetryTasksAsync: ",
@@ -1842,8 +1858,12 @@ export function deleteAllArchivedTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: DELETE_ALL_ARCHIVED_TASKS_BEGIN, queue });
     try {
-      await deleteAllArchivedTasks(queue);
-      dispatch({ type: DELETE_ALL_ARCHIVED_TASKS_SUCCESS, queue });
+      const response = await deleteAllArchivedTasks(queue);
+      dispatch({
+        type: DELETE_ALL_ARCHIVED_TASKS_SUCCESS,
+        deleted: response.deleted,
+        queue,
+      });
     } catch (error) {
       console.error(
         "deleteAllArchivedTasksAsync: ",
