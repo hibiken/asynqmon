@@ -392,21 +392,27 @@ function Row(props: RowProps) {
                   <TableBody>
                     <TableRow>
                       <TableCell>Retry</TableCell>
-                      <TableCell align="right">2/25</TableCell>
+                      <TableCell align="right">
+                        {task.retried}/{task.max_retry}
+                      </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell>Deadline</TableCell>
-                      <TableCell align="right">In 30s</TableCell>
+                      <TableCell>Last Error</TableCell>
+                      <TableCell align="right">
+                        {task.error_message.length > 0
+                          ? task.error_message
+                          : "N/A"}
+                      </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className={classes.noBottomBorder}>
-                        Unique
+                        Deadline
                       </TableCell>
                       <TableCell
-                        align="right"
                         className={classes.noBottomBorder}
+                        align="right"
                       >
-                        5m30s remaining
+                        TODO: In 30s
                       </TableCell>
                     </TableRow>
                   </TableBody>

@@ -249,18 +249,27 @@ export interface ActiveTask extends BaseTask {
   id: string;
   queue: string;
   start_time: string;
+  max_retry: number;
+  retried: number;
+  error_message: string;
 }
 
 export interface PendingTask extends BaseTask {
   id: string;
   key: string;
   queue: string;
+  max_retry: number;
+  retried: number;
+  error_message: string;
 }
 
 export interface ScheduledTask extends BaseTask {
   id: string;
   key: string;
   queue: string;
+  max_retry: number;
+  retried: number;
+  error_message: string;
   next_process_at: string;
 }
 

@@ -84,10 +84,13 @@ func toDailyStatsList(in []*asynq.DailyStats) []*DailyStats {
 }
 
 type BaseTask struct {
-	ID      string        `json:"id"`
-	Type    string        `json:"type"`
-	Payload asynq.Payload `json:"payload"`
-	Queue   string        `json:"queue"`
+	ID        string        `json:"id"`
+	Type      string        `json:"type"`
+	Payload   asynq.Payload `json:"payload"`
+	Queue     string        `json:"queue"`
+	MaxRetry  int           `json:"max_retry"`
+	Retried   int           `json:"retried"`
+	LastError string        `json:"error_message"`
 }
 
 type ActiveTask struct {
@@ -103,10 +106,13 @@ type ActiveTask struct {
 
 func toActiveTask(t *asynq.ActiveTask) *ActiveTask {
 	base := &BaseTask{
-		ID:      t.ID,
-		Type:    t.Type,
-		Payload: t.Payload,
-		Queue:   t.Queue,
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   t.Payload,
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastError,
 	}
 	return &ActiveTask{BaseTask: base}
 }
@@ -126,10 +132,13 @@ type PendingTask struct {
 
 func toPendingTask(t *asynq.PendingTask) *PendingTask {
 	base := &BaseTask{
-		ID:      t.ID,
-		Type:    t.Type,
-		Payload: t.Payload,
-		Queue:   t.Queue,
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   t.Payload,
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastError,
 	}
 	return &PendingTask{
 		BaseTask: base,
@@ -153,10 +162,13 @@ type ScheduledTask struct {
 
 func toScheduledTask(t *asynq.ScheduledTask) *ScheduledTask {
 	base := &BaseTask{
-		ID:      t.ID,
-		Type:    t.Type,
-		Payload: t.Payload,
-		Queue:   t.Queue,
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   t.Payload,
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastError,
 	}
 	return &ScheduledTask{
 		BaseTask:      base,
@@ -177,25 +189,22 @@ type RetryTask struct {
 	*BaseTask
 	Key           string    `json:"key"`
 	NextProcessAt time.Time `json:"next_process_at"`
-	MaxRetry      int       `json:"max_retry"`
-	Retried       int       `json:"retried"`
-	ErrorMsg      string    `json:"error_message"`
 }
 
 func toRetryTask(t *asynq.RetryTask) *RetryTask {
 	base := &BaseTask{
-		ID:      t.ID,
-		Type:    t.Type,
-		Payload: t.Payload,
-		Queue:   t.Queue,
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   t.Payload,
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastError,
 	}
 	return &RetryTask{
 		BaseTask:      base,
 		Key:           t.Key(),
 		NextProcessAt: t.NextProcessAt,
-		MaxRetry:      t.MaxRetry,
-		Retried:       t.Retried,
-		ErrorMsg:      t.ErrorMsg,
 	}
 }
 
@@ -210,25 +219,22 @@ func toRetryTasks(in []*asynq.RetryTask) []*RetryTask {
 type ArchivedTask struct {
 	*BaseTask
 	Key          string    `json:"key"`
-	MaxRetry     int       `json:"max_retry"`
-	Retried      int       `json:"retried"`
-	ErrorMsg     string    `json:"error_message"`
 	LastFailedAt time.Time `json:"last_failed_at"`
 }
 
 func toArchivedTask(t *asynq.ArchivedTask) *ArchivedTask {
 	base := &BaseTask{
-		ID:      t.ID,
-		Type:    t.Type,
-		Payload: t.Payload,
-		Queue:   t.Queue,
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   t.Payload,
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastError,
 	}
 	return &ArchivedTask{
 		BaseTask:     base,
 		Key:          t.Key(),
-		MaxRetry:     t.MaxRetry,
-		Retried:      t.Retried,
-		ErrorMsg:     t.ErrorMsg,
 		LastFailedAt: t.LastFailedAt,
 	}
 }
