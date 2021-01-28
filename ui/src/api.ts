@@ -249,6 +249,7 @@ export interface ActiveTask extends BaseTask {
   id: string;
   queue: string;
   start_time: string;
+  deadline: string;
   max_retry: number;
   retried: number;
   error_message: string;

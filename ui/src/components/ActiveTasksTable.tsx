@@ -37,7 +37,7 @@ import TablePaginationActions, {
 import TableActions from "./TableActions";
 import { usePolling } from "../hooks";
 import { ActiveTaskExtended } from "../reducers/tasksReducer";
-import { timeAgo, uuidPrefix } from "../utils";
+import { durationBefore, timeAgo, uuidPrefix } from "../utils";
 import { TableColumn } from "../types/table";
 
 const useStyles = makeStyles((theme) => ({
@@ -412,7 +412,9 @@ function Row(props: RowProps) {
                         className={classes.noBottomBorder}
                         align="right"
                       >
-                        TODO: In 30s
+                        {task.deadline === "-"
+                          ? "-"
+                          : durationBefore(task.deadline)}
                       </TableCell>
                     </TableRow>
                   </TableBody>

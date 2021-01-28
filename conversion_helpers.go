@@ -102,6 +102,12 @@ type ActiveTask struct {
 	// a worker started working on the task only a few moments ago, and started time
 	// data is not available.
 	Started string `json:"start_time"`
+
+	// Deadline indicates the time by which the worker needs to finish its task.
+	//
+	// Value is either time formatted in RFC3339 format, or "-" which indicates that
+	// the data is not available yet.
+	Deadline string `json:"deadline"`
 }
 
 func toActiveTask(t *asynq.ActiveTask) *ActiveTask {

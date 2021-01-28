@@ -43,22 +43,24 @@ func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// m maps taskID to started time.
-		m := make(map[string]time.Time)
+		// m maps taskID to WorkerInfo.
+		m := make(map[string]*asynq.WorkerInfo)
 		for _, srv := range servers {
 			for _, w := range srv.ActiveWorkers {
 				if w.Task.Queue == qname {
-					m[w.Task.ID] = w.Started
+					m[w.Task.ID] = w
 				}
 			}
 		}
 		activeTasks := toActiveTasks(tasks)
 		for _, t := range activeTasks {
-			started, ok := m[t.ID]
+			workerInfo, ok := m[t.ID]
 			if ok {
-				t.Started = started.Format(time.RFC3339)
+				t.Started = workerInfo.Started.Format(time.RFC3339)
+				t.Deadline = workerInfo.Deadline.Format(time.RFC3339)
 			} else {
 				t.Started = "-"
+				t.Deadline = "-"
 			}
 		}
 
