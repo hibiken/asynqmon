@@ -273,8 +273,9 @@ export default function QueuesOverviewTable(props: Props) {
                               color="secondary"
                               onClick={() => props.onResumeClick(q.queue)}
                               disabled={q.requestPending}
+                              size="small"
                             >
-                              <PlayCircleFilledIcon />
+                              <PlayCircleFilledIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         ) : (
@@ -283,20 +284,24 @@ export default function QueuesOverviewTable(props: Props) {
                               color="primary"
                               onClick={() => props.onPauseClick(q.queue)}
                               disabled={q.requestPending}
+                              size="small"
                             >
-                              <PauseCircleFilledIcon />
+                              <PauseCircleFilledIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         )}
                         <Tooltip title="Delete">
-                          <IconButton onClick={() => setQueueToDelete(q)}>
-                            <DeleteIcon />
+                          <IconButton
+                            onClick={() => setQueueToDelete(q)}
+                            size="small"
+                          >
+                            <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       </React.Fragment>
                     ) : (
-                      <IconButton>
-                        <MoreHorizIcon />
+                      <IconButton size="small">
+                        <MoreHorizIcon fontSize="small" />
                       </IconButton>
                     )}
                   </div>
