@@ -8,7 +8,6 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import TableFooter from "@material-ui/core/TableFooter";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
@@ -20,33 +19,18 @@ import DeleteQueueConfirmationDialog from "./DeleteQueueConfirmationDialog";
 import { Queue } from "../api";
 import { queueDetailsPath } from "../paths";
 import { SortDirection, SortableTableColumn } from "../types/table";
+import prettyBytes from "pretty-bytes";
+import { percentage } from "../utils";
 
 const useStyles = makeStyles((theme) => ({
   table: {
     minWidth: 650,
-  },
-  linkCell: {
-    textDecoration: "none",
-    color: theme.palette.text.primary,
-  },
-  footerCell: {
-    fontWeight: 600,
-    fontSize: "0.875rem",
-    borderBottom: "none",
-  },
-  boldCell: {
-    fontWeight: 600,
   },
   fixedCell: {
     position: "sticky",
     zIndex: 1,
     left: 0,
     background: theme.palette.background.paper,
-  },
-  actionIconsContainer: {
-    display: "flex",
-    justifyContent: "center",
-    minWidth: "100px",
   },
 }));
 
@@ -63,32 +47,42 @@ interface Props {
 
 enum SortBy {
   Queue,
+  State,
   Size,
-  Active,
-  Pending,
-  Scheduled,
-  Retry,
-  Archived,
+  MemoryUsage,
+  Processed,
+  Failed,
+  ErrorRate,
 
   None, // no sort support
 }
 
 const colConfigs: SortableTableColumn<SortBy>[] = [
   { label: "Queue", key: "queue", sortBy: SortBy.Queue, align: "left" },
-  { label: "Size", key: "size", sortBy: SortBy.Size, align: "right" },
-  { label: "Active", key: "active", sortBy: SortBy.Active, align: "right" },
-  { label: "Pending", key: "pending", sortBy: SortBy.Pending, align: "right" },
+  { label: "State", key: "state", sortBy: SortBy.State, align: "left" },
   {
-    label: "Scheduled",
-    key: "scheduled",
-    sortBy: SortBy.Scheduled,
+    label: "Size",
+    key: "size",
+    sortBy: SortBy.Size,
     align: "right",
   },
-  { label: "Retry", key: "retry", sortBy: SortBy.Retry, align: "right" },
   {
-    label: "Archived",
-    key: "archived",
-    sortBy: SortBy.Archived,
+    label: "Memory usage",
+    key: "memory_usage",
+    sortBy: SortBy.MemoryUsage,
+    align: "right",
+  },
+  {
+    label: "Processed",
+    key: "processed",
+    sortBy: SortBy.Processed,
+    align: "right",
+  },
+  { label: "Failed", key: "failed", sortBy: SortBy.Failed, align: "right" },
+  {
+    label: "Error rate",
+    key: "error_rate",
+    sortBy: SortBy.ErrorRate,
     align: "right",
   },
   { label: "Actions", key: "actions", sortBy: SortBy.None, align: "center" },
@@ -109,12 +103,9 @@ export default function QueuesOverviewTable(props: Props) {
   const classes = useStyles();
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.Queue);
   const [sortDir, setSortDir] = useState<SortDirection>(SortDirection.Asc);
-  const [activeRowIndex, setActiveRowIndex] = useState<number>(-1);
   const [queueToDelete, setQueueToDelete] = useState<QueueWithMetadata | null>(
     null
   );
-  const total = getAggregateCounts(props.queues);
-
   const createSortClickHandler = (sortKey: SortBy) => (e: React.MouseEvent) => {
     if (sortKey === sortBy) {
       // Toggle sort direction.
@@ -134,29 +125,31 @@ export default function QueuesOverviewTable(props: Props) {
         if (q1.queue === q2.queue) return 0;
         isQ1Smaller = q1.queue < q2.queue;
         break;
+      case SortBy.State:
+        if (q1.paused === q2.paused) return 0;
+        isQ1Smaller = !q1.paused;
+        break;
       case SortBy.Size:
         if (q1.size === q2.size) return 0;
         isQ1Smaller = q1.size < q2.size;
         break;
-      case SortBy.Active:
-        if (q1.active === q2.active) return 0;
-        isQ1Smaller = q1.active < q2.active;
+      case SortBy.MemoryUsage:
+        if (q1.memory_usage_bytes === q2.memory_usage_bytes) return 0;
+        isQ1Smaller = q1.memory_usage_bytes < q2.memory_usage_bytes;
         break;
-      case SortBy.Pending:
-        if (q1.pending === q2.pending) return 0;
-        isQ1Smaller = q1.pending < q2.pending;
+      case SortBy.Processed:
+        if (q1.processed === q2.processed) return 0;
+        isQ1Smaller = q1.processed < q2.processed;
         break;
-      case SortBy.Scheduled:
-        if (q1.scheduled === q2.scheduled) return 0;
-        isQ1Smaller = q1.scheduled < q2.scheduled;
+      case SortBy.Failed:
+        if (q1.failed === q2.failed) return 0;
+        isQ1Smaller = q1.failed < q2.failed;
         break;
-      case SortBy.Retry:
-        if (q1.retry === q2.retry) return 0;
-        isQ1Smaller = q1.retry < q2.retry;
-        break;
-      case SortBy.Archived:
-        if (q1.archived === q2.archived) return 0;
-        isQ1Smaller = q1.archived < q2.archived;
+      case SortBy.ErrorRate:
+        const q1ErrorRate = q1.failed / q1.processed;
+        const q2ErrorRate = q2.failed / q2.processed;
+        if (q1ErrorRate === q2ErrorRate) return 0;
+        isQ1Smaller = q1ErrorRate < q2ErrorRate;
         break;
       default:
         // eslint-disable-next-line no-throw-literal
@@ -201,141 +194,15 @@ export default function QueuesOverviewTable(props: Props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortQueues(props.queues, cmpFunc).map((q, i) => (
-              <TableRow
-                key={q.queue}
-                onMouseEnter={() => setActiveRowIndex(i)}
-                onMouseLeave={() => setActiveRowIndex(-1)}
-              >
-                <TableCell
-                  component="th"
-                  scope="row"
-                  className={clsx(classes.boldCell, classes.fixedCell)}
-                >
-                  <Link
-                    to={queueDetailsPath(q.queue)}
-                    className={classes.linkCell}
-                  >
-                    {q.queue}
-                    {q.paused ? " (paused)" : ""}
-                  </Link>
-                </TableCell>
-                <TableCell align="right" className={classes.boldCell}>
-                  {q.size}
-                </TableCell>
-                <TableCell align="right">
-                  <Link
-                    to={queueDetailsPath(q.queue, "active")}
-                    className={classes.linkCell}
-                  >
-                    {q.active}
-                  </Link>
-                </TableCell>
-                <TableCell align="right">
-                  <Link
-                    to={queueDetailsPath(q.queue, "pending")}
-                    className={classes.linkCell}
-                  >
-                    {q.pending}
-                  </Link>
-                </TableCell>
-                <TableCell align="right">
-                  <Link
-                    to={queueDetailsPath(q.queue, "scheduled")}
-                    className={classes.linkCell}
-                  >
-                    {q.scheduled}
-                  </Link>
-                </TableCell>
-                <TableCell align="right">
-                  <Link
-                    to={queueDetailsPath(q.queue, "retry")}
-                    className={classes.linkCell}
-                  >
-                    {q.retry}
-                  </Link>
-                </TableCell>
-                <TableCell align="right">
-                  <Link
-                    to={queueDetailsPath(q.queue, "archived")}
-                    className={classes.linkCell}
-                  >
-                    {q.archived}
-                  </Link>
-                </TableCell>
-                <TableCell align="center">
-                  <div className={classes.actionIconsContainer}>
-                    {activeRowIndex === i ? (
-                      <React.Fragment>
-                        {q.paused ? (
-                          <Tooltip title="Resume">
-                            <IconButton
-                              color="secondary"
-                              onClick={() => props.onResumeClick(q.queue)}
-                              disabled={q.requestPending}
-                              size="small"
-                            >
-                              <PlayCircleFilledIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip title="Pause">
-                            <IconButton
-                              color="primary"
-                              onClick={() => props.onPauseClick(q.queue)}
-                              disabled={q.requestPending}
-                              size="small"
-                            >
-                              <PauseCircleFilledIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                        <Tooltip title="Delete">
-                          <IconButton
-                            onClick={() => setQueueToDelete(q)}
-                            size="small"
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </React.Fragment>
-                    ) : (
-                      <IconButton size="small">
-                        <MoreHorizIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
+            {sortQueues(props.queues, cmpFunc).map((q) => (
+              <Row
+                queue={q}
+                onPauseClick={() => props.onPauseClick(q.queue)}
+                onResumeClick={() => props.onResumeClick(q.queue)}
+                onDeleteClick={() => setQueueToDelete(q)}
+              />
             ))}
           </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell
-                className={clsx(classes.fixedCell, classes.footerCell)}
-              >
-                Total
-              </TableCell>
-              <TableCell className={classes.footerCell} align="right">
-                {total.size}
-              </TableCell>
-              <TableCell className={classes.footerCell} align="right">
-                {total.active}
-              </TableCell>
-              <TableCell className={classes.footerCell} align="right">
-                {total.pending}
-              </TableCell>
-              <TableCell className={classes.footerCell} align="right">
-                {total.scheduled}
-              </TableCell>
-              <TableCell className={classes.footerCell} align="right">
-                {total.retry}
-              </TableCell>
-              <TableCell className={classes.footerCell} align="right">
-                {total.archived}
-              </TableCell>
-            </TableRow>
-          </TableFooter>
         </Table>
       </TableContainer>
       <DeleteQueueConfirmationDialog
@@ -346,31 +213,122 @@ export default function QueuesOverviewTable(props: Props) {
   );
 }
 
-interface AggregateCounts {
-  size: number;
-  active: number;
-  pending: number;
-  scheduled: number;
-  retry: number;
-  archived: number;
+const useRowStyles = makeStyles((theme) => ({
+  row: {
+    "&:last-child td": {
+      borderBottomWidth: 0,
+    },
+    "&:last-child th": {
+      borderBottomWidth: 0,
+    },
+  },
+  linkText: {
+    textDecoration: "none",
+    color: theme.palette.text.primary,
+    "&:hover": {
+      textDecoration: "underline",
+    },
+  },
+  textGreen: {
+    color: theme.palette.success.dark,
+  },
+  textRed: {
+    color: theme.palette.error.dark,
+  },
+  boldCell: {
+    fontWeight: 600,
+  },
+  fixedCell: {
+    position: "sticky",
+    zIndex: 1,
+    left: 0,
+    background: theme.palette.background.paper,
+  },
+  actionIconsContainer: {
+    display: "flex",
+    justifyContent: "center",
+    minWidth: "100px",
+  },
+}));
+
+interface RowProps {
+  queue: QueueWithMetadata;
+  onPauseClick: () => void;
+  onResumeClick: () => void;
+  onDeleteClick: () => void;
 }
 
-function getAggregateCounts(queues: Queue[]): AggregateCounts {
-  let total = {
-    size: 0,
-    active: 0,
-    pending: 0,
-    scheduled: 0,
-    retry: 0,
-    archived: 0,
-  };
-  queues.forEach((q) => {
-    total.size += q.size;
-    total.active += q.active;
-    total.pending += q.pending;
-    total.scheduled += q.scheduled;
-    total.retry += q.retry;
-    total.archived += q.archived;
-  });
-  return total;
+function Row(props: RowProps) {
+  const classes = useRowStyles();
+  const { queue: q } = props;
+  const [showIcons, setShowIcons] = useState<boolean>(false);
+  return (
+    <TableRow key={q.queue} className={classes.row}>
+      <TableCell
+        component="th"
+        scope="row"
+        className={clsx(classes.boldCell, classes.fixedCell)}
+      >
+        <Link to={queueDetailsPath(q.queue)} className={classes.linkText}>
+          {q.queue}
+        </Link>
+      </TableCell>
+      <TableCell>
+        {q.paused ? (
+          <span className={classes.textRed}>paused</span>
+        ) : (
+          <span className={classes.textGreen}>run</span>
+        )}
+      </TableCell>
+      <TableCell align="right">{q.size}</TableCell>
+      <TableCell align="right">{prettyBytes(q.memory_usage_bytes)}</TableCell>
+      <TableCell align="right">{q.processed}</TableCell>
+      <TableCell align="right">{q.failed}</TableCell>
+      <TableCell align="right">{percentage(q.failed, q.processed)}</TableCell>
+      <TableCell
+        align="center"
+        onMouseEnter={() => setShowIcons(true)}
+        onMouseLeave={() => setShowIcons(false)}
+      >
+        <div className={classes.actionIconsContainer}>
+          {showIcons ? (
+            <React.Fragment>
+              {q.paused ? (
+                <Tooltip title="Resume">
+                  <IconButton
+                    color="secondary"
+                    onClick={props.onResumeClick}
+                    disabled={q.requestPending}
+                    size="small"
+                  >
+                    <PlayCircleFilledIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <Tooltip title="Pause">
+                  <IconButton
+                    color="primary"
+                    onClick={props.onPauseClick}
+                    disabled={q.requestPending}
+                    size="small"
+                  >
+                    <PauseCircleFilledIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              <Tooltip title="Delete">
+                <IconButton onClick={props.onDeleteClick} size="small">
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </React.Fragment>
+          ) : (
+            <IconButton size="small">
+              <MoreHorizIcon fontSize="small" />
+            </IconButton>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
 }
