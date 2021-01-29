@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynq/inspeq"
 )
 
 // ****************************************************************************
@@ -39,7 +40,7 @@ type QueueStateSnapshot struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func toQueueStateSnapshot(s *asynq.QueueStats) *QueueStateSnapshot {
+func toQueueStateSnapshot(s *inspeq.QueueStats) *QueueStateSnapshot {
 	return &QueueStateSnapshot{
 		Queue:       s.Queue,
 		MemoryUsage: s.MemoryUsage,
@@ -65,7 +66,7 @@ type DailyStats struct {
 	Date      string `json:"date"`
 }
 
-func toDailyStats(s *asynq.DailyStats) *DailyStats {
+func toDailyStats(s *inspeq.DailyStats) *DailyStats {
 	return &DailyStats{
 		Queue:     s.Queue,
 		Processed: s.Processed,
@@ -75,7 +76,7 @@ func toDailyStats(s *asynq.DailyStats) *DailyStats {
 	}
 }
 
-func toDailyStatsList(in []*asynq.DailyStats) []*DailyStats {
+func toDailyStatsList(in []*inspeq.DailyStats) []*DailyStats {
 	out := make([]*DailyStats, len(in))
 	for i, s := range in {
 		out[i] = toDailyStats(s)
@@ -110,7 +111,7 @@ type ActiveTask struct {
 	Deadline string `json:"deadline"`
 }
 
-func toActiveTask(t *asynq.ActiveTask) *ActiveTask {
+func toActiveTask(t *inspeq.ActiveTask) *ActiveTask {
 	base := &BaseTask{
 		ID:        t.ID,
 		Type:      t.Type,
@@ -123,7 +124,7 @@ func toActiveTask(t *asynq.ActiveTask) *ActiveTask {
 	return &ActiveTask{BaseTask: base}
 }
 
-func toActiveTasks(in []*asynq.ActiveTask) []*ActiveTask {
+func toActiveTasks(in []*inspeq.ActiveTask) []*ActiveTask {
 	out := make([]*ActiveTask, len(in))
 	for i, t := range in {
 		out[i] = toActiveTask(t)
@@ -136,7 +137,7 @@ type PendingTask struct {
 	Key string `json:"key"`
 }
 
-func toPendingTask(t *asynq.PendingTask) *PendingTask {
+func toPendingTask(t *inspeq.PendingTask) *PendingTask {
 	base := &BaseTask{
 		ID:        t.ID,
 		Type:      t.Type,
@@ -152,7 +153,7 @@ func toPendingTask(t *asynq.PendingTask) *PendingTask {
 	}
 }
 
-func toPendingTasks(in []*asynq.PendingTask) []*PendingTask {
+func toPendingTasks(in []*inspeq.PendingTask) []*PendingTask {
 	out := make([]*PendingTask, len(in))
 	for i, t := range in {
 		out[i] = toPendingTask(t)
@@ -166,7 +167,7 @@ type ScheduledTask struct {
 	NextProcessAt time.Time `json:"next_process_at"`
 }
 
-func toScheduledTask(t *asynq.ScheduledTask) *ScheduledTask {
+func toScheduledTask(t *inspeq.ScheduledTask) *ScheduledTask {
 	base := &BaseTask{
 		ID:        t.ID,
 		Type:      t.Type,
@@ -183,7 +184,7 @@ func toScheduledTask(t *asynq.ScheduledTask) *ScheduledTask {
 	}
 }
 
-func toScheduledTasks(in []*asynq.ScheduledTask) []*ScheduledTask {
+func toScheduledTasks(in []*inspeq.ScheduledTask) []*ScheduledTask {
 	out := make([]*ScheduledTask, len(in))
 	for i, t := range in {
 		out[i] = toScheduledTask(t)
@@ -197,7 +198,7 @@ type RetryTask struct {
 	NextProcessAt time.Time `json:"next_process_at"`
 }
 
-func toRetryTask(t *asynq.RetryTask) *RetryTask {
+func toRetryTask(t *inspeq.RetryTask) *RetryTask {
 	base := &BaseTask{
 		ID:        t.ID,
 		Type:      t.Type,
@@ -214,7 +215,7 @@ func toRetryTask(t *asynq.RetryTask) *RetryTask {
 	}
 }
 
-func toRetryTasks(in []*asynq.RetryTask) []*RetryTask {
+func toRetryTasks(in []*inspeq.RetryTask) []*RetryTask {
 	out := make([]*RetryTask, len(in))
 	for i, t := range in {
 		out[i] = toRetryTask(t)
@@ -228,7 +229,7 @@ type ArchivedTask struct {
 	LastFailedAt time.Time `json:"last_failed_at"`
 }
 
-func toArchivedTask(t *asynq.ArchivedTask) *ArchivedTask {
+func toArchivedTask(t *inspeq.ArchivedTask) *ArchivedTask {
 	base := &BaseTask{
 		ID:        t.ID,
 		Type:      t.Type,
@@ -245,7 +246,7 @@ func toArchivedTask(t *asynq.ArchivedTask) *ArchivedTask {
 	}
 }
 
-func toArchivedTasks(in []*asynq.ArchivedTask) []*ArchivedTask {
+func toArchivedTasks(in []*inspeq.ArchivedTask) []*ArchivedTask {
 	out := make([]*ArchivedTask, len(in))
 	for i, t := range in {
 		out[i] = toArchivedTask(t)
@@ -264,7 +265,7 @@ type SchedulerEntry struct {
 	PrevEnqueueAt string `json:"prev_enqueue_at,omitempty"`
 }
 
-func toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry {
+func toSchedulerEntry(e *inspeq.SchedulerEntry) *SchedulerEntry {
 	opts := make([]string, 0) // create a non-nil, empty slice to avoid null in json output
 	for _, o := range e.Opts {
 		opts = append(opts, o.String())
@@ -284,7 +285,7 @@ func toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry {
 	}
 }
 
-func toSchedulerEntries(in []*asynq.SchedulerEntry) []*SchedulerEntry {
+func toSchedulerEntries(in []*inspeq.SchedulerEntry) []*SchedulerEntry {
 	out := make([]*SchedulerEntry, len(in))
 	for i, e := range in {
 		out[i] = toSchedulerEntry(e)
@@ -297,14 +298,14 @@ type SchedulerEnqueueEvent struct {
 	EnqueuedAt string `json:"enqueued_at"`
 }
 
-func toSchedulerEnqueueEvent(e *asynq.SchedulerEnqueueEvent) *SchedulerEnqueueEvent {
+func toSchedulerEnqueueEvent(e *inspeq.SchedulerEnqueueEvent) *SchedulerEnqueueEvent {
 	return &SchedulerEnqueueEvent{
 		TaskID:     e.TaskID,
 		EnqueuedAt: e.EnqueuedAt.Format(time.RFC3339),
 	}
 }
 
-func toSchedulerEnqueueEvents(in []*asynq.SchedulerEnqueueEvent) []*SchedulerEnqueueEvent {
+func toSchedulerEnqueueEvents(in []*inspeq.SchedulerEnqueueEvent) []*SchedulerEnqueueEvent {
 	out := make([]*SchedulerEnqueueEvent, len(in))
 	for i, e := range in {
 		out[i] = toSchedulerEnqueueEvent(e)
@@ -324,7 +325,7 @@ type ServerInfo struct {
 	ActiveWorkers  []*WorkerInfo  `json:"active_workers"`
 }
 
-func toServerInfo(info *asynq.ServerInfo) *ServerInfo {
+func toServerInfo(info *inspeq.ServerInfo) *ServerInfo {
 	return &ServerInfo{
 		ID:             info.ID,
 		Host:           info.Host,
@@ -338,7 +339,7 @@ func toServerInfo(info *asynq.ServerInfo) *ServerInfo {
 	}
 }
 
-func toServerInfoList(in []*asynq.ServerInfo) []*ServerInfo {
+func toServerInfoList(in []*inspeq.ServerInfo) []*ServerInfo {
 	out := make([]*ServerInfo, len(in))
 	for i, s := range in {
 		out[i] = toServerInfo(s)
@@ -351,14 +352,14 @@ type WorkerInfo struct {
 	Started string      `json:"start_time"`
 }
 
-func toWorkerInfo(info *asynq.WorkerInfo) *WorkerInfo {
+func toWorkerInfo(info *inspeq.WorkerInfo) *WorkerInfo {
 	return &WorkerInfo{
 		Task:    toActiveTask(info.Task),
 		Started: info.Started.Format(time.RFC3339),
 	}
 }
 
-func toWorkerInfoList(in []*asynq.WorkerInfo) []*WorkerInfo {
+func toWorkerInfoList(in []*inspeq.WorkerInfo) []*WorkerInfo {
 	out := make([]*WorkerInfo, len(in))
 	for i, w := range in {
 		out[i] = toWorkerInfo(w)

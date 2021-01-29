@@ -15,6 +15,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynq/inspeq"
 	"github.com/rs/cors"
 )
 
@@ -95,7 +96,7 @@ func main() {
 		tlsConfig = &tls.Config{ServerName: flagRedisTLS}
 	}
 
-	inspector := asynq.NewInspector(asynq.RedisClientOpt{
+	inspector := inspeq.New(asynq.RedisClientOpt{
 		Addr:      flagRedisAddr,
 		DB:        flagRedisDB,
 		Password:  flagRedisPassword,

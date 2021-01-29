@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynq/inspeq"
 )
 
 // ****************************************************************************
@@ -13,7 +13,7 @@ import (
 //   - http.Handler(s) for queue related endpoints
 // ****************************************************************************
 
-func newListQueuesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListQueuesHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()
 		if err != nil {
@@ -34,7 +34,7 @@ func newListQueuesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newGetQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newGetQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -63,16 +63,16 @@ func newGetQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newDeleteQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newDeleteQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		if err := inspector.DeleteQueue(qname, false); err != nil {
-			if _, ok := err.(*asynq.ErrQueueNotFound); ok {
+			if _, ok := err.(*inspeq.ErrQueueNotFound); ok {
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
-			if _, ok := err.(*asynq.ErrQueueNotEmpty); ok {
+			if _, ok := err.(*inspeq.ErrQueueNotEmpty); ok {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -83,7 +83,7 @@ func newDeleteQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newPauseQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newPauseQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -95,7 +95,7 @@ func newPauseQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newResumeQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newResumeQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -111,7 +111,7 @@ type ListQueueStatsResponse struct {
 	Stats map[string][]*DailyStats `json:"stats"`
 }
 
-func newListQueueStatsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListQueueStatsHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()
 		if err != nil {

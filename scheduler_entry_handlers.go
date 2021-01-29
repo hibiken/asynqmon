@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynq/inspeq"
 )
 
 // ****************************************************************************
@@ -13,7 +13,7 @@ import (
 //   - http.Handler(s) for scheduler entry related endpoints
 // ****************************************************************************
 
-func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListSchedulerEntriesHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		entries, err := inspector.SchedulerEntries()
 		if err != nil {
@@ -38,12 +38,12 @@ type ListSchedulerEnqueueEventsResponse struct {
 	Events []*SchedulerEnqueueEvent `json:"events"`
 }
 
-func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListSchedulerEnqueueEventsHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		entryID := mux.Vars(r)["entry_id"]
 		pageSize, pageNum := getPageOptions(r)
 		events, err := inspector.ListSchedulerEnqueueEvents(
-			entryID, asynq.PageSize(pageSize), asynq.Page(pageNum))
+			entryID, inspeq.PageSize(pageSize), inspeq.Page(pageNum))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
