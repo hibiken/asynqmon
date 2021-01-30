@@ -90,6 +90,7 @@ export function uuidPrefix(uuid: string): string {
 }
 
 export function percentage(numerator: number, denominator: number): string {
+  if (denominator === 0) return "0.00%";
   const perc = ((numerator / denominator) * 100).toFixed(2);
   return `${perc} %`;
 }
