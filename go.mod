@@ -1,6 +1,6 @@
 module asynqmon
 
-go 1.14
+go 1.16
 
 require (
 	github.com/go-redis/redis/v8 v8.4.4

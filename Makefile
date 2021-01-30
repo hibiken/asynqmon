@@ -3,7 +3,7 @@ assets:
 
 # TODO: Update this once go1.16 is released.
 go_binary:
-	go1.16beta1 build -o asynqmon .
+	go1.16rc1 build -o asynqmon .
 
 # Target to build a release binary.
 build: assets go_binary
