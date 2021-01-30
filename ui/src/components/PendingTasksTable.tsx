@@ -12,13 +12,8 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Tooltip from "@material-ui/core/Tooltip";
 import Paper from "@material-ui/core/Paper";
-import Box from "@material-ui/core/Box";
 import Checkbox from "@material-ui/core/Checkbox";
-import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
-import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
-import Typography from "@material-ui/core/Typography";
 import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -55,6 +50,9 @@ const useStyles = makeStyles((theme) => ({
   alert: {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+  },
+  pagination: {
+    border: "none",
   },
 }));
 
@@ -164,9 +162,11 @@ function PendingTasksTable(props: Props & ReduxProps) {
   }
 
   const columns: TableColumn[] = [
-    { key: "icon", label: "", align: "left" },
     { key: "id", label: "ID", align: "left" },
     { key: "type", label: "Type", align: "left" },
+    { key: "paylod", label: "Payload", align: "left" },
+    { key: "retried", label: "Retried", align: "right" },
+    { key: "max_retry", label: "Max Retry", align: "right" },
     { key: "actions", label: "Actions", align: "center" },
   ];
 
@@ -229,7 +229,9 @@ function PendingTasksTable(props: Props & ReduxProps) {
                 <TableCell
                   key={col.key}
                   align={col.align}
-                  classes={{ stickyHeader: classes.stickyHeaderCell }}
+                  classes={{
+                    stickyHeader: classes.stickyHeaderCell,
+                  }}
                 >
                   {col.label}
                 </TableCell>
@@ -279,6 +281,7 @@ function PendingTasksTable(props: Props & ReduxProps) {
                 onChangePage={handleChangePage}
                 onChangeRowsPerPage={handleChangeRowsPerPage}
                 ActionsComponent={TablePaginationActions}
+                className={classes.pagination}
               />
             </TableRow>
           </TableFooter>
@@ -289,11 +292,6 @@ function PendingTasksTable(props: Props & ReduxProps) {
 }
 
 const useRowStyles = makeStyles({
-  root: {
-    "& > *": {
-      borderBottom: "unset",
-    },
-  },
   actionCell: {
     width: "96px",
   },
@@ -317,90 +315,68 @@ interface RowProps {
 
 function Row(props: RowProps) {
   const { task } = props;
-  const [open, setOpen] = React.useState(false);
   const classes = useRowStyles();
   return (
-    <React.Fragment>
-      <TableRow
-        key={task.id}
-        className={classes.root}
-        selected={props.isSelected}
-      >
-        <TableCell padding="checkbox">
-          <Checkbox
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              props.onSelectChange(event.target.checked)
-            }
-            checked={props.isSelected}
-          />
-        </TableCell>
-        <TableCell>
-          <Tooltip title={open ? "Hide Details" : "Show Details"}>
-            <IconButton
-              aria-label="expand row"
-              size="small"
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </IconButton>
-          </Tooltip>
-        </TableCell>
-        <TableCell component="th" scope="row">
-          {uuidPrefix(task.id)}
-        </TableCell>
-        <TableCell>{task.type}</TableCell>
-        <TableCell
-          align="center"
-          className={clsx(
-            classes.actionCell,
-            props.showActions && classes.activeActionCell
-          )}
-          onMouseEnter={props.onActionCellEnter}
-          onMouseLeave={props.onActionCellLeave}
+    <TableRow key={task.id} selected={props.isSelected}>
+      <TableCell padding="checkbox">
+        <Checkbox
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            props.onSelectChange(event.target.checked)
+          }
+          checked={props.isSelected}
+        />
+      </TableCell>
+      <TableCell component="th" scope="row">
+        {uuidPrefix(task.id)}
+      </TableCell>
+      <TableCell>{task.type}</TableCell>
+      <TableCell>
+        <SyntaxHighlighter
+          language="json"
+          customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {props.showActions ? (
-            <React.Fragment>
-              <Tooltip title="Delete">
-                <IconButton
-                  onClick={props.onDeleteClick}
-                  disabled={task.requestPending || props.allActionPending}
-                  size="small"
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Archive">
-                <IconButton
-                  onClick={props.onArchiveClick}
-                  disabled={task.requestPending || props.allActionPending}
-                  size="small"
-                >
-                  <ArchiveIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </React.Fragment>
-          ) : (
-            <IconButton size="small" onClick={props.onActionCellEnter}>
-              <MoreHorizIcon fontSize="small" />
-            </IconButton>
-          )}
-        </TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box margin={1}>
-              <Typography variant="h6" gutterBottom component="div">
-                Payload
-              </Typography>
-              <SyntaxHighlighter language="json">
-                {JSON.stringify(task.payload, null, 2)}
-              </SyntaxHighlighter>
-            </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    </React.Fragment>
+          {JSON.stringify(task.payload)}
+        </SyntaxHighlighter>
+      </TableCell>
+      <TableCell align="right">{task.retried}</TableCell>
+      <TableCell align="right">{task.max_retry}</TableCell>
+      <TableCell
+        align="center"
+        className={clsx(
+          classes.actionCell,
+          props.showActions && classes.activeActionCell
+        )}
+        onMouseEnter={props.onActionCellEnter}
+        onMouseLeave={props.onActionCellLeave}
+      >
+        {props.showActions ? (
+          <React.Fragment>
+            <Tooltip title="Delete">
+              <IconButton
+                onClick={props.onDeleteClick}
+                disabled={task.requestPending || props.allActionPending}
+                size="small"
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Archive">
+              <IconButton
+                onClick={props.onArchiveClick}
+                disabled={task.requestPending || props.allActionPending}
+                size="small"
+              >
+                <ArchiveIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </React.Fragment>
+        ) : (
+          <IconButton size="small" onClick={props.onActionCellEnter}>
+            <MoreHorizIcon fontSize="small" />
+          </IconButton>
+        )}
+      </TableCell>
+    </TableRow>
   );
 }
 

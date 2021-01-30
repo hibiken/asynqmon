@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { connect, ConnectedProps } from "react-redux";
-import { makeStyles, useTheme, Theme } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -13,15 +13,10 @@ import TableFooter from "@material-ui/core/TableFooter";
 import TablePagination from "@material-ui/core/TablePagination";
 import Tooltip from "@material-ui/core/Tooltip";
 import Paper from "@material-ui/core/Paper";
-import Grid from "@material-ui/core/Grid";
 import Checkbox from "@material-ui/core/Checkbox";
-import Collapse from "@material-ui/core/Collapse";
 import IconButton from "@material-ui/core/IconButton";
 import CancelIcon from "@material-ui/icons/Cancel";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
-import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
-import Typography from "@material-ui/core/Typography";
 import SyntaxHighlighter from "./SyntaxHighlighter";
 import {
   listActiveTasksAsync,
@@ -47,12 +42,12 @@ const useStyles = makeStyles((theme) => ({
   stickyHeaderCell: {
     background: theme.palette.background.paper,
   },
-  iconCell: {
-    width: "70px",
-  },
   alert: {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+  },
+  pagination: {
+    border: "none",
   },
 }));
 
@@ -77,8 +72,10 @@ const mapDispatchToProps = {
 const columns: TableColumn[] = [
   { key: "id", label: "ID", align: "left" },
   { key: "type", label: "Type", align: "left" },
+  { key: "payload", label: "Payload", align: "left" },
   { key: "status", label: "Status", align: "left" },
   { key: "start-time", label: "Started", align: "left" },
+  { key: "deadline", label: "Deadline", align: "left" },
   { key: "actions", label: "Actions", align: "center" },
 ];
 
@@ -200,12 +197,6 @@ function ActiveTasksTable(props: Props & ReduxProps) {
                   }}
                 />
               </TableCell>
-              <TableCell
-                classes={{
-                  root: classes.iconCell,
-                  stickyHeader: classes.stickyHeaderCell,
-                }}
-              />
               {columns.map((col) => (
                 <TableCell
                   key={col.key}
@@ -244,7 +235,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
             <TableRow>
               <TablePagination
                 rowsPerPageOptions={rowsPerPageOptions}
-                colSpan={columns.length + 2}
+                colSpan={columns.length + 1}
                 count={props.tasks.length}
                 rowsPerPage={pageSize}
                 page={page}
@@ -255,6 +246,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
                 onChangePage={handleChangePage}
                 onChangeRowsPerPage={handleChangeRowsPerPage}
                 ActionsComponent={TablePaginationActions}
+                className={classes.pagination}
               />
             </TableRow>
           </TableFooter>
@@ -263,27 +255,6 @@ function ActiveTasksTable(props: Props & ReduxProps) {
     </div>
   );
 }
-
-const useRowStyles = makeStyles((theme) => ({
-  root: {
-    "& > *": {
-      borderBottom: "unset",
-    },
-  },
-  taskDetails: {
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-  },
-  detailHeading: {
-    paddingLeft: theme.spacing(1),
-  },
-  payloadContainer: {
-    paddingRight: theme.spacing(2),
-  },
-  noBottomBorder: {
-    borderBottom: "none",
-  },
-}));
 
 interface RowProps {
   task: ActiveTaskExtended;
@@ -297,138 +268,59 @@ interface RowProps {
 
 function Row(props: RowProps) {
   const { task } = props;
-  const [open, setOpen] = React.useState(false);
-  const theme = useTheme<Theme>();
-  const classes = useRowStyles();
   return (
-    <React.Fragment>
-      <TableRow
-        key={task.id}
-        className={classes.root}
-        selected={props.isSelected}
+    <TableRow key={task.id} selected={props.isSelected}>
+      <TableCell padding="checkbox">
+        <Checkbox
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            props.onSelectChange(event.target.checked)
+          }
+          checked={props.isSelected}
+        />
+      </TableCell>
+      <TableCell component="th" scope="row">
+        {uuidPrefix(task.id)}
+      </TableCell>
+      <TableCell>{task.type}</TableCell>
+      <TableCell>
+        <SyntaxHighlighter
+          language="json"
+          customStyle={{ margin: 0, maxWidth: 400 }}
+        >
+          {JSON.stringify(task.payload)}
+        </SyntaxHighlighter>
+      </TableCell>
+      <TableCell>{task.canceling ? "Canceling" : "Running"}</TableCell>
+      <TableCell>
+        {task.start_time === "-" ? "just now" : timeAgo(task.start_time)}
+      </TableCell>
+      <TableCell>
+        {task.deadline === "-" ? "-" : durationBefore(task.deadline)}
+      </TableCell>
+      <TableCell
+        align="center"
+        onMouseEnter={props.onActionCellEnter}
+        onMouseLeave={props.onActionCellLeave}
       >
-        <TableCell padding="checkbox">
-          <Checkbox
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              props.onSelectChange(event.target.checked)
-            }
-            checked={props.isSelected}
-          />
-        </TableCell>
-        <TableCell>
-          <Tooltip title={open ? "Hide Details" : "Show Details"}>
-            <IconButton
-              aria-label="expand row"
-              size="small"
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </IconButton>
-          </Tooltip>
-        </TableCell>
-        <TableCell component="th" scope="row">
-          {uuidPrefix(task.id)}
-        </TableCell>
-        <TableCell>{task.type}</TableCell>
-        <TableCell>{task.canceling ? "Canceling" : "Running"}</TableCell>
-        <TableCell>
-          {task.start_time === "-" ? "just now" : timeAgo(task.start_time)}
-        </TableCell>
-        <TableCell
-          align="center"
-          onMouseEnter={props.onActionCellEnter}
-          onMouseLeave={props.onActionCellLeave}
-        >
-          {props.showActions ? (
-            <React.Fragment>
-              <Tooltip title="Cancel">
-                <IconButton
-                  onClick={props.onCancelClick}
-                  disabled={task.requestPending || task.canceling}
-                  size="small"
-                >
-                  <CancelIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </React.Fragment>
-          ) : (
-            <IconButton size="small" onClick={props.onActionCellEnter}>
-              <MoreHorizIcon fontSize="small" />
-            </IconButton>
-          )}
-        </TableCell>
-      </TableRow>
-      <TableRow selected={props.isSelected}>
-        <TableCell
-          style={{ paddingBottom: 0, paddingTop: 0 }}
-          colSpan={columns.length + 2}
-        >
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Grid container className={classes.taskDetails}>
-              <Grid item xs={8} className={classes.payloadContainer}>
-                <Typography
-                  variant="subtitle2"
-                  color="textSecondary"
-                  gutterBottom
-                  component="div"
-                  className={classes.detailHeading}
-                >
-                  Payload
-                </Typography>
-                <SyntaxHighlighter
-                  language="json"
-                  customStyle={{ borderRadius: theme.shape.borderRadius }}
-                >
-                  {JSON.stringify(task.payload, null, 2)}
-                </SyntaxHighlighter>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="subtitle2"
-                  color="textSecondary"
-                  gutterBottom
-                  component="div"
-                  className={classes.detailHeading}
-                >
-                  Task Info
-                </Typography>
-                <Table size="small" aria-label="active workers">
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>Retry</TableCell>
-                      <TableCell align="right">
-                        {task.retried}/{task.max_retry}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>Last Error</TableCell>
-                      <TableCell align="right">
-                        {task.error_message.length > 0
-                          ? task.error_message
-                          : "N/A"}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className={classes.noBottomBorder}>
-                        Deadline
-                      </TableCell>
-                      <TableCell
-                        className={classes.noBottomBorder}
-                        align="right"
-                      >
-                        {task.deadline === "-"
-                          ? "-"
-                          : durationBefore(task.deadline)}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </Grid>
-            </Grid>
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    </React.Fragment>
+        {props.showActions ? (
+          <React.Fragment>
+            <Tooltip title="Cancel">
+              <IconButton
+                onClick={props.onCancelClick}
+                disabled={task.requestPending || task.canceling}
+                size="small"
+              >
+                <CancelIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </React.Fragment>
+        ) : (
+          <IconButton size="small" onClick={props.onActionCellEnter}>
+            <MoreHorizIcon fontSize="small" />
+          </IconButton>
+        )}
+      </TableCell>
+    </TableRow>
   );
 }
 
