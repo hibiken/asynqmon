@@ -61,7 +61,7 @@ function TasksView(props: ConnectedProps<typeof connector>) {
   return (
     <Container maxWidth="lg">
       <Grid container spacing={0} className={classes.container}>
-        <Grid xs={12} className={classes.breadcrumbs}>
+        <Grid item xs={12} className={classes.breadcrumbs}>
           <QueueBreadCrumb queues={props.queues} selectedQueue={qname} />
         </Grid>
         <Grid item xs={12} className={classes.banner}>

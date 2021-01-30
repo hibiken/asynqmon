@@ -52,22 +52,11 @@ const useStyles = makeStyles((theme) => ({
   stickyHeaderCell: {
     background: theme.palette.background.paper,
   },
+  alert: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
 }));
-
-const useRowStyles = makeStyles({
-  root: {
-    "& > *": {
-      borderBottom: "unset",
-    },
-  },
-  actionCell: {
-    width: "96px",
-  },
-  activeActionCell: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-});
 
 function mapStateToProps(state: AppState) {
   return {
@@ -159,7 +148,7 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
 
   if (props.error.length > 0) {
     return (
-      <Alert severity="error">
+      <Alert severity="error" className={classes.alert}>
         <AlertTitle>Error</AlertTitle>
         {props.error}
       </Alert>
@@ -167,7 +156,7 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
   }
   if (props.tasks.length === 0) {
     return (
-      <Alert severity="info">
+      <Alert severity="info" className={classes.alert}>
         <AlertTitle>Info</AlertTitle>
         No archived tasks at this time.
       </Alert>
@@ -300,6 +289,21 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
     </div>
   );
 }
+
+const useRowStyles = makeStyles({
+  root: {
+    "& > *": {
+      borderBottom: "unset",
+    },
+  },
+  actionCell: {
+    width: "96px",
+  },
+  activeActionCell: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
+});
 
 interface RowProps {
   task: ArchivedTaskExtended;

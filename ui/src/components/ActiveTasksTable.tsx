@@ -50,6 +50,10 @@ const useStyles = makeStyles((theme) => ({
   iconCell: {
     width: "70px",
   },
+  alert: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
 }));
 
 function mapStateToProps(state: AppState) {
@@ -136,7 +140,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
 
   if (props.error.length > 0) {
     return (
-      <Alert severity="error">
+      <Alert severity="error" className={classes.alert}>
         <AlertTitle>Error</AlertTitle>
         {props.error}
       </Alert>
@@ -145,7 +149,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
 
   if (props.tasks.length === 0) {
     return (
-      <Alert severity="info">
+      <Alert severity="info" className={classes.alert}>
         <AlertTitle>Info</AlertTitle>
         No active tasks at this time.
       </Alert>

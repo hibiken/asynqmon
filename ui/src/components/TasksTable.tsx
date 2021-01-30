@@ -124,6 +124,7 @@ function TasksTable(props: Props & ReduxProps) {
         <div>
           {chips.map((c) => (
             <Chip
+              key={c.key}
               className={classes.chip}
               label={
                 <div>
