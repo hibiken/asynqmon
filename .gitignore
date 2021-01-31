@@ -11,6 +11,9 @@
 # tar file.
 *.tar.gz
 
+# Prevent accidental node_modules installed at root.
+node_modules/
+
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 

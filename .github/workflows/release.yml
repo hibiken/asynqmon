@@ -1,10 +1,14 @@
 on:
-  pull_request:
-  push:
+  release:
+    types:
+      - created:
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [darwin, linux, windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -27,8 +31,23 @@ jobs:
       - name: Install NPM packages
         run: cd ui && rm yarn.lock && yarn install
 
-      - name: Build Binary
+      - id: release
+        uses: bruceadams/get-release@v1.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Build release binary
         run: |
-          make build
-          tar -czvf asynqmon-linux-amd64.tar.gz asynqmon
+          GOOS=${{ matrix.goos }} GOARCH=amd64 make build
+          tar -czvf asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}_amd64.tar.gz asynqmon
           ls
+
+      - name: Upload release binary
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ./asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}-amd64.tar.gz
+          asset_name: asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}-amd64.tar.gz
+          asset_content_type: application/gzip
