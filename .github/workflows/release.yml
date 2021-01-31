@@ -1,6 +1,8 @@
 on:
+  workflow_dispatch:
   release:
-    types: [published, created, edited]
+    types:
+      - created
 
 jobs:
   release:
@@ -27,13 +29,14 @@ jobs:
         with:
           node-version: "12"
 
-      - name: Install NPM packages
-        run: cd ui && rm yarn.lock && yarn install
-
-      - id: release
+      - name: Get release
+        id: release
         uses: bruceadams/get-release@v1.2.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Install NPM packages
+        run: cd ui && rm yarn.lock && yarn install
 
       - name: Build release binary
         run: |
@@ -41,12 +44,13 @@ jobs:
           tar -czvf asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}_amd64.tar.gz asynqmon
           ls
 
-      - name: Upload release binary
-        uses: actions/upload-release-asset@v1.0.2
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.release.outputs.upload_url }}
-          asset_path: ./asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}-amd64.tar.gz
-          asset_name: asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}-amd64.tar.gz
-          asset_content_type: application/gzip
+          asset_path: ./asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}_amd64.tar.gz
+          asset_name: asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}_amd64.tar.gz
+          asset_content_type: application/zip
