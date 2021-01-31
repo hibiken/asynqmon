@@ -1,25 +1,34 @@
-name: goreleaser
-
 on:
   pull_request:
   push:
 
 jobs:
-  goreleaser:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16rc1
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+          go-version: 1.15
+
+      - name: Install Go1.16
+        run: go get golang.org/dl/go1.16rc1 && go1.16rc1 download
+
+      - name: Set up Node
+        uses: actions/setup-node@v2
         with:
-          version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          node-version: "12"
+
+      - name: Install NPM packages
+        run: cd ui && rm yarn.lock && yarn install
+
+      - name: Build Binary
+        run: |
+          make build
+          tar -czvf asynqmon-linux-amd64.tar.gz asynqmon
+          ls
