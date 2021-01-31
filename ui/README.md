@@ -1,44 +1,53 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Working with the React UI
 
-## Available Scripts
+This file explains how to work with Asynqmon UI.
 
-In the project directory, you can run:
+## Introduction
 
-### `yarn start`
+The Asynqmon UI was bootstrapped using [Create React App](https://github.com/facebook/create-react-app), a popular toolkit for generating React application setups. You can find general information about Create React App on [their documentation site](https://create-react-app.dev/).
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Instead of plain JavaScript, we use [TypeScript](https://www.typescriptlang.org/) to ensure typed code.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+## Development environment
 
-### `yarn test`
+To work with the React UI code, you will need to have the following tools installed:
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- The [Node.js](https://nodejs.org/) JavaScript runtime.
+- The [Yarn](https://yarnpkg.com/) package manager.
+- _Recommended:_ An editor with TypeScript, React, and [ESLint](https://eslint.org/) linting support. See e.g. [Create React App's editor setup instructions](https://create-react-app.dev/docs/setting-up-your-editor/). If you are not sure which editor to use, we recommend using [Visual Studio Code](https://code.visualstudio.com/docs/languages/typescript). Make sure that [the editor uses the project's TypeScript version rather than its own](https://code.visualstudio.com/docs/typescript/typescript-compiling#_using-the-workspace-version-of-typescript).
 
-### `yarn build`
+**NOTE**: When using Visual Studio Code, be sure to open the `ui/` directory in the editor instead of the root of the repository. This way, the right ESLint and TypeScript configuration will be picked up from the React workspace.
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Installing npm dependencies
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+The React UI depends on a large number of [npm](https://www.npmjs.com/) packages. These are not checked in, so you will need to download and install them locally via the Yarn package manager:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    yarn
 
-### `yarn eject`
+Yarn consults the `package.json` and `yarn.lock` files for dependencies to install. It creates a `node_modules` directory with all installed dependencies.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+**NOTE**: Remember to change directory to `ui/` before running this command and the following commands.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Running a local development server
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+You can start a development server for the React UI outside of a running Asynqmon server by running:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+    yarn start
 
-## Learn More
+This will open a browser window with the React app running on http://localhost:3000/. The page will reload if you make edits to the source code. You will also see any lint errors in the console.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Building the app for production
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+To build a production-optimized version of the React app to a `build` subdirectory, run:
+
+    yarn build
+
+**NOTE:** You will likely not need to do this directly. Instead, this is taken care of by the `build` target in the main Asynqmon `Makefile` when building the full binary.
+
+## Integration into Asynqmon
+
+To build a Asynqmon binary that includes a compiled-in version of the production build of the React app, change to the root of the repository and run:
+
+    make build
+
+This installs npm dependencies via Yarn, builds a production build of the React app, and then finally compiles in all web assets into the Asynqmon binary.
