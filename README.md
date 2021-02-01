@@ -2,6 +2,10 @@
 
 Asynqmon is a web based tool for monitoring and administrating Asynq queues and tasks.
 
+## Compatibility
+
+Current version of Asynqmon is compatible with [Asynq v0.15 or above](https://github.com/hibiken/asynq/releases).
+
 ## Installation
 
 ### Release binaries
@@ -26,7 +30,10 @@ The `asynqmon` binary should be created in the current directory.
 
 ## Usage
 
-To start the server, run
+Asynqmon server needs to connect to redis server to serve data.
+By default, it connects to redis server running on port 6379 locally, and the server listens on port 8080.
+
+To use the defaults, simply run and open http://localhost:8080.
 
 ```sh
 $ asynqmon
@@ -36,6 +43,12 @@ Pass flags to specify port, redis server address, etc.
 
 ```sh
 $ asynqmon --port=3000 --redis_addr=localhost:6380
+```
+
+To see all available flags, run
+
+```sh
+$ asynqmon --help
 ```
 
 ## License
