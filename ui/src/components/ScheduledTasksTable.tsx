@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from "react";
-import clsx from "clsx";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
@@ -323,9 +322,9 @@ const useRowStyles = makeStyles({
   actionCell: {
     width: "140px",
   },
-  activeActionCell: {
-    display: "flex",
-    justifyContent: "space-between",
+  actionButton: {
+    marginLeft: 3,
+    marginRight: 3,
   },
 });
 
@@ -370,10 +369,7 @@ function Row(props: RowProps) {
       <TableCell>{durationBefore(task.next_process_at)}</TableCell>
       <TableCell
         align="center"
-        className={clsx(
-          classes.actionCell,
-          props.showActions && classes.activeActionCell
-        )}
+        className={classes.actionCell}
         onMouseEnter={props.onActionCellEnter}
         onMouseLeave={props.onActionCellLeave}
       >
@@ -384,6 +380,7 @@ function Row(props: RowProps) {
                 onClick={props.onDeleteClick}
                 disabled={task.requestPending || props.allActionPending}
                 size="small"
+                className={classes.actionButton}
               >
                 <DeleteIcon fontSize="small" />
               </IconButton>
@@ -393,6 +390,7 @@ function Row(props: RowProps) {
                 onClick={props.onArchiveClick}
                 disabled={task.requestPending || props.allActionPending}
                 size="small"
+                className={classes.actionButton}
               >
                 <ArchiveIcon fontSize="small" />
               </IconButton>
@@ -402,6 +400,7 @@ function Row(props: RowProps) {
                 onClick={props.onRunClick}
                 disabled={task.requestPending || props.allActionPending}
                 size="small"
+                className={classes.actionButton}
               >
                 <PlayArrowIcon fontSize="small" />
               </IconButton>
