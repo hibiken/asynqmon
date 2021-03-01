@@ -20,14 +20,14 @@ func newListQueuesHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		var snapshots []*QueueStateSnapshot
-		for _, qname := range qnames {
+		snapshots := make([]*QueueStateSnapshot, len(qnames))
+		for i, qname := range qnames {
 			s, err := inspector.CurrentStats(qname)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			snapshots = append(snapshots, toQueueStateSnapshot(s))
+			snapshots[i] = toQueueStateSnapshot(s)
 		}
 		payload := map[string]interface{}{"queues": snapshots}
 		json.NewEncoder(w).Encode(payload)
