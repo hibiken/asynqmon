@@ -9,6 +9,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useHistory } from "react-router-dom";
+import { queueDetailsPath } from "../paths";
 
 interface Props {
   data: TaskBreakdown[];
@@ -24,9 +26,25 @@ interface TaskBreakdown {
 }
 
 function QueueSizeChart(props: Props) {
+  const handleClick = (params: { activeLabel?: string } | null) => {
+    const allQueues = props.data.map((b) => b.queue);
+    if (
+      params &&
+      params.activeLabel &&
+      allQueues.includes(params.activeLabel)
+    ) {
+      history.push(queueDetailsPath(params.activeLabel));
+    }
+  };
+  const history = useHistory();
   return (
     <ResponsiveContainer>
-      <BarChart data={props.data} maxBarSize={120}>
+      <BarChart
+        data={props.data}
+        maxBarSize={120}
+        onClick={handleClick}
+        style={{ cursor: "pointer" }}
+      >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="queue" />
         <YAxis />

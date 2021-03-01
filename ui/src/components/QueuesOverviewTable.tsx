@@ -196,6 +196,7 @@ export default function QueuesOverviewTable(props: Props) {
           <TableBody>
             {sortQueues(props.queues, cmpFunc).map((q) => (
               <Row
+                key={q.queue}
                 queue={q}
                 onPauseClick={() => props.onPauseClick(q.queue)}
                 onResumeClick={() => props.onResumeClick(q.queue)}
