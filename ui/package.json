@@ -19,7 +19,7 @@
     "@types/react-router-dom": "5.1.6",
     "@types/react-syntax-highlighter": "13.5.0",
     "@types/recharts": "1.8.16",
-    "axios": "0.20.0",
+    "axios": "0.21.1",
     "clsx": "1.1.1",
     "lodash.uniqby": "4.7.0",
     "query-string": "6.13.7",
