@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from "react";
-import clsx from "clsx";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
@@ -289,15 +288,15 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
   );
 }
 
-const useRowStyles = makeStyles({
+const useRowStyles = makeStyles(theme => ({
   actionCell: {
     width: "96px",
   },
-  activeActionCell: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-});
+  actionButton: {
+    marginLeft: 3,
+    marginRight: 3,
+  }
+}));
 
 interface RowProps {
   task: ArchivedTaskExtended;
@@ -340,10 +339,7 @@ function Row(props: RowProps) {
       <TableCell>{task.error_message}</TableCell>
       <TableCell
         align="center"
-        className={clsx(
-          classes.actionCell,
-          props.showActions && classes.activeActionCell
-        )}
+        className={classes.actionCell}
         onMouseEnter={props.onActionCellEnter}
         onMouseLeave={props.onActionCellLeave}
       >
@@ -351,6 +347,7 @@ function Row(props: RowProps) {
           <React.Fragment>
             <Tooltip title="Delete">
               <IconButton
+                className={classes.actionButton}
                 onClick={props.onDeleteClick}
                 disabled={task.requestPending || props.allActionPending}
                 size="small"
@@ -360,6 +357,7 @@ function Row(props: RowProps) {
             </Tooltip>
             <Tooltip title="Run">
               <IconButton
+                className={classes.actionButton}
                 onClick={props.onRunClick}
                 disabled={task.requestPending || props.allActionPending}
                 size="small"
