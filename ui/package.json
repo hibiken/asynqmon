@@ -29,7 +29,7 @@
     "react-router-dom": "5.2.0",
     "react-scripts": "4.0.3",
     "react-syntax-highlighter": "15.4.3",
-    "recharts": "1.8.5",
+    "recharts": "2.0.8",
     "typescript": "~3.7.2"
   },
   "scripts": {
