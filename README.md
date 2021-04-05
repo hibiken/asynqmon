@@ -38,6 +38,12 @@ After that, just run this command:
 make docker
 ```
 
+Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
+
+![Screenshot](https://user-images.githubusercontent.com/11155743/113557216-57af2b80-9606-11eb-8ab6-df023b14e5c1.png)
+
+#### Change a default Asynqmon settings
+
 By default, Asynqmon runs on `http://localhost:8080` and waiting to connect to the Redis server on port `6379`. You can easily change this settings by running Docker container with custom options, like this:
 
 ```bash
@@ -71,6 +77,7 @@ To use the defaults, simply run and open http://localhost:8080.
 ```
 
 Pass flags to specify port, redis server address, etc.
+
 
 ```bash
 ./asynqmon --port=3000 --redis_addr=localhost:6380
