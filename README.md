@@ -79,7 +79,7 @@ docker run --rm \
 
 ### Works with a Redis server from Docker
 
-If you run Redis server from Docker container too (i.e. is **not** locally installed to your machine), you need to set [Docker network](https://docs.docker.com/network/) to work with it. For example, if Redis container have a name like `dev-redis`, and our Docker network called `dev-network`, you should run Asynqmon container by this command:
+If you run Redis server from Docker container too (i.e. is **not** locally installed to your machine), you need to set [Docker network](https://docs.docker.com/network/) to make them work together. For example, if Redis container have a name like `dev-redis`, and our Docker network called `dev-network`, you should run Asynqmon container by this command:
 
 ```bash
 docker run --rm \
