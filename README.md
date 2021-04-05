@@ -47,6 +47,18 @@ docker run --rm \
     asynqmon --port=3000 --redis_addr=localhost:6380
 ```
 
+#### Works with a Redis server from Docker
+
+If you run Redis server from Docker container too (i.e. is **not** locally installed to your machine), you need to set [Docker network](https://docs.docker.com/network/) to work with it. For example, if Redis container have a name like `dev-redis`, and our Docker network called `dev-network`, you should run Asynqmon container by this command:
+
+```bash
+docker run --rm \
+    --name asynqmon \
+    --network dev-network \
+    -p 8080:8080 \
+    asynqmon --redis_addr=dev-redis:6379
+```
+
 ## Usage
 
 Asynqmon server needs to connect to redis server to serve data.
