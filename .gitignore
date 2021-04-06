@@ -26,3 +26,6 @@ package-json.lock
 # main binary
 asynqmon
 dist/
+
+# Editor configs
+.vscode/
