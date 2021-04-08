@@ -36,7 +36,7 @@ RUN go mod download
 COPY . .
 
 # Copy frontend static files from /static to the root folder of the backend container.
-COPY --from=frontend ["/static/build", "/ui/build"]
+COPY --from=frontend ["/static/build", "ui/build"]
 
 # Set necessary environmet variables needed for the image and build the server.
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
