@@ -1,16 +1,24 @@
+import { initialState as settingsInitialState } from "./reducers/settingsReducer"
 import { AppState } from "./store";
 
 const LOCAL_STORAGE_KEY = "asynqmon:state";
 
-export function loadState(): AppState | undefined {
+export function loadState(): Partial<AppState> {
   try {
     const serializedState = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (serializedState === null) {
-      return undefined;
+      return {};
     }
-    return JSON.parse(serializedState);
+    const savedState = JSON.parse(serializedState);
+    return {
+      settings: {
+        ...settingsInitialState,
+        ...(savedState.settings || {}),
+      }
+    }
   } catch (err) {
-    return undefined;
+    console.log("loadState: could not load state ", err)
+    return {};
   }
 }
 

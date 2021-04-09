@@ -30,9 +30,9 @@ import {
   runAllArchivedTasksAsync,
 } from "../actions/tasksActions";
 import TablePaginationActions, {
-  defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
+import { taskRowsPerPageChange } from "../actions/settingsActions";
 import TableActions from "./TableActions";
 import { timeAgo, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
@@ -63,6 +63,7 @@ function mapStateToProps(state: AppState) {
     batchActionPending: state.tasks.archivedTasks.batchActionPending,
     allActionPending: state.tasks.archivedTasks.allActionPending,
     pollInterval: state.settings.pollInterval,
+    pageSize: state.settings.taskRowsPerPage,
   };
 }
 
@@ -74,6 +75,7 @@ const mapDispatchToProps = {
   deleteAllArchivedTasksAsync,
   batchRunArchivedTasksAsync,
   batchDeleteArchivedTasksAsync,
+  taskRowsPerPageChange,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -86,10 +88,9 @@ interface Props {
 }
 
 function ArchivedTasksTable(props: Props & ReduxProps) {
-  const { pollInterval, listArchivedTasksAsync, queue } = props;
+  const { pollInterval, listArchivedTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
@@ -103,7 +104,7 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setPageSize(parseInt(event.target.value, 10));
+    props.taskRowsPerPageChange(parseInt(event.target.value, 10));
     setPage(0);
   };
 
@@ -288,14 +289,14 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
   );
 }
 
-const useRowStyles = makeStyles(theme => ({
+const useRowStyles = makeStyles((theme) => ({
   actionCell: {
     width: "96px",
   },
   actionButton: {
     marginLeft: 3,
     marginRight: 3,
-  }
+  },
 }));
 
 interface RowProps {

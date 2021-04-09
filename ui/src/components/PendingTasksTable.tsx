@@ -20,7 +20,6 @@ import ArchiveIcon from "@material-ui/icons/Archive";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import SyntaxHighlighter from "./SyntaxHighlighter";
 import TablePaginationActions, {
-  defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import TableActions from "./TableActions";
@@ -33,6 +32,7 @@ import {
   batchArchivePendingTasksAsync,
   archiveAllPendingTasksAsync,
 } from "../actions/tasksActions";
+import { taskRowsPerPageChange } from "../actions/settingsActions";
 import { AppState } from "../store";
 import { usePolling } from "../hooks";
 import { uuidPrefix } from "../utils";
@@ -63,6 +63,7 @@ function mapStateToProps(state: AppState) {
     batchActionPending: state.tasks.pendingTasks.batchActionPending,
     allActionPending: state.tasks.pendingTasks.allActionPending,
     pollInterval: state.settings.pollInterval,
+    pageSize: state.settings.taskRowsPerPage,
   };
 }
 
@@ -74,6 +75,7 @@ const mapDispatchToProps = {
   archivePendingTaskAsync,
   batchArchivePendingTasksAsync,
   archiveAllPendingTasksAsync,
+  taskRowsPerPageChange,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -86,10 +88,9 @@ interface Props {
 }
 
 function PendingTasksTable(props: Props & ReduxProps) {
-  const { pollInterval, listPendingTasksAsync, queue } = props;
+  const { pollInterval, listPendingTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
@@ -103,7 +104,7 @@ function PendingTasksTable(props: Props & ReduxProps) {
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setPageSize(parseInt(event.target.value, 10));
+    props.taskRowsPerPageChange(parseInt(event.target.value, 10));
     setPage(0);
   };
 

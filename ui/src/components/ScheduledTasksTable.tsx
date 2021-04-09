@@ -32,9 +32,9 @@ import {
   runScheduledTaskAsync,
   archiveScheduledTaskAsync,
 } from "../actions/tasksActions";
+import { taskRowsPerPageChange } from "../actions/settingsActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
-  defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import TableActions from "./TableActions";
@@ -67,6 +67,7 @@ function mapStateToProps(state: AppState) {
     batchActionPending: state.tasks.scheduledTasks.batchActionPending,
     allActionPending: state.tasks.scheduledTasks.allActionPending,
     pollInterval: state.settings.pollInterval,
+    pageSize: state.settings.taskRowsPerPage,
   };
 }
 
@@ -81,6 +82,7 @@ const mapDispatchToProps = {
   deleteScheduledTaskAsync,
   runScheduledTaskAsync,
   archiveScheduledTaskAsync,
+  taskRowsPerPageChange,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -93,10 +95,9 @@ interface Props {
 }
 
 function ScheduledTasksTable(props: Props & ReduxProps) {
-  const { pollInterval, listScheduledTasksAsync, queue } = props;
+  const { pollInterval, listScheduledTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
@@ -110,7 +111,7 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setPageSize(parseInt(event.target.value, 10));
+    props.taskRowsPerPageChange(parseInt(event.target.value, 10));
     setPage(0);
   };
 
