@@ -24,10 +24,10 @@ import {
   batchCancelActiveTasksAsync,
   cancelAllActiveTasksAsync,
 } from "../actions/tasksActions";
+import { taskRowsPerPageChange } from "../actions/settingsActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
   rowsPerPageOptions,
-  defaultPageSize,
 } from "./TablePaginationActions";
 import TableActions from "./TableActions";
 import { usePolling } from "../hooks";
@@ -59,6 +59,7 @@ function mapStateToProps(state: AppState) {
     batchActionPending: state.tasks.activeTasks.batchActionPending,
     allActionPending: state.tasks.activeTasks.allActionPending,
     pollInterval: state.settings.pollInterval,
+    pageSize: state.settings.taskRowsPerPage,
   };
 }
 
@@ -67,6 +68,7 @@ const mapDispatchToProps = {
   cancelActiveTaskAsync,
   batchCancelActiveTasksAsync,
   cancelAllActiveTasksAsync,
+  taskRowsPerPageChange,
 };
 
 const columns: TableColumn[] = [
@@ -88,10 +90,9 @@ interface Props {
 }
 
 function ActiveTasksTable(props: Props & ReduxProps) {
-  const { pollInterval, listActiveTasksAsync, queue } = props;
+  const { pollInterval, listActiveTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
@@ -105,7 +106,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setPageSize(parseInt(event.target.value, 10));
+    props.taskRowsPerPageChange(parseInt(event.target.value, 10));
     setPage(0);
   };
 

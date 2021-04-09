@@ -34,9 +34,9 @@ import {
 } from "../actions/tasksActions";
 import { AppState } from "../store";
 import TablePaginationActions, {
-  defaultPageSize,
   rowsPerPageOptions,
 } from "./TablePaginationActions";
+import { taskRowsPerPageChange } from "../actions/settingsActions";
 import TableActions from "./TableActions";
 import { durationBefore, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
@@ -67,6 +67,7 @@ function mapStateToProps(state: AppState) {
     batchActionPending: state.tasks.retryTasks.batchActionPending,
     allActionPending: state.tasks.retryTasks.allActionPending,
     pollInterval: state.settings.pollInterval,
+    pageSize: state.settings.taskRowsPerPage,
   };
 }
 
@@ -81,6 +82,7 @@ const mapDispatchToProps = {
   deleteRetryTaskAsync,
   runRetryTaskAsync,
   archiveRetryTaskAsync,
+  taskRowsPerPageChange,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -93,10 +95,9 @@ interface Props {
 }
 
 function RetryTasksTable(props: Props & ReduxProps) {
-  const { pollInterval, listRetryTasksAsync, queue } = props;
+  const { pollInterval, listRetryTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
@@ -110,7 +111,7 @@ function RetryTasksTable(props: Props & ReduxProps) {
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setPageSize(parseInt(event.target.value, 10));
+    props.taskRowsPerPageChange(parseInt(event.target.value, 10));
     setPage(0);
   };
 
