@@ -1,4 +1,5 @@
 import {
+  DAILY_STATS_KEY_CHANGE,
   POLL_INTERVAL_CHANGE,
   SettingsActionTypes,
   TASK_ROWS_PER_PAGE_CHANGE,
@@ -6,6 +7,7 @@ import {
   TOGGLE_DRAWER,
 } from "../actions/settingsActions";
 import { defaultPageSize } from "../components/TablePaginationActions"
+import { DailyStatsKey, defaultDailyStatsKey } from "../views/DashboardView";
 
 export enum ThemePreference {
   SystemDefault,
@@ -14,10 +16,20 @@ export enum ThemePreference {
 }
 
 export interface SettingsState {
+  // Time duration between data refresh.
   pollInterval: number;
+
+  // UI theme setting.
   themePreference: ThemePreference;
+
+  // Whether the drawer (i.e. sidebar) is open or not.
   isDrawerOpen: boolean;
+
+  // Number of tasks displayed in task table.
   taskRowsPerPage: number,
+
+  // Type of the chart displayed for "Processed Tasks" section in dashboard.
+  dailyStatsChartType: DailyStatsKey;
 }
 
 export const initialState: SettingsState = {
@@ -25,6 +37,7 @@ export const initialState: SettingsState = {
   themePreference: ThemePreference.SystemDefault,
   isDrawerOpen: true,
   taskRowsPerPage: defaultPageSize,
+  dailyStatsChartType: defaultDailyStatsKey,
 };
 
 function settingsReducer(
@@ -54,6 +67,12 @@ function settingsReducer(
       return {
         ...state,
         taskRowsPerPage: action.value,
+      }
+
+    case DAILY_STATS_KEY_CHANGE:
+      return {
+        ...state,
+        dailyStatsChartType: action.value,
       }
 
     default:
