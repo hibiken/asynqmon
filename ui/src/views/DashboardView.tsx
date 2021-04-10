@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import Container from "@material-ui/core/Container";
 import { makeStyles } from "@material-ui/core/styles";
@@ -15,6 +15,7 @@ import {
   deleteQueueAsync,
 } from "../actions/queuesActions";
 import { listQueueStatsAsync } from "../actions/queueStatsActions";
+import { dailyStatsKeyChange } from "../actions/settingsActions";
 import { AppState } from "../store";
 import QueueSizeChart from "../components/QueueSizeChart";
 import ProcessedTasksChart from "../components/ProcessedTasksChart";
@@ -72,6 +73,7 @@ function mapStateToProps(state: AppState) {
     error: state.queues.error,
     pollInterval: state.settings.pollInterval,
     queueStats: state.queueStats.data,
+    dailyStatsKey: state.settings.dailyStatsChartType,
   };
 }
 
@@ -81,21 +83,25 @@ const mapDispatchToProps = {
   resumeQueueAsync,
   deleteQueueAsync,
   listQueueStatsAsync,
+  dailyStatsKeyChange,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
 
 type Props = ConnectedProps<typeof connector>;
 
-type DailyStatsKey = "today" | "last-7d" | "last-30d" | "last-90d";
-const initialStatsKey = "last-7d";
+export type DailyStatsKey = "today" | "last-7d" | "last-30d" | "last-90d";
+export const defaultDailyStatsKey = "last-7d";
 
 function DashboardView(props: Props) {
-  const { pollInterval, listQueuesAsync, queues, listQueueStatsAsync } = props;
+  const {
+    pollInterval,
+    listQueuesAsync,
+    queues,
+    listQueueStatsAsync,
+    dailyStatsKey,
+  } = props;
   const classes = useStyles();
-  const [dailyStatsKey, setDailyStatsKey] = useState<DailyStatsKey>(
-    initialStatsKey
-  );
 
   usePolling(listQueuesAsync, pollInterval);
 
@@ -204,8 +210,10 @@ function DashboardView(props: Props) {
                     { label: "Last 30d", key: "last-30d" },
                     { label: "Last 90d", key: "last-90d" },
                   ]}
-                  initialSelectedKey={initialStatsKey}
-                  onSelect={(key) => setDailyStatsKey(key as DailyStatsKey)}
+                  initialSelectedKey={dailyStatsKey}
+                  onSelect={(key) =>
+                    props.dailyStatsKeyChange(key as DailyStatsKey)
+                  }
                 />
               </div>
             </div>
