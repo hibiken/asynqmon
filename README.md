@@ -1,6 +1,6 @@
 <img src="https://user-images.githubusercontent.com/11155743/114745460-57760500-9d57-11eb-9a2c-43fa88171807.png" alt="Asynqmon logo" width="360px" />
 
-# A modern web based tool for monitoring & administrating Asynq queues, tasks and message broker
+# A modern web based tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues, tasks and message broker
 
 > ☝️ **Important Note**: Current version of Asynqmon is compatible with Asynq [v0.15.x](https://github.com/hibiken/asynq/releases) or above.
 
