@@ -1,21 +1,18 @@
-# Asynqmon
+<img src="https://user-images.githubusercontent.com/11155743/114745460-57760500-9d57-11eb-9a2c-43fa88171807.png" alt="Asynqmon logo" width="360px" />
 
-Asynqmon is a web based tool for monitoring and administrating Asynq queues and tasks.
+# A modern web based tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues, tasks and message broker
 
-## Compatibility
-
-Current version of Asynqmon is compatible with [Asynq v0.15 or above](https://github.com/hibiken/asynq/releases).
+> ☝️ **Important Note**: Current version of Asynqmon is compatible with Asynq [`v0.15.x`](https://github.com/hibiken/asynq/releases) or above.
 
 ## Install
 
 ### Release binaries
 
-You can download the release binary for your system from the
-[releases page](https://github.com/hibiken/asynqmon/releases).
+You can download the release binary for your system from the [releases page](https://github.com/hibiken/asynqmon/releases).
 
 ### Docker image
 
-To pull the docker image:
+To pull the Docker image:
 
 ```bash
 # Pull the latest image
@@ -27,12 +24,9 @@ docker pull hibiken/asynqmon[:tag]
 
 ### Building from source
 
-To build Asynqmon from source code, first ensure that have a working
-Go environment with [version 1.16 or greater installed](https://golang.org/doc/install).
-You also need [Node.js](https://nodejs.org/) and [Yarn](https://yarnpkg.com/)
-installed in order to build the frontend assets.
+To build Asynqmon from source code, make sure you have Go installed ([download](https://golang.org/dl/)). Version `1.16` or higher is required. You also need [Node.js](https://nodejs.org/) and [Yarn](https://yarnpkg.com/) installed in order to build the frontend assets.
 
-Download the source code and then run:
+Download the source code of this repository and then run:
 
 ```bash
 make build
@@ -40,9 +34,9 @@ make build
 
 The `asynqmon` binary should be created in the current directory.
 
-### Building docker image
+### Building Docker image locally
 
-To build docker image locally, run:
+To build Docker image locally, run:
 
 ```bash
 make docker
@@ -71,34 +65,42 @@ Pass flags to specify port, redis server address, etc.
 # with a local binary
 ./asynqmon --port=3000 --redis_addr=localhost:6380
 
-# with docker (connect to redis-server running on the host machine)
+# with Docker (connect to a Redis server running on the host machine)
 docker run --rm \
     --name asynqmon \
     -p 3000:3000 \
     hibiken/asynqmon --port=3000 --redis_addr=host.docker.internal:6380
 
-# with docker (connect to redis-server running in a docker container)
+# with Docker (connect to a Redis server running in the Docker container)
 docker run --rm \
     --name asynqmon \
     --network dev-network \
     -p 8080:8080 \
-    asynqmon --redis_addr=dev-redis:6379
+    hibiken/asynqmon --redis_addr=dev-redis:6379
 ```
 
-To see all available flags, run
+To see all available flags, run:
 
 ```bash
 # with a local binary
 ./asynqmon --help
 
-# with docker
+# with Docker
 docker run hibiken/asynqmon --help
 ```
 
 Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
 
-![Screenshot](https://user-images.githubusercontent.com/11155743/113557216-57af2b80-9606-11eb-8ab6-df023b14e5c1.png)
+![Web UI Queues View](https://user-images.githubusercontent.com/11155743/114697016-07327f00-9d26-11eb-808c-0ac841dc888e.png)
+
+**Tasks view**  
+
+![Web UI TasksView](https://user-images.githubusercontent.com/11155743/114697070-1f0a0300-9d26-11eb-855c-d3ec263865b7.png)
+
+**Settings and adaptive dark mode**
+
+![Web UI Settings and adaptive dark mode](https://user-images.githubusercontent.com/11155743/114697149-3517c380-9d26-11eb-9f7a-ae2dd00aad5b.png)
 
 ## License
 
-Asynqmon is released under the MIT license. See [LICENSE](https://github.com/hibiken/asynqmon/blob/master/LICENSE).
+Copyright (c) 2019-present [Ken Hibino](https://github.com/hibiken) and [Contributors](https://github.com/hibiken/asynqmon/graphs/contributors). `Asynqmon` is free and open-source software licensed under the [MIT License](https://github.com/hibiken/asynq/blob/master/LICENSE). Official logo was created by [Vic Shóstak](https://github.com/koddr) and distributed under [Creative Commons](https://creativecommons.org/publicdomain/zero/1.0/) license (CC0 1.0 Universal).
