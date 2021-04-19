@@ -9,6 +9,7 @@ import Paper from "@material-ui/core/Paper";
 import Popper from "@material-ui/core/Popper";
 import MenuItem from "@material-ui/core/MenuItem";
 import MenuList from "@material-ui/core/MenuList";
+import { isDarkTheme } from "../theme";
 
 interface Option {
   label: string;
@@ -26,10 +27,9 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 2,
   },
   buttonContained: {
-    backgroundColor:
-      theme.palette.type === "dark"
-        ? "#303030"
-        : theme.palette.background.default,
+    backgroundColor: isDarkTheme(theme)
+      ? "#303030"
+      : theme.palette.background.default,
     color: theme.palette.text.primary,
     "&:hover": {
       backgroundColor: theme.palette.action.hover,

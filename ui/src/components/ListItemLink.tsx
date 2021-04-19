@@ -10,6 +10,7 @@ import {
   Link as RouterLink,
   LinkProps as RouterLinkProps,
 } from "react-router-dom";
+import { isDarkTheme } from "../theme";
 
 const useStyles = makeStyles((theme) => ({
   listItem: {
@@ -17,23 +18,20 @@ const useStyles = makeStyles((theme) => ({
     borderBottomRightRadius: "24px",
   },
   selected: {
-    backgroundColor:
-      theme.palette.type === "dark"
-        ? `${theme.palette.secondary.main}30`
-        : `${theme.palette.primary.main}30`,
+    backgroundColor: isDarkTheme(theme)
+      ? `${theme.palette.secondary.main}30`
+      : `${theme.palette.primary.main}30`,
   },
   selectedText: {
     fontWeight: 600,
-    color:
-      theme.palette.type === "dark"
-        ? theme.palette.secondary.main
-        : theme.palette.primary.main,
+    color: isDarkTheme(theme)
+      ? theme.palette.secondary.main
+      : theme.palette.primary.main,
   },
   selectedIcon: {
-    color:
-      theme.palette.type === "dark"
-        ? theme.palette.secondary.main
-        : theme.palette.primary.main,
+    color: isDarkTheme(theme)
+      ? theme.palette.secondary.main
+      : theme.palette.primary.main,
   },
 }));
 

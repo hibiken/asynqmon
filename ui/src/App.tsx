@@ -10,7 +10,6 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import Typography from "@material-ui/core/Typography";
 import Snackbar from "@material-ui/core/Snackbar";
 import SnackbarContent from "@material-ui/core/SnackbarContent";
 import IconButton from "@material-ui/core/IconButton";
@@ -26,7 +25,7 @@ import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 import CloseIcon from "@material-ui/icons/Close";
 import { AppState } from "./store";
 import { paths } from "./paths";
-import { useTheme } from "./theme";
+import { isDarkTheme, useTheme } from "./theme";
 import { closeSnackbar } from "./actions/snackbarActions";
 import { toggleDrawer } from "./actions/settingsActions";
 import ListItemLink from "./components/ListItemLink";
@@ -37,6 +36,8 @@ import SettingsView from "./views/SettingsView";
 import ServersView from "./views/ServersView";
 import RedisInfoView from "./views/RedisInfoView";
 import PageNotFoundView from "./views/PageNotFoundView";
+import logo from "./images/logo-color.svg";
+import logoWhite from "./images/logo-white.svg";
 
 const drawerWidth = 220;
 
@@ -63,11 +64,9 @@ const useStyles = (theme: Theme) =>
       zIndex: theme.zIndex.drawer + 1,
     },
     menuButton: {
-      marginRight: theme.spacing(2),
-      color:
-        theme.palette.type === "dark"
-          ? theme.palette.grey[100]
-          : theme.palette.grey[700],
+      color: isDarkTheme(theme)
+        ? theme.palette.grey[100]
+        : theme.palette.grey[700],
     },
     menuButtonHidden: {
       display: "none",
@@ -173,15 +172,11 @@ function App(props: ConnectedProps<typeof connector>) {
               >
                 <MenuIcon />
               </IconButton>
-              <Typography
-                component="h1"
-                variant="h6"
-                noWrap
-                className={classes.title}
-                color="textPrimary"
-              >
-                Asynq Monitoring
-              </Typography>
+              <img
+                src={isDarkTheme(theme) ? logoWhite : logo}
+                width={200}
+                alt="logo"
+              />
             </Toolbar>
           </AppBar>
           <div className={classes.mainContainer}>

@@ -25,3 +25,7 @@ export function useTheme(themePreference: ThemePreference): Theme {
     },
   });
 }
+
+export function isDarkTheme(theme: Theme): boolean {
+  return theme.palette.type === "dark";
+}

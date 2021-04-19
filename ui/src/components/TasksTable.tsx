@@ -13,6 +13,7 @@ import { useHistory } from "react-router-dom";
 import { queueDetailsPath } from "../paths";
 import { QueueInfo } from "../reducers/queuesReducer";
 import { AppState } from "../store";
+import { isDarkTheme } from "../theme";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -92,10 +93,9 @@ const useStyles = makeStyles((theme) => ({
   taskcount: {
     fontSize: "12px",
     color: theme.palette.text.secondary,
-    background:
-      theme.palette.type === "dark"
-        ? "#303030"
-        : theme.palette.background.default,
+    background: isDarkTheme(theme)
+      ? "#303030"
+      : theme.palette.background.default,
     textAlign: "center",
     padding: "3px 6px",
     borderRadius: "10px",

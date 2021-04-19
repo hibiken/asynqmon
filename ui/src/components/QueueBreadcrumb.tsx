@@ -7,13 +7,13 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { paths, queueDetailsPath } from "../paths";
+import { isDarkTheme } from "../theme";
 
 const StyledBreadcrumb = withStyles((theme: Theme) => ({
   root: {
-    backgroundColor:
-      theme.palette.type === "dark"
-        ? "#303030"
-        : theme.palette.background.default,
+    backgroundColor: isDarkTheme(theme)
+      ? "#303030"
+      : theme.palette.background.default,
     height: theme.spacing(3),
     color: theme.palette.text.secondary,
     fontWeight: theme.typography.fontWeightRegular,
