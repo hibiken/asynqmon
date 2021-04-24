@@ -21,19 +21,23 @@ import (
 
 // Command-line flags
 var (
-	flagPort          int
-	flagRedisAddr     string
-	flagRedisDB       int
-	flagRedisPassword string
-	flagRedisTLS      string
+	flagPort             int
+	flagRedisAddr        string
+	flagRedisDB          int
+	flagRedisPassword    string
+	flagRedisTLS         string
+	flagRedisURL         string
+	flagRedisInsecureTLS bool
 )
 
 func init() {
 	flag.IntVar(&flagPort, "port", 8080, "port number to use for web ui server")
-	flag.StringVar(&flagRedisAddr, "redis_addr", "127.0.0.1:6379", "address of redis server to connect to")
-	flag.IntVar(&flagRedisDB, "redis_db", 0, "redis database number")
-	flag.StringVar(&flagRedisPassword, "redis_password", "", "password to use when connecting to redis server")
-	flag.StringVar(&flagRedisTLS, "redis_tls", "", "server name for TLS validation used when connecting to redis server")
+	flag.StringVar(&flagRedisAddr, "redis-addr", "127.0.0.1:6379", "address of redis server to connect to")
+	flag.IntVar(&flagRedisDB, "redis-db", 0, "redis database number")
+	flag.StringVar(&flagRedisPassword, "redis-password", "", "password to use when connecting to redis server")
+	flag.StringVar(&flagRedisTLS, "redis-tls", "", "server name for TLS validation used when connecting to redis server")
+	flag.StringVar(&flagRedisURL, "redis-url", "", "URL to redis server")
+	flag.BoolVar(&flagRedisInsecureTLS, "redis-insecure-tls", false, "Disable TLS certificate host checks")
 }
 
 // staticFileServer implements the http.Handler interface, so we can use it
@@ -85,31 +89,57 @@ func (srv *staticFileServer) indexFilePath() string {
 	return filepath.Join(srv.staticDirPath, srv.indexFileName)
 }
 
+func getRedisOptionsFromFlags() (*redis.Options, error) {
+	var err error
+	var opts *redis.Options
+
+	if flagRedisURL != "" {
+		opts, err = redis.ParseURL(flagRedisURL)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		opts = &redis.Options{
+			Addr:      flagRedisAddr,
+			DB:        flagRedisDB,
+			Password:  flagRedisPassword,
+			TLSConfig: &tls.Config{},
+		}
+	}
+
+	if tls := opts.TLSConfig; tls != nil {
+		if tlsHost := flagRedisTLS; tlsHost != "" {
+			tls.ServerName = tlsHost
+		}
+
+		if flagRedisInsecureTLS {
+			tls.InsecureSkipVerify = true
+		}
+	}
+
+	return opts, nil
+}
+
 //go:embed ui/build/*
 var staticContents embed.FS
 
 func main() {
 	flag.Parse()
 
-	var tlsConfig *tls.Config
-	if flagRedisTLS != "" {
-		tlsConfig = &tls.Config{ServerName: flagRedisTLS}
+	opts, err := getRedisOptionsFromFlags()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	inspector := inspeq.New(asynq.RedisClientOpt{
-		Addr:      flagRedisAddr,
-		DB:        flagRedisDB,
-		Password:  flagRedisPassword,
-		TLSConfig: tlsConfig,
+		Addr:      opts.Addr,
+		DB:        opts.DB,
+		Password:  opts.Password,
+		TLSConfig: opts.TLSConfig,
 	})
 	defer inspector.Close()
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr:      flagRedisAddr,
-		DB:        flagRedisDB,
-		Password:  flagRedisPassword,
-		TLSConfig: tlsConfig,
-	})
+	rdb := redis.NewClient(opts)
 	defer rdb.Close()
 
 	router := mux.NewRouter()
