@@ -63,20 +63,20 @@ Pass flags to specify port, redis server address, etc.
 
 ```bash
 # with a local binary
-./asynqmon --port=3000 --redis_addr=localhost:6380
+./asynqmon --port=3000 --redis-addr=localhost:6380
 
 # with Docker (connect to a Redis server running on the host machine)
 docker run --rm \
     --name asynqmon \
     -p 3000:3000 \
-    hibiken/asynqmon --port=3000 --redis_addr=host.docker.internal:6380
+    hibiken/asynqmon --port=3000 --redis-addr=host.docker.internal:6380
 
 # with Docker (connect to a Redis server running in the Docker container)
 docker run --rm \
     --name asynqmon \
     --network dev-network \
     -p 8080:8080 \
-    hibiken/asynqmon --redis_addr=dev-redis:6379
+    hibiken/asynqmon --redis-addr=dev-redis:6379
 ```
 
 To see all available flags, run:
@@ -93,7 +93,7 @@ Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
 
 ![Web UI Queues View](https://user-images.githubusercontent.com/11155743/114697016-07327f00-9d26-11eb-808c-0ac841dc888e.png)
 
-**Tasks view**  
+**Tasks view**
 
 ![Web UI TasksView](https://user-images.githubusercontent.com/11155743/114697070-1f0a0300-9d26-11eb-855c-d3ec263865b7.png)
 
