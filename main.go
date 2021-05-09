@@ -100,23 +100,21 @@ func getRedisOptionsFromFlags() (*redis.Options, error) {
 		}
 	} else {
 		opts = &redis.Options{
-			Addr:      flagRedisAddr,
-			DB:        flagRedisDB,
-			Password:  flagRedisPassword,
-			TLSConfig: &tls.Config{},
+			Addr:     flagRedisAddr,
+			DB:       flagRedisDB,
+			Password: flagRedisPassword,
 		}
 	}
 
-	if tls := opts.TLSConfig; tls != nil {
-		if tlsHost := flagRedisTLS; tlsHost != "" {
-			tls.ServerName = tlsHost
-		}
-
-		if flagRedisInsecureTLS {
-			tls.InsecureSkipVerify = true
-		}
+	if flagRedisTLS != "" {
+		opts.TLSConfig = &tls.Config{ServerName: flagRedisTLS}
 	}
-
+	if flagRedisInsecureTLS {
+		if opts.TLSConfig == nil {
+			opts.TLSConfig = &tls.Config{}
+		}
+		opts.TLSConfig.InsecureSkipVerify = true
+	}
 	return opts, nil
 }
 
