@@ -12,6 +12,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Snackbar from "@material-ui/core/Snackbar";
 import SnackbarContent from "@material-ui/core/SnackbarContent";
+import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Slide from "@material-ui/core/Slide";
 import { TransitionProps } from "@material-ui/core/transitions";
@@ -36,8 +37,6 @@ import SettingsView from "./views/SettingsView";
 import ServersView from "./views/ServersView";
 import RedisInfoView from "./views/RedisInfoView";
 import PageNotFoundView from "./views/PageNotFoundView";
-import logo from "./images/logo-color.svg";
-import logoWhite from "./images/logo-white.svg";
 
 const drawerWidth = 220;
 
@@ -64,6 +63,7 @@ const useStyles = (theme: Theme) =>
       zIndex: theme.zIndex.drawer + 1,
     },
     menuButton: {
+      marginRight: theme.spacing(1),
       color: isDarkTheme(theme)
         ? theme.palette.grey[100]
         : theme.palette.grey[700],
@@ -172,11 +172,15 @@ function App(props: ConnectedProps<typeof connector>) {
               >
                 <MenuIcon />
               </IconButton>
-              <img
-                src={isDarkTheme(theme) ? logoWhite : logo}
-                width={200}
-                alt="logo"
-              />
+              <Typography
+                component="h1"
+                variant="h6"
+                noWrap
+                className={classes.title}
+                color="textPrimary"
+              >
+                Asynq Monitoring
+              </Typography>
             </Toolbar>
           </AppBar>
           <div className={classes.mainContainer}>
