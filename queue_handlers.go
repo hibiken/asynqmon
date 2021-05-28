@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/hibiken/asynq/inspeq"
+	"github.com/hibiken/asynq"
 )
 
 // ****************************************************************************
@@ -13,7 +14,7 @@ import (
 //   - http.Handler(s) for queue related endpoints
 // ****************************************************************************
 
-func newListQueuesHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newListQueuesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()
 		if err != nil {
@@ -22,31 +23,31 @@ func newListQueuesHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 		}
 		snapshots := make([]*QueueStateSnapshot, len(qnames))
 		for i, qname := range qnames {
-			s, err := inspector.CurrentStats(qname)
+			qinfo, err := inspector.GetQueueInfo(qname)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			snapshots[i] = toQueueStateSnapshot(s)
+			snapshots[i] = toQueueStateSnapshot(qinfo)
 		}
 		payload := map[string]interface{}{"queues": snapshots}
 		json.NewEncoder(w).Encode(payload)
 	}
 }
 
-func newGetQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newGetQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 
 		payload := make(map[string]interface{})
-		stats, err := inspector.CurrentStats(qname)
+		qinfo, err := inspector.GetQueueInfo(qname)
 		if err != nil {
 			// TODO: Check for queue not found error.
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		payload["current"] = toQueueStateSnapshot(stats)
+		payload["current"] = toQueueStateSnapshot(qinfo)
 
 		// TODO: make this n a variable
 		data, err := inspector.History(qname, 10)
@@ -63,16 +64,16 @@ func newGetQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newDeleteQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newDeleteQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		if err := inspector.DeleteQueue(qname, false); err != nil {
-			if _, ok := err.(*inspeq.ErrQueueNotFound); ok {
+			if errors.Is(err, asynq.ErrQueueNotFound) {
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
-			if _, ok := err.(*inspeq.ErrQueueNotEmpty); ok {
+			if errors.Is(err, asynq.ErrQueueNotEmpty) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -83,7 +84,7 @@ func newDeleteQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newPauseQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newPauseQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -95,7 +96,7 @@ func newPauseQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newResumeQueueHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newResumeQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -111,7 +112,7 @@ type ListQueueStatsResponse struct {
 	Stats map[string][]*DailyStats `json:"stats"`
 }
 
-func newListQueueStatsHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newListQueueStatsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()
 		if err != nil {
