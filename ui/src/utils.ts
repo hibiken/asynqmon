@@ -68,7 +68,10 @@ export function timeAgo(timestamp: string): string {
   }
 }
 
-export function timeAgoUnix(unixtime: number) {
+export function timeAgoUnix(unixtime: number): string {
+  if (unixtime === 0)  {
+    return ""
+  }
   const duration = durationBetween(Date.now(), unixtime * 1000);
   return stringifyDuration(duration) + " ago";
 }
