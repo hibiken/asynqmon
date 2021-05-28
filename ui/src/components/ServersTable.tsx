@@ -273,19 +273,19 @@ function Row(props: RowProps) {
                   </TableHead>
                   <TableBody>
                     {server.active_workers.map((worker) => (
-                      <TableRow key={worker.task.id}>
+                      <TableRow key={worker.task_id}>
                         <TableCell component="th" scope="row">
-                          {uuidPrefix(worker.task.id)}
+                          {uuidPrefix(worker.task_id)}
                         </TableCell>
                         <TableCell>
                           <SyntaxHighlighter
                             language="json"
                             customStyle={{ margin: 0 }}
                           >
-                            {JSON.stringify(worker.task.payload)}
+                            {JSON.stringify(worker.task_payload)}
                           </SyntaxHighlighter>
                         </TableCell>
-                        <TableCell>{worker.task.queue}</TableCell>
+                        <TableCell>{worker.queue}</TableCell>
                         <TableCell>{timeAgo(worker.start_time)}</TableCell>
                       </TableRow>
                     ))}

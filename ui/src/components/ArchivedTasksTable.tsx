@@ -91,7 +91,7 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
   const { pollInterval, listArchivedTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
   const handleChangePage = (
@@ -110,10 +110,10 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = props.tasks.map((t) => t.key);
-      setSelectedKeys(newSelected);
+      const newSelected = props.tasks.map((t) => t.id);
+      setSelectedIds(newSelected);
     } else {
-      setSelectedKeys([]);
+      setSelectedIds([]);
     }
   };
 
@@ -127,14 +127,14 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
 
   const handleBatchRunClick = () => {
     props
-      .batchRunArchivedTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchRunArchivedTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const handleBatchDeleteClick = () => {
     props
-      .batchDeleteArchivedTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchDeleteArchivedTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const fetchData = useCallback(() => {
@@ -171,7 +171,7 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
   ];
 
   const rowCount = props.tasks.length;
-  const numSelected = selectedKeys.length;
+  const numSelected = selectedIds.length;
   return (
     <div>
       <TableActions
@@ -239,23 +239,21 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
           <TableBody>
             {props.tasks.map((task) => (
               <Row
-                key={task.key}
+                key={task.id}
                 task={task}
-                isSelected={selectedKeys.includes(task.key)}
+                isSelected={selectedIds.includes(task.id)}
                 onSelectChange={(checked: boolean) => {
                   if (checked) {
-                    setSelectedKeys(selectedKeys.concat(task.key));
+                    setSelectedIds(selectedIds.concat(task.id));
                   } else {
-                    setSelectedKeys(
-                      selectedKeys.filter((key) => key !== task.key)
-                    );
+                    setSelectedIds(selectedIds.filter((id) => id !== task.id));
                   }
                 }}
                 onRunClick={() => {
-                  props.runArchivedTaskAsync(queue, task.key);
+                  props.runArchivedTaskAsync(queue, task.id);
                 }}
                 onDeleteClick={() => {
-                  props.deleteArchivedTaskAsync(queue, task.key);
+                  props.deleteArchivedTaskAsync(queue, task.id);
                 }}
                 allActionPending={props.allActionPending}
                 onActionCellEnter={() => setActiveTaskId(task.id)}

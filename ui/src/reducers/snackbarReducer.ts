@@ -126,7 +126,7 @@ function snackbarReducer(
       };
 
     case BATCH_RUN_SCHEDULED_TASKS_SUCCESS: {
-      const n = action.payload.pending_keys.length;
+      const n = action.payload.pending_ids.length;
       return {
         isOpen: true,
         message: `${n} scheduled ${
@@ -136,7 +136,7 @@ function snackbarReducer(
     }
 
     case BATCH_ARCHIVE_PENDING_TASKS_SUCCESS: {
-      const n = action.payload.archived_keys.length;
+      const n = action.payload.archived_ids.length;
       return {
         isOpen: true,
         message: `${n} pending ${
@@ -146,7 +146,7 @@ function snackbarReducer(
     }
 
     case BATCH_DELETE_PENDING_TASKS_SUCCESS: {
-      const n = action.payload.deleted_keys.length;
+      const n = action.payload.deleted_ids.length;
       return {
         isOpen: true,
         message: `${n} pending ${n === 1 ? "task" : "tasks"} deleted`,
@@ -154,7 +154,7 @@ function snackbarReducer(
     }
 
     case BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS: {
-      const n = action.payload.archived_keys.length;
+      const n = action.payload.archived_ids.length;
       return {
         isOpen: true,
         message: `${n} scheduled ${
@@ -164,7 +164,7 @@ function snackbarReducer(
     }
 
     case BATCH_DELETE_SCHEDULED_TASKS_SUCCESS: {
-      const n = action.payload.deleted_keys.length;
+      const n = action.payload.deleted_ids.length;
       return {
         isOpen: true,
         message: `${n} scheduled ${n === 1 ? "task" : "tasks"} deleted`,
@@ -208,7 +208,7 @@ function snackbarReducer(
       };
 
     case BATCH_RUN_RETRY_TASKS_SUCCESS: {
-      const n = action.payload.pending_keys.length;
+      const n = action.payload.pending_ids.length;
       return {
         isOpen: true,
         message: `${n} retry ${n === 1 ? "task is" : "tasks are"} now pending`,
@@ -216,7 +216,7 @@ function snackbarReducer(
     }
 
     case BATCH_ARCHIVE_RETRY_TASKS_SUCCESS: {
-      const n = action.payload.archived_keys.length;
+      const n = action.payload.archived_ids.length;
       return {
         isOpen: true,
         message: `${n} retry ${n === 1 ? "task is" : "tasks are"} now archived`,
@@ -224,7 +224,7 @@ function snackbarReducer(
     }
 
     case BATCH_DELETE_RETRY_TASKS_SUCCESS: {
-      const n = action.payload.deleted_keys.length;
+      const n = action.payload.deleted_ids.length;
       return {
         isOpen: true,
         message: `${n} retry ${n === 1 ? "task" : "tasks"} deleted`,
@@ -256,7 +256,7 @@ function snackbarReducer(
       };
 
     case BATCH_RUN_ARCHIVED_TASKS_SUCCESS: {
-      const n = action.payload.pending_keys.length;
+      const n = action.payload.pending_ids.length;
       return {
         isOpen: true,
         message: `${n} archived ${
@@ -266,7 +266,7 @@ function snackbarReducer(
     }
 
     case BATCH_DELETE_ARCHIVED_TASKS_SUCCESS: {
-      const n = action.payload.deleted_keys.length;
+      const n = action.payload.deleted_ids.length;
       return {
         isOpen: true,
         message: `${n} archived ${n === 1 ? "task" : "tasks"} deleted`,

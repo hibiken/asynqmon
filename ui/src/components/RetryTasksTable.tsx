@@ -98,7 +98,7 @@ function RetryTasksTable(props: Props & ReduxProps) {
   const { pollInterval, listRetryTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
   const handleChangePage = (
@@ -117,10 +117,10 @@ function RetryTasksTable(props: Props & ReduxProps) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = props.tasks.map((t) => t.key);
-      setSelectedKeys(newSelected);
+      const newSelected = props.tasks.map((t) => t.id);
+      setSelectedIds(newSelected);
     } else {
-      setSelectedKeys([]);
+      setSelectedIds([]);
     }
   };
 
@@ -138,20 +138,20 @@ function RetryTasksTable(props: Props & ReduxProps) {
 
   const handleBatchRunClick = () => {
     props
-      .batchRunRetryTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchRunRetryTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const handleBatchDeleteClick = () => {
     props
-      .batchDeleteRetryTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchDeleteRetryTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const handleBatchArchiveClick = () => {
     props
-      .batchArchiveRetryTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchArchiveRetryTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const fetchData = useCallback(() => {
@@ -190,7 +190,7 @@ function RetryTasksTable(props: Props & ReduxProps) {
   ];
 
   const rowCount = props.tasks.length;
-  const numSelected = selectedKeys.length;
+  const numSelected = selectedIds.length;
   return (
     <div>
       <TableActions
@@ -272,24 +272,22 @@ function RetryTasksTable(props: Props & ReduxProps) {
                 key={task.id}
                 task={task}
                 allActionPending={props.allActionPending}
-                isSelected={selectedKeys.includes(task.key)}
+                isSelected={selectedIds.includes(task.id)}
                 onSelectChange={(checked: boolean) => {
                   if (checked) {
-                    setSelectedKeys(selectedKeys.concat(task.key));
+                    setSelectedIds(selectedIds.concat(task.id));
                   } else {
-                    setSelectedKeys(
-                      selectedKeys.filter((key) => key !== task.key)
-                    );
+                    setSelectedIds(selectedIds.filter((id) => id !== task.id));
                   }
                 }}
                 onRunClick={() => {
-                  props.runRetryTaskAsync(task.queue, task.key);
+                  props.runRetryTaskAsync(task.queue, task.id);
                 }}
                 onDeleteClick={() => {
-                  props.deleteRetryTaskAsync(task.queue, task.key);
+                  props.deleteRetryTaskAsync(task.queue, task.id);
                 }}
                 onArchiveClick={() => {
-                  props.archiveRetryTaskAsync(task.queue, task.key);
+                  props.archiveRetryTaskAsync(task.queue, task.id);
                 }}
                 onActionCellEnter={() => setActiveTaskId(task.id)}
                 onActionCellLeave={() => setActiveTaskId("")}

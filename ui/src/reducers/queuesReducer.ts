@@ -319,10 +319,10 @@ function queuesReducer(
             ...queueInfo.currentStats,
             archived:
               queueInfo.currentStats.archived +
-              action.payload.archived_keys.length,
+              action.payload.archived_ids.length,
             pending:
               queueInfo.currentStats.pending -
-              action.payload.archived_keys.length,
+              action.payload.archived_ids.length,
           },
         };
       });
@@ -339,10 +339,10 @@ function queuesReducer(
           currentStats: {
             ...queueInfo.currentStats,
             size:
-              queueInfo.currentStats.size - action.payload.deleted_keys.length,
+              queueInfo.currentStats.size - action.payload.deleted_ids.length,
             pending:
               queueInfo.currentStats.pending -
-              action.payload.deleted_keys.length,
+              action.payload.deleted_ids.length,
           },
         };
       });
@@ -395,10 +395,10 @@ function queuesReducer(
             ...queueInfo.currentStats,
             pending:
               queueInfo.currentStats.pending +
-              action.payload.pending_keys.length,
+              action.payload.pending_ids.length,
             scheduled:
               queueInfo.currentStats.scheduled -
-              action.payload.pending_keys.length,
+              action.payload.pending_ids.length,
           },
         };
       });
@@ -416,10 +416,10 @@ function queuesReducer(
             ...queueInfo.currentStats,
             archived:
               queueInfo.currentStats.archived +
-              action.payload.archived_keys.length,
+              action.payload.archived_ids.length,
             scheduled:
               queueInfo.currentStats.scheduled -
-              action.payload.archived_keys.length,
+              action.payload.archived_ids.length,
           },
         };
       });
@@ -436,10 +436,10 @@ function queuesReducer(
           currentStats: {
             ...queueInfo.currentStats,
             size:
-              queueInfo.currentStats.size - action.payload.deleted_keys.length,
+              queueInfo.currentStats.size - action.payload.deleted_ids.length,
             scheduled:
               queueInfo.currentStats.scheduled -
-              action.payload.deleted_keys.length,
+              action.payload.deleted_ids.length,
           },
         };
       });
@@ -528,9 +528,9 @@ function queuesReducer(
             ...queueInfo.currentStats,
             pending:
               queueInfo.currentStats.pending +
-              action.payload.pending_keys.length,
+              action.payload.pending_ids.length,
             retry:
-              queueInfo.currentStats.retry - action.payload.pending_keys.length,
+              queueInfo.currentStats.retry - action.payload.pending_ids.length,
           },
         };
       });
@@ -548,10 +548,10 @@ function queuesReducer(
             ...queueInfo.currentStats,
             archived:
               queueInfo.currentStats.pending +
-              action.payload.archived_keys.length,
+              action.payload.archived_ids.length,
             retry:
               queueInfo.currentStats.retry -
-              action.payload.archived_keys.length,
+              action.payload.archived_ids.length,
           },
         };
       });
@@ -568,9 +568,9 @@ function queuesReducer(
           currentStats: {
             ...queueInfo.currentStats,
             size:
-              queueInfo.currentStats.size - action.payload.deleted_keys.length,
+              queueInfo.currentStats.size - action.payload.deleted_ids.length,
             retry:
-              queueInfo.currentStats.retry - action.payload.deleted_keys.length,
+              queueInfo.currentStats.retry - action.payload.deleted_ids.length,
           },
         };
       });
@@ -658,10 +658,10 @@ function queuesReducer(
             ...queueInfo.currentStats,
             pending:
               queueInfo.currentStats.pending +
-              action.payload.pending_keys.length,
+              action.payload.pending_ids.length,
             archived:
               queueInfo.currentStats.archived -
-              action.payload.pending_keys.length,
+              action.payload.pending_ids.length,
           },
         };
       });
@@ -678,10 +678,10 @@ function queuesReducer(
           currentStats: {
             ...queueInfo.currentStats,
             size:
-              queueInfo.currentStats.size - action.payload.deleted_keys.length,
+              queueInfo.currentStats.size - action.payload.deleted_ids.length,
             archived:
               queueInfo.currentStats.archived -
-              action.payload.deleted_keys.length,
+              action.payload.deleted_ids.length,
           },
         };
       });
