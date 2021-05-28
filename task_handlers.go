@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/hibiken/asynq/inspeq"
+	"github.com/hibiken/asynq"
 )
 
 // ****************************************************************************
@@ -21,19 +21,19 @@ type ListActiveTasksResponse struct {
 	Stats *QueueStateSnapshot `json:"stats"`
 }
 
-func newListActiveTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		pageSize, pageNum := getPageOptions(r)
 
 		tasks, err := inspector.ListActiveTasks(
-			qname, inspeq.PageSize(pageSize), inspeq.Page(pageNum))
+			qname, asynq.PageSize(pageSize), asynq.Page(pageNum))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		stats, err := inspector.CurrentStats(qname)
+		qinfo, err := inspector.GetQueueInfo(qname)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -44,11 +44,11 @@ func newListActiveTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc
 			return
 		}
 		// m maps taskID to WorkerInfo.
-		m := make(map[string]*inspeq.WorkerInfo)
+		m := make(map[string]*asynq.WorkerInfo)
 		for _, srv := range servers {
 			for _, w := range srv.ActiveWorkers {
-				if w.Task.Queue == qname {
-					m[w.Task.ID] = w
+				if w.Queue == qname {
+					m[w.TaskID] = w
 				}
 			}
 		}
@@ -66,7 +66,7 @@ func newListActiveTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc
 
 		resp := ListActiveTasksResponse{
 			Tasks: activeTasks,
-			Stats: toQueueStateSnapshot(stats),
+			Stats: toQueueStateSnapshot(qinfo),
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -75,10 +75,10 @@ func newListActiveTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc
 	}
 }
 
-func newCancelActiveTaskHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newCancelActiveTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := mux.Vars(r)["task_id"]
-		if err := inspector.CancelActiveTask(id); err != nil {
+		if err := inspector.CancelProcessing(id); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -86,19 +86,19 @@ func newCancelActiveTaskHandlerFunc(inspector *inspeq.Inspector) http.HandlerFun
 	}
 }
 
-func newCancelAllActiveTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newCancelAllActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const batchSize = 100
 		page := 1
 		qname := mux.Vars(r)["qname"]
 		for {
-			tasks, err := inspector.ListActiveTasks(qname, inspeq.Page(page), inspeq.PageSize(batchSize))
+			tasks, err := inspector.ListActiveTasks(qname, asynq.Page(page), asynq.PageSize(batchSize))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			for _, t := range tasks {
-				if err := inspector.CancelActiveTask(t.ID); err != nil {
+				if err := inspector.CancelProcessing(t.ID()); err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -121,7 +121,7 @@ type batchCancelTasksResponse struct {
 	ErrorIDs    []string `json:"error_ids"`
 }
 
-func newBatchCancelActiveTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newBatchCancelActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 		dec := json.NewDecoder(r.Body)
@@ -139,7 +139,7 @@ func newBatchCancelActiveTasksHandlerFunc(inspector *inspeq.Inspector) http.Hand
 			ErrorIDs:    make([]string, 0),
 		}
 		for _, id := range req.TaskIDs {
-			if err := inspector.CancelActiveTask(id); err != nil {
+			if err := inspector.CancelProcessing(id); err != nil {
 				log.Printf("error: could not send cancelation signal to task %s", id)
 				resp.ErrorIDs = append(resp.ErrorIDs, id)
 			} else {
@@ -153,18 +153,18 @@ func newBatchCancelActiveTasksHandlerFunc(inspector *inspeq.Inspector) http.Hand
 	}
 }
 
-func newListPendingTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newListPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		pageSize, pageNum := getPageOptions(r)
 		tasks, err := inspector.ListPendingTasks(
-			qname, inspeq.PageSize(pageSize), inspeq.Page(pageNum))
+			qname, asynq.PageSize(pageSize), asynq.Page(pageNum))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		stats, err := inspector.CurrentStats(qname)
+		qinfo, err := inspector.GetQueueInfo(qname)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -176,7 +176,7 @@ func newListPendingTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFun
 		} else {
 			payload["tasks"] = toPendingTasks(tasks)
 		}
-		payload["stats"] = toQueueStateSnapshot(stats)
+		payload["stats"] = toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -184,18 +184,18 @@ func newListPendingTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFun
 	}
 }
 
-func newListScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newListScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		pageSize, pageNum := getPageOptions(r)
 		tasks, err := inspector.ListScheduledTasks(
-			qname, inspeq.PageSize(pageSize), inspeq.Page(pageNum))
+			qname, asynq.PageSize(pageSize), asynq.Page(pageNum))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		stats, err := inspector.CurrentStats(qname)
+		qinfo, err := inspector.GetQueueInfo(qname)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -207,7 +207,7 @@ func newListScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerF
 		} else {
 			payload["tasks"] = toScheduledTasks(tasks)
 		}
-		payload["stats"] = toQueueStateSnapshot(stats)
+		payload["stats"] = toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -215,18 +215,18 @@ func newListScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerF
 	}
 }
 
-func newListRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newListRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		pageSize, pageNum := getPageOptions(r)
 		tasks, err := inspector.ListRetryTasks(
-			qname, inspeq.PageSize(pageSize), inspeq.Page(pageNum))
+			qname, asynq.PageSize(pageSize), asynq.Page(pageNum))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		stats, err := inspector.CurrentStats(qname)
+		qinfo, err := inspector.GetQueueInfo(qname)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -238,7 +238,7 @@ func newListRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc 
 		} else {
 			payload["tasks"] = toRetryTasks(tasks)
 		}
-		payload["stats"] = toQueueStateSnapshot(stats)
+		payload["stats"] = toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -246,18 +246,18 @@ func newListRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc 
 	}
 }
 
-func newListArchivedTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newListArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
 		pageSize, pageNum := getPageOptions(r)
 		tasks, err := inspector.ListArchivedTasks(
-			qname, inspeq.PageSize(pageSize), inspeq.Page(pageNum))
+			qname, asynq.PageSize(pageSize), asynq.Page(pageNum))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		stats, err := inspector.CurrentStats(qname)
+		qinfo, err := inspector.GetQueueInfo(qname)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -269,7 +269,7 @@ func newListArchivedTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFu
 		} else {
 			payload["tasks"] = toArchivedTasks(tasks)
 		}
-		payload["stats"] = toQueueStateSnapshot(stats)
+		payload["stats"] = toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -277,15 +277,15 @@ func newListArchivedTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFu
 	}
 }
 
-func newDeleteTaskHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newDeleteTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		qname, key := vars["qname"], vars["task_key"]
-		if qname == "" || key == "" {
+		qname, taskid := vars["qname"], vars["task_id"]
+		if qname == "" || taskid == "" {
 			http.Error(w, "route parameters should not be empty", http.StatusBadRequest)
 			return
 		}
-		if err := inspector.DeleteTaskByKey(qname, key); err != nil {
+		if err := inspector.DeleteTask(qname, taskid); err != nil {
 			// TODO: Handle task not found error and return 404
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -294,15 +294,15 @@ func newDeleteTaskHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newRunTaskHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newRunTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		qname, key := vars["qname"], vars["task_key"]
-		if qname == "" || key == "" {
+		qname, taskid := vars["qname"], vars["task_id"]
+		if qname == "" || taskid == "" {
 			http.Error(w, "route parameters should not be empty", http.StatusBadRequest)
 			return
 		}
-		if err := inspector.RunTaskByKey(qname, key); err != nil {
+		if err := inspector.RunTask(qname, taskid); err != nil {
 			// TODO: Handle task not found error and return 404
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -311,15 +311,15 @@ func newRunTaskHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newArchiveTaskHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newArchiveTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		qname, key := vars["qname"], vars["task_key"]
-		if qname == "" || key == "" {
+		qname, taskid := vars["qname"], vars["task_id"]
+		if qname == "" || taskid == "" {
 			http.Error(w, "route parameters should not be empty", http.StatusBadRequest)
 			return
 		}
-		if err := inspector.ArchiveTaskByKey(qname, key); err != nil {
+		if err := inspector.ArchiveTask(qname, taskid); err != nil {
 			// TODO: Handle task not found error and return 404
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -333,7 +333,7 @@ type DeleteAllTasksResponse struct {
 	Deleted int `json:"deleted"`
 }
 
-func newDeleteAllPendingTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newDeleteAllPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		n, err := inspector.DeleteAllPendingTasks(qname)
@@ -349,7 +349,7 @@ func newDeleteAllPendingTasksHandlerFunc(inspector *inspeq.Inspector) http.Handl
 	}
 }
 
-func newDeleteAllScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newDeleteAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		n, err := inspector.DeleteAllScheduledTasks(qname)
@@ -365,7 +365,7 @@ func newDeleteAllScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.Han
 	}
 }
 
-func newDeleteAllRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newDeleteAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		n, err := inspector.DeleteAllRetryTasks(qname)
@@ -381,7 +381,7 @@ func newDeleteAllRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.Handler
 	}
 }
 
-func newDeleteAllArchivedTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newDeleteAllArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		n, err := inspector.DeleteAllArchivedTasks(qname)
@@ -397,7 +397,7 @@ func newDeleteAllArchivedTasksHandlerFunc(inspector *inspeq.Inspector) http.Hand
 	}
 }
 
-func newRunAllScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newRunAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.RunAllScheduledTasks(qname); err != nil {
@@ -408,7 +408,7 @@ func newRunAllScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.Handle
 	}
 }
 
-func newRunAllRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newRunAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.RunAllRetryTasks(qname); err != nil {
@@ -419,7 +419,7 @@ func newRunAllRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFun
 	}
 }
 
-func newRunAllArchivedTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newRunAllArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.RunAllArchivedTasks(qname); err != nil {
@@ -430,7 +430,7 @@ func newRunAllArchivedTasksHandlerFunc(inspector *inspeq.Inspector) http.Handler
 	}
 }
 
-func newArchiveAllPendingTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newArchiveAllPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.ArchiveAllPendingTasks(qname); err != nil {
@@ -441,7 +441,7 @@ func newArchiveAllPendingTasksHandlerFunc(inspector *inspeq.Inspector) http.Hand
 	}
 }
 
-func newArchiveAllScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newArchiveAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.ArchiveAllScheduledTasks(qname); err != nil {
@@ -452,7 +452,7 @@ func newArchiveAllScheduledTasksHandlerFunc(inspector *inspeq.Inspector) http.Ha
 	}
 }
 
-func newArchiveAllRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newArchiveAllRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.ArchiveAllRetryTasks(qname); err != nil {
@@ -465,26 +465,26 @@ func newArchiveAllRetryTasksHandlerFunc(inspector *inspeq.Inspector) http.Handle
 
 // request body used for all batch delete tasks endpoints.
 type batchDeleteTasksRequest struct {
-	TaskKeys []string `json:"task_keys"`
+	TaskIDs []string `json:"task_ids"`
 }
 
 // Note: Redis does not have any rollback mechanism, so it's possible
 // to have partial success when doing a batch operation.
-// For this reason this response contains a list of succeeded keys
-// and a list of failed keys.
+// For this reason this response contains a list of succeeded ids
+// and a list of failed ids.
 type batchDeleteTasksResponse struct {
-	// task keys that were successfully deleted.
-	DeletedKeys []string `json:"deleted_keys"`
+	// task ids that were successfully deleted.
+	DeletedIDs []string `json:"deleted_ids"`
 
-	// task keys that were not deleted.
-	FailedKeys []string `json:"failed_keys"`
+	// task ids that were not deleted.
+	FailedIDs []string `json:"failed_ids"`
 }
 
 // Maximum request body size in bytes.
 // Allow up to 1MB in size.
 const maxRequestBodySize = 1000000
 
-func newBatchDeleteTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newBatchDeleteTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 		dec := json.NewDecoder(r.Body)
@@ -499,15 +499,15 @@ func newBatchDeleteTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFun
 		qname := mux.Vars(r)["qname"]
 		resp := batchDeleteTasksResponse{
 			// avoid null in the json response
-			DeletedKeys: make([]string, 0),
-			FailedKeys:  make([]string, 0),
+			DeletedIDs: make([]string, 0),
+			FailedIDs:  make([]string, 0),
 		}
-		for _, key := range req.TaskKeys {
-			if err := inspector.DeleteTaskByKey(qname, key); err != nil {
-				log.Printf("error: could not delete task with key %q: %v", key, err)
-				resp.FailedKeys = append(resp.FailedKeys, key)
+		for _, taskid := range req.TaskIDs {
+			if err := inspector.DeleteTask(qname, taskid); err != nil {
+				log.Printf("error: could not delete task with id %q: %v", taskid, err)
+				resp.FailedIDs = append(resp.FailedIDs, taskid)
 			} else {
-				resp.DeletedKeys = append(resp.DeletedKeys, key)
+				resp.DeletedIDs = append(resp.DeletedIDs, taskid)
 			}
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -518,17 +518,17 @@ func newBatchDeleteTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFun
 }
 
 type batchRunTasksRequest struct {
-	TaskKeys []string `json:"task_keys"`
+	TaskIDs []string `json:"task_ids"`
 }
 
 type batchRunTasksResponse struct {
-	// task keys that were successfully moved to the pending state.
-	PendingKeys []string `json:"pending_keys"`
-	// task keys that were not able to move to the pending state.
-	ErrorKeys []string `json:"error_keys"`
+	// task ids that were successfully moved to the pending state.
+	PendingIDs []string `json:"pending_ids"`
+	// task ids that were not able to move to the pending state.
+	ErrorIDs []string `json:"error_ids"`
 }
 
-func newBatchRunTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newBatchRunTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 		dec := json.NewDecoder(r.Body)
@@ -543,15 +543,15 @@ func newBatchRunTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 		qname := mux.Vars(r)["qname"]
 		resp := batchRunTasksResponse{
 			// avoid null in the json response
-			PendingKeys: make([]string, 0),
-			ErrorKeys:   make([]string, 0),
+			PendingIDs: make([]string, 0),
+			ErrorIDs:   make([]string, 0),
 		}
-		for _, key := range req.TaskKeys {
-			if err := inspector.RunTaskByKey(qname, key); err != nil {
-				log.Printf("error: could not run task with key %q: %v", key, err)
-				resp.ErrorKeys = append(resp.ErrorKeys, key)
+		for _, taskid := range req.TaskIDs {
+			if err := inspector.RunTask(qname, taskid); err != nil {
+				log.Printf("error: could not run task with id %q: %v", taskid, err)
+				resp.ErrorIDs = append(resp.ErrorIDs, taskid)
 			} else {
-				resp.PendingKeys = append(resp.PendingKeys, key)
+				resp.PendingIDs = append(resp.PendingIDs, taskid)
 			}
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -562,17 +562,17 @@ func newBatchRunTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
 }
 
 type batchArchiveTasksRequest struct {
-	TaskKeys []string `json:"task_keys"`
+	TaskIDs []string `json:"task_ids"`
 }
 
 type batchArchiveTasksResponse struct {
-	// task keys that were successfully moved to the archived state.
-	ArchivedKeys []string `json:"archived_keys"`
-	// task keys that were not able to move to the archived state.
-	ErrorKeys []string `json:"error_keys"`
+	// task ids that were successfully moved to the archived state.
+	ArchivedIDs []string `json:"archived_ids"`
+	// task ids that were not able to move to the archived state.
+	ErrorIDs []string `json:"error_ids"`
 }
 
-func newBatchArchiveTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newBatchArchiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 		dec := json.NewDecoder(r.Body)
@@ -587,15 +587,15 @@ func newBatchArchiveTasksHandlerFunc(inspector *inspeq.Inspector) http.HandlerFu
 		qname := mux.Vars(r)["qname"]
 		resp := batchArchiveTasksResponse{
 			// avoid null in the json response
-			ArchivedKeys: make([]string, 0),
-			ErrorKeys:    make([]string, 0),
+			ArchivedIDs: make([]string, 0),
+			ErrorIDs:    make([]string, 0),
 		}
-		for _, key := range req.TaskKeys {
-			if err := inspector.ArchiveTaskByKey(qname, key); err != nil {
-				log.Printf("error: could not archive task with key %q: %v", key, err)
-				resp.ErrorKeys = append(resp.ErrorKeys, key)
+		for _, taskid := range req.TaskIDs {
+			if err := inspector.ArchiveTask(qname, taskid); err != nil {
+				log.Printf("error: could not archive task with id %q: %v", taskid, err)
+				resp.ErrorIDs = append(resp.ErrorIDs, taskid)
 			} else {
-				resp.ArchivedKeys = append(resp.ArchivedKeys, key)
+				resp.ArchivedIDs = append(resp.ArchivedIDs, taskid)
 			}
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {

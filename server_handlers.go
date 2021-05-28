@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/hibiken/asynq/inspeq"
+	"github.com/hibiken/asynq"
 )
 
 // ****************************************************************************
@@ -16,7 +16,7 @@ type ListServersResponse struct {
 	Servers []*ServerInfo `json:"servers"`
 }
 
-func newListServersHandlerFunc(inspector *inspeq.Inspector) http.HandlerFunc {
+func newListServersHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		srvs, err := inspector.Servers()
 		if err != nil {
