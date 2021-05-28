@@ -351,26 +351,26 @@ interface BatchCancelActiveTasksErrorAction {
 interface DeletePendingTaskBeginAction {
   type: typeof DELETE_PENDING_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface DeletePendingTaskSuccessAction {
   type: typeof DELETE_PENDING_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface DeletePendingTaskErrorAction {
   type: typeof DELETE_PENDING_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface BatchDeletePendingTasksBeginAction {
   type: typeof BATCH_DELETE_PENDING_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchDeletePendingTasksSuccessAction {
@@ -382,7 +382,7 @@ interface BatchDeletePendingTasksSuccessAction {
 interface BatchDeletePendingTasksErrorAction {
   type: typeof BATCH_DELETE_PENDING_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
@@ -406,26 +406,26 @@ interface DeleteAllPendingTasksErrorAction {
 interface ArchivePendingTaskBeginAction {
   type: typeof ARCHIVE_PENDING_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface ArchivePendingTaskSuccessAction {
   type: typeof ARCHIVE_PENDING_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface ArchivePendingTaskErrorAction {
   type: typeof ARCHIVE_PENDING_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface BatchArchivePendingTasksBeginAction {
   type: typeof BATCH_ARCHIVE_PENDING_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchArchivePendingTasksSuccessAction {
@@ -437,7 +437,7 @@ interface BatchArchivePendingTasksSuccessAction {
 interface BatchArchivePendingTasksErrorAction {
   type: typeof BATCH_ARCHIVE_PENDING_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
@@ -460,121 +460,121 @@ interface ArchiveAllPendingTasksErrorAction {
 interface RunScheduledTaskBeginAction {
   type: typeof RUN_SCHEDULED_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface RunScheduledTaskSuccessAction {
   type: typeof RUN_SCHEDULED_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface RunScheduledTaskErrorAction {
   type: typeof RUN_SCHEDULED_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface ArchiveScheduledTaskBeginAction {
   type: typeof ARCHIVE_SCHEDULED_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface ArchiveScheduledTaskSuccessAction {
   type: typeof ARCHIVE_SCHEDULED_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface ArchiveScheduledTaskErrorAction {
   type: typeof ARCHIVE_SCHEDULED_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface RunRetryTaskBeginAction {
   type: typeof RUN_RETRY_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface RunRetryTaskSuccessAction {
   type: typeof RUN_RETRY_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface RunRetryTaskErrorAction {
   type: typeof RUN_RETRY_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface ArchiveRetryTaskBeginAction {
   type: typeof ARCHIVE_RETRY_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface ArchiveRetryTaskSuccessAction {
   type: typeof ARCHIVE_RETRY_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface ArchiveRetryTaskErrorAction {
   type: typeof ARCHIVE_RETRY_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface RunArchivedTaskBeginAction {
   type: typeof RUN_ARCHIVED_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface RunArchivedTaskSuccessAction {
   type: typeof RUN_ARCHIVED_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface RunArchivedTaskErrorAction {
   type: typeof RUN_ARCHIVED_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface DeleteScheduledTaskBeginAction {
   type: typeof DELETE_SCHEDULED_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface DeleteScheduledTaskSuccessAction {
   type: typeof DELETE_SCHEDULED_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface DeleteScheduledTaskErrorAction {
   type: typeof DELETE_SCHEDULED_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface BatchDeleteScheduledTasksBeginAction {
   type: typeof BATCH_DELETE_SCHEDULED_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchDeleteScheduledTasksSuccessAction {
@@ -586,14 +586,14 @@ interface BatchDeleteScheduledTasksSuccessAction {
 interface BatchDeleteScheduledTasksErrorAction {
   type: typeof BATCH_DELETE_SCHEDULED_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
 interface BatchRunScheduledTasksBeginAction {
   type: typeof BATCH_RUN_SCHEDULED_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchRunScheduledTasksSuccessAction {
@@ -605,7 +605,7 @@ interface BatchRunScheduledTasksSuccessAction {
 interface BatchRunScheduledTasksErrorAction {
   type: typeof BATCH_RUN_SCHEDULED_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
@@ -628,7 +628,7 @@ interface RunAllScheduledTasksErrorAction {
 interface BatchArchiveScheduledTasksBeginAction {
   type: typeof BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchArchiveScheduledTasksSuccessAction {
@@ -640,7 +640,7 @@ interface BatchArchiveScheduledTasksSuccessAction {
 interface BatchArchiveScheduledTasksErrorAction {
   type: typeof BATCH_ARCHIVE_SCHEDULED_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
@@ -680,26 +680,26 @@ interface DeleteAllScheduledTasksErrorAction {
 interface DeleteRetryTaskBeginAction {
   type: typeof DELETE_RETRY_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface DeleteRetryTaskSuccessAction {
   type: typeof DELETE_RETRY_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface DeleteRetryTaskErrorAction {
   type: typeof DELETE_RETRY_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface BatchDeleteRetryTasksBeginAction {
   type: typeof BATCH_DELETE_RETRY_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchDeleteRetryTasksSuccessAction {
@@ -711,14 +711,14 @@ interface BatchDeleteRetryTasksSuccessAction {
 interface BatchDeleteRetryTasksErrorAction {
   type: typeof BATCH_DELETE_RETRY_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
 interface BatchRunRetryTasksBeginAction {
   type: typeof BATCH_RUN_RETRY_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchRunRetryTasksSuccessAction {
@@ -730,7 +730,7 @@ interface BatchRunRetryTasksSuccessAction {
 interface BatchRunRetryTasksErrorAction {
   type: typeof BATCH_RUN_RETRY_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
@@ -753,7 +753,7 @@ interface RunAllRetryTasksErrorAction {
 interface BatchArchiveRetryTasksBeginAction {
   type: typeof BATCH_ARCHIVE_RETRY_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchArchiveRetryTasksSuccessAction {
@@ -765,7 +765,7 @@ interface BatchArchiveRetryTasksSuccessAction {
 interface BatchArchiveRetryTasksErrorAction {
   type: typeof BATCH_ARCHIVE_RETRY_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
@@ -805,26 +805,26 @@ interface DeleteAllRetryTasksErrorAction {
 interface DeleteArchivedTaskBeginAction {
   type: typeof DELETE_ARCHIVED_TASK_BEGIN;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface DeleteArchivedTaskSuccessAction {
   type: typeof DELETE_ARCHIVED_TASK_SUCCESS;
   queue: string;
-  taskKey: string;
+  taskId: string;
 }
 
 interface DeleteArchivedTaskErrorAction {
   type: typeof DELETE_ARCHIVED_TASK_ERROR;
   queue: string;
-  taskKey: string;
+  taskId: string;
   error: string;
 }
 
 interface BatchDeleteArchivedTasksBeginAction {
   type: typeof BATCH_DELETE_ARCHIVED_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchDeleteArchivedTasksSuccessAction {
@@ -836,14 +836,14 @@ interface BatchDeleteArchivedTasksSuccessAction {
 interface BatchDeleteArchivedTasksErrorAction {
   type: typeof BATCH_DELETE_ARCHIVED_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
 interface BatchRunArchivedTasksBeginAction {
   type: typeof BATCH_RUN_ARCHIVED_TASKS_BEGIN;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
 }
 
 interface BatchRunArchivedTasksSuccessAction {
@@ -855,7 +855,7 @@ interface BatchRunArchivedTasksSuccessAction {
 interface BatchRunArchivedTasksErrorAction {
   type: typeof BATCH_RUN_ARCHIVED_TASKS_ERROR;
   queue: string;
-  taskKeys: string[];
+  taskIds: string[];
   error: string;
 }
 
@@ -1210,12 +1210,12 @@ export function batchCancelActiveTasksAsync(queue: string, taskIds: string[]) {
   };
 }
 
-export function runScheduledTaskAsync(queue: string, taskKey: string) {
+export function runScheduledTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: RUN_SCHEDULED_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: RUN_SCHEDULED_TASK_BEGIN, queue, taskId });
     try {
-      await runScheduledTask(queue, taskKey);
-      dispatch({ type: RUN_SCHEDULED_TASK_SUCCESS, queue, taskKey });
+      await runScheduledTask(queue, taskId);
+      dispatch({ type: RUN_SCHEDULED_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "runScheduledTaskAsync: ",
@@ -1225,36 +1225,36 @@ export function runScheduledTaskAsync(queue: string, taskKey: string) {
         type: RUN_SCHEDULED_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
 }
 
-export function runRetryTaskAsync(queue: string, taskKey: string) {
+export function runRetryTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: RUN_RETRY_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: RUN_RETRY_TASK_BEGIN, queue, taskId });
     try {
-      await runRetryTask(queue, taskKey);
-      dispatch({ type: RUN_RETRY_TASK_SUCCESS, queue, taskKey });
+      await runRetryTask(queue, taskId);
+      dispatch({ type: RUN_RETRY_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error("runRetryTaskAsync: ", toErrorStringWithHttpStatus(error));
       dispatch({
         type: RUN_RETRY_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
 }
 
-export function archivePendingTaskAsync(queue: string, taskKey: string) {
+export function archivePendingTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: ARCHIVE_PENDING_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: ARCHIVE_PENDING_TASK_BEGIN, queue, taskId });
     try {
-      await archivePendingTask(queue, taskKey);
-      dispatch({ type: ARCHIVE_PENDING_TASK_SUCCESS, queue, taskKey });
+      await archivePendingTask(queue, taskId);
+      dispatch({ type: ARCHIVE_PENDING_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "archivePendingTaskAsync: ",
@@ -1264,18 +1264,18 @@ export function archivePendingTaskAsync(queue: string, taskKey: string) {
         type: ARCHIVE_PENDING_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
 }
 
-export function archiveScheduledTaskAsync(queue: string, taskKey: string) {
+export function archiveScheduledTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: ARCHIVE_SCHEDULED_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: ARCHIVE_SCHEDULED_TASK_BEGIN, queue, taskId });
     try {
-      await archiveScheduledTask(queue, taskKey);
-      dispatch({ type: ARCHIVE_SCHEDULED_TASK_SUCCESS, queue, taskKey });
+      await archiveScheduledTask(queue, taskId);
+      dispatch({ type: ARCHIVE_SCHEDULED_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "archiveScheduledTaskAsync: ",
@@ -1285,18 +1285,18 @@ export function archiveScheduledTaskAsync(queue: string, taskKey: string) {
         type: ARCHIVE_SCHEDULED_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
 }
 
-export function archiveRetryTaskAsync(queue: string, taskKey: string) {
+export function archiveRetryTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: ARCHIVE_RETRY_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: ARCHIVE_RETRY_TASK_BEGIN, queue, taskId });
     try {
-      await archiveRetryTask(queue, taskKey);
-      dispatch({ type: ARCHIVE_RETRY_TASK_SUCCESS, queue, taskKey });
+      await archiveRetryTask(queue, taskId);
+      dispatch({ type: ARCHIVE_RETRY_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "archiveRetryTaskAsync: ",
@@ -1306,18 +1306,18 @@ export function archiveRetryTaskAsync(queue: string, taskKey: string) {
         type: ARCHIVE_RETRY_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
 }
 
-export function runArchivedTaskAsync(queue: string, taskKey: string) {
+export function runArchivedTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: RUN_ARCHIVED_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: RUN_ARCHIVED_TASK_BEGIN, queue, taskId });
     try {
-      await runArchivedTask(queue, taskKey);
-      dispatch({ type: RUN_ARCHIVED_TASK_SUCCESS, queue, taskKey });
+      await runArchivedTask(queue, taskId);
+      dispatch({ type: RUN_ARCHIVED_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "runArchivedTaskAsync: ",
@@ -1327,18 +1327,18 @@ export function runArchivedTaskAsync(queue: string, taskKey: string) {
         type: RUN_ARCHIVED_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
 }
 
-export function deletePendingTaskAsync(queue: string, taskKey: string) {
+export function deletePendingTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: DELETE_PENDING_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: DELETE_PENDING_TASK_BEGIN, queue, taskId });
     try {
-      await deletePendingTask(queue, taskKey);
-      dispatch({ type: DELETE_PENDING_TASK_SUCCESS, queue, taskKey });
+      await deletePendingTask(queue, taskId);
+      dispatch({ type: DELETE_PENDING_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "deletePendingTaskAsync: ",
@@ -1348,7 +1348,7 @@ export function deletePendingTaskAsync(queue: string, taskKey: string) {
         type: DELETE_PENDING_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
@@ -1356,12 +1356,12 @@ export function deletePendingTaskAsync(queue: string, taskKey: string) {
 
 export function batchDeletePendingTasksAsync(
   queue: string,
-  taskKeys: string[]
+  taskIds: string[]
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_DELETE_PENDING_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_DELETE_PENDING_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchDeletePendingTasks(queue, taskKeys);
+      const response = await batchDeletePendingTasks(queue, taskIds);
       dispatch({
         type: BATCH_DELETE_PENDING_TASKS_SUCCESS,
         queue: queue,
@@ -1376,18 +1376,18 @@ export function batchDeletePendingTasksAsync(
         type: BATCH_DELETE_PENDING_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
 }
 
-export function deleteScheduledTaskAsync(queue: string, taskKey: string) {
+export function deleteScheduledTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: DELETE_SCHEDULED_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: DELETE_SCHEDULED_TASK_BEGIN, queue, taskId });
     try {
-      await deleteScheduledTask(queue, taskKey);
-      dispatch({ type: DELETE_SCHEDULED_TASK_SUCCESS, queue, taskKey });
+      await deleteScheduledTask(queue, taskId);
+      dispatch({ type: DELETE_SCHEDULED_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "deleteScheduledTaskAsync: ",
@@ -1397,7 +1397,7 @@ export function deleteScheduledTaskAsync(queue: string, taskKey: string) {
         type: DELETE_SCHEDULED_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
@@ -1405,12 +1405,12 @@ export function deleteScheduledTaskAsync(queue: string, taskKey: string) {
 
 export function batchDeleteScheduledTasksAsync(
   queue: string,
-  taskKeys: string[]
+  taskIds: string[]
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_DELETE_SCHEDULED_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_DELETE_SCHEDULED_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchDeleteScheduledTasks(queue, taskKeys);
+      const response = await batchDeleteScheduledTasks(queue, taskIds);
       dispatch({
         type: BATCH_DELETE_SCHEDULED_TASKS_SUCCESS,
         queue: queue,
@@ -1425,17 +1425,17 @@ export function batchDeleteScheduledTasksAsync(
         type: BATCH_DELETE_SCHEDULED_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
 }
 
-export function batchRunScheduledTasksAsync(queue: string, taskKeys: string[]) {
+export function batchRunScheduledTasksAsync(queue: string, taskIds: string[]) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_RUN_SCHEDULED_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_RUN_SCHEDULED_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchRunScheduledTasks(queue, taskKeys);
+      const response = await batchRunScheduledTasks(queue, taskIds);
       dispatch({
         type: BATCH_RUN_SCHEDULED_TASKS_SUCCESS,
         queue: queue,
@@ -1450,7 +1450,7 @@ export function batchRunScheduledTasksAsync(queue: string, taskKeys: string[]) {
         type: BATCH_RUN_SCHEDULED_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
@@ -1458,12 +1458,12 @@ export function batchRunScheduledTasksAsync(queue: string, taskKeys: string[]) {
 
 export function batchArchiveScheduledTasksAsync(
   queue: string,
-  taskKeys: string[]
+  taskIds: string[]
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_ARCHIVE_SCHEDULED_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchArchiveScheduledTasks(queue, taskKeys);
+      const response = await batchArchiveScheduledTasks(queue, taskIds);
       dispatch({
         type: BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS,
         queue: queue,
@@ -1478,7 +1478,7 @@ export function batchArchiveScheduledTasksAsync(
         type: BATCH_ARCHIVE_SCHEDULED_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
@@ -1486,12 +1486,12 @@ export function batchArchiveScheduledTasksAsync(
 
 export function batchArchivePendingTasksAsync(
   queue: string,
-  taskKeys: string[]
+  taskIds: string[]
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_ARCHIVE_PENDING_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_ARCHIVE_PENDING_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchArchivePendingTasks(queue, taskKeys);
+      const response = await batchArchivePendingTasks(queue, taskIds);
       dispatch({
         type: BATCH_ARCHIVE_PENDING_TASKS_SUCCESS,
         queue: queue,
@@ -1506,7 +1506,7 @@ export function batchArchivePendingTasksAsync(
         type: BATCH_ARCHIVE_PENDING_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
@@ -1620,12 +1620,12 @@ export function archiveAllScheduledTasksAsync(queue: string) {
   };
 }
 
-export function deleteRetryTaskAsync(queue: string, taskKey: string) {
+export function deleteRetryTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: DELETE_RETRY_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: DELETE_RETRY_TASK_BEGIN, queue, taskId });
     try {
-      await deleteRetryTask(queue, taskKey);
-      dispatch({ type: DELETE_RETRY_TASK_SUCCESS, queue, taskKey });
+      await deleteRetryTask(queue, taskId);
+      dispatch({ type: DELETE_RETRY_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "deleteRetryTaskAsync: ",
@@ -1635,17 +1635,17 @@ export function deleteRetryTaskAsync(queue: string, taskKey: string) {
         type: DELETE_RETRY_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
 }
 
-export function batchDeleteRetryTasksAsync(queue: string, taskKeys: string[]) {
+export function batchDeleteRetryTasksAsync(queue: string, taskIds: string[]) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_DELETE_RETRY_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_DELETE_RETRY_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchDeleteRetryTasks(queue, taskKeys);
+      const response = await batchDeleteRetryTasks(queue, taskIds);
       dispatch({
         type: BATCH_DELETE_RETRY_TASKS_SUCCESS,
         queue: queue,
@@ -1660,17 +1660,17 @@ export function batchDeleteRetryTasksAsync(queue: string, taskKeys: string[]) {
         type: BATCH_DELETE_RETRY_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
 }
 
-export function batchRunRetryTasksAsync(queue: string, taskKeys: string[]) {
+export function batchRunRetryTasksAsync(queue: string, taskIds: string[]) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_RUN_RETRY_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_RUN_RETRY_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchRunRetryTasks(queue, taskKeys);
+      const response = await batchRunRetryTasks(queue, taskIds);
       dispatch({
         type: BATCH_RUN_RETRY_TASKS_SUCCESS,
         queue: queue,
@@ -1685,17 +1685,17 @@ export function batchRunRetryTasksAsync(queue: string, taskKeys: string[]) {
         type: BATCH_RUN_RETRY_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
 }
 
-export function batchArchiveRetryTasksAsync(queue: string, taskKeys: string[]) {
+export function batchArchiveRetryTasksAsync(queue: string, taskIds: string[]) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_ARCHIVE_RETRY_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_ARCHIVE_RETRY_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchArchiveRetryTasks(queue, taskKeys);
+      const response = await batchArchiveRetryTasks(queue, taskIds);
       dispatch({
         type: BATCH_ARCHIVE_RETRY_TASKS_SUCCESS,
         queue: queue,
@@ -1710,7 +1710,7 @@ export function batchArchiveRetryTasksAsync(queue: string, taskKeys: string[]) {
         type: BATCH_ARCHIVE_RETRY_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
@@ -1780,12 +1780,12 @@ export function archiveAllRetryTasksAsync(queue: string) {
   };
 }
 
-export function deleteArchivedTaskAsync(queue: string, taskKey: string) {
+export function deleteArchivedTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: DELETE_ARCHIVED_TASK_BEGIN, queue, taskKey });
+    dispatch({ type: DELETE_ARCHIVED_TASK_BEGIN, queue, taskId });
     try {
-      await deleteArchivedTask(queue, taskKey);
-      dispatch({ type: DELETE_ARCHIVED_TASK_SUCCESS, queue, taskKey });
+      await deleteArchivedTask(queue, taskId);
+      dispatch({ type: DELETE_ARCHIVED_TASK_SUCCESS, queue, taskId });
     } catch (error) {
       console.error(
         "deleteArchivedTaskAsync: ",
@@ -1795,7 +1795,7 @@ export function deleteArchivedTaskAsync(queue: string, taskKey: string) {
         type: DELETE_ARCHIVED_TASK_ERROR,
         error: toErrorString(error),
         queue,
-        taskKey,
+        taskId,
       });
     }
   };
@@ -1803,12 +1803,12 @@ export function deleteArchivedTaskAsync(queue: string, taskKey: string) {
 
 export function batchDeleteArchivedTasksAsync(
   queue: string,
-  taskKeys: string[]
+  taskIds: string[]
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_DELETE_ARCHIVED_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_DELETE_ARCHIVED_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchDeleteArchivedTasks(queue, taskKeys);
+      const response = await batchDeleteArchivedTasks(queue, taskIds);
       dispatch({
         type: BATCH_DELETE_ARCHIVED_TASKS_SUCCESS,
         queue: queue,
@@ -1823,17 +1823,17 @@ export function batchDeleteArchivedTasksAsync(
         type: BATCH_DELETE_ARCHIVED_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };
 }
 
-export function batchRunArchivedTasksAsync(queue: string, taskKeys: string[]) {
+export function batchRunArchivedTasksAsync(queue: string, taskIds: string[]) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: BATCH_RUN_ARCHIVED_TASKS_BEGIN, queue, taskKeys });
+    dispatch({ type: BATCH_RUN_ARCHIVED_TASKS_BEGIN, queue, taskIds });
     try {
-      const response = await batchRunArchivedTasks(queue, taskKeys);
+      const response = await batchRunArchivedTasks(queue, taskIds);
       dispatch({
         type: BATCH_RUN_ARCHIVED_TASKS_SUCCESS,
         queue: queue,
@@ -1848,7 +1848,7 @@ export function batchRunArchivedTasksAsync(queue: string, taskKeys: string[]) {
         type: BATCH_RUN_ARCHIVED_TASKS_ERROR,
         error: toErrorString(error),
         queue,
-        taskKeys,
+        taskIds,
       });
     }
   };

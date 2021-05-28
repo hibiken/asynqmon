@@ -91,7 +91,7 @@ function PendingTasksTable(props: Props & ReduxProps) {
   const { pollInterval, listPendingTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
   const handleChangePage = (
@@ -110,10 +110,10 @@ function PendingTasksTable(props: Props & ReduxProps) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = props.tasks.map((t) => t.key);
-      setSelectedKeys(newSelected);
+      const newSelected = props.tasks.map((t) => t.id);
+      setSelectedIds(newSelected);
     } else {
-      setSelectedKeys([]);
+      setSelectedIds([]);
     }
   };
 
@@ -127,14 +127,14 @@ function PendingTasksTable(props: Props & ReduxProps) {
 
   const handleBatchDeleteClick = () => {
     props
-      .batchDeletePendingTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchDeletePendingTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const handleBatchArchiveClick = () => {
     props
-      .batchArchivePendingTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchArchivePendingTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const fetchData = useCallback(() => {
@@ -171,7 +171,7 @@ function PendingTasksTable(props: Props & ReduxProps) {
   ];
 
   const rowCount = props.tasks.length;
-  const numSelected = selectedKeys.length;
+  const numSelected = selectedIds.length;
   return (
     <div>
       <TableActions
@@ -243,22 +243,20 @@ function PendingTasksTable(props: Props & ReduxProps) {
               <Row
                 key={task.id}
                 task={task}
-                isSelected={selectedKeys.includes(task.key)}
+                isSelected={selectedIds.includes(task.id)}
                 onSelectChange={(checked: boolean) => {
                   if (checked) {
-                    setSelectedKeys(selectedKeys.concat(task.key));
+                    setSelectedIds(selectedIds.concat(task.id));
                   } else {
-                    setSelectedKeys(
-                      selectedKeys.filter((key) => key !== task.key)
-                    );
+                    setSelectedIds(selectedIds.filter((id) => id !== task.id));
                   }
                 }}
                 allActionPending={props.allActionPending}
                 onDeleteClick={() =>
-                  props.deletePendingTaskAsync(queue, task.key)
+                  props.deletePendingTaskAsync(queue, task.id)
                 }
                 onArchiveClick={() => {
-                  props.archivePendingTaskAsync(queue, task.key);
+                  props.archivePendingTaskAsync(queue, task.id);
                 }}
                 onActionCellEnter={() => setActiveTaskId(task.id)}
                 onActionCellLeave={() => setActiveTaskId("")}

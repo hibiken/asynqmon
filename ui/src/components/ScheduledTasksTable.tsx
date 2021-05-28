@@ -98,7 +98,7 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
   const { pollInterval, listScheduledTasksAsync, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
   const handleChangePage = (
@@ -117,10 +117,10 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = props.tasks.map((t) => t.key);
-      setSelectedKeys(newSelected);
+      const newSelected = props.tasks.map((t) => t.id);
+      setSelectedIds(newSelected);
     } else {
-      setSelectedKeys([]);
+      setSelectedIds([]);
     }
   };
 
@@ -138,20 +138,20 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
 
   const handleBatchRunClick = () => {
     props
-      .batchRunScheduledTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchRunScheduledTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const handleBatchDeleteClick = () => {
     props
-      .batchDeleteScheduledTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchDeleteScheduledTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const handleBatchArchiveClick = () => {
     props
-      .batchArchiveScheduledTasksAsync(queue, selectedKeys)
-      .then(() => setSelectedKeys([]));
+      .batchArchiveScheduledTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const fetchData = useCallback(() => {
@@ -187,7 +187,7 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
   ];
 
   const rowCount = props.tasks.length;
-  const numSelected = selectedKeys.length;
+  const numSelected = selectedIds.length;
   return (
     <div>
       <TableActions
@@ -269,24 +269,22 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
                 key={task.id}
                 task={task}
                 allActionPending={props.allActionPending}
-                isSelected={selectedKeys.includes(task.key)}
+                isSelected={selectedIds.includes(task.id)}
                 onSelectChange={(checked: boolean) => {
                   if (checked) {
-                    setSelectedKeys(selectedKeys.concat(task.key));
+                    setSelectedIds(selectedIds.concat(task.id));
                   } else {
-                    setSelectedKeys(
-                      selectedKeys.filter((key) => key !== task.key)
-                    );
+                    setSelectedIds(selectedIds.filter((id) => id !== task.id));
                   }
                 }}
                 onRunClick={() => {
-                  props.runScheduledTaskAsync(queue, task.key);
+                  props.runScheduledTaskAsync(queue, task.id);
                 }}
                 onDeleteClick={() => {
-                  props.deleteScheduledTaskAsync(queue, task.key);
+                  props.deleteScheduledTaskAsync(queue, task.id);
                 }}
                 onArchiveClick={() => {
-                  props.archiveScheduledTaskAsync(queue, task.key);
+                  props.archiveScheduledTaskAsync(queue, task.id);
                 }}
                 onActionCellEnter={() => setActiveTaskId(task.id)}
                 onActionCellLeave={() => setActiveTaskId("")}

@@ -560,7 +560,7 @@ function tasksReducer(
         pendingTasks: {
           ...state.pendingTasks,
           data: state.pendingTasks.data.map((task) => {
-            if (task.key !== action.taskKey) {
+            if (task.id !== action.taskId) {
               return task;
             }
             return { ...task, requestPending: true };
@@ -575,7 +575,7 @@ function tasksReducer(
         pendingTasks: {
           ...state.pendingTasks,
           data: state.pendingTasks.data.filter(
-            (task) => task.key !== action.taskKey
+            (task) => task.id !== action.taskId
           ),
         },
       };
@@ -587,7 +587,7 @@ function tasksReducer(
         pendingTasks: {
           ...state.pendingTasks,
           data: state.pendingTasks.data.map((task) => {
-            if (task.key !== action.taskKey) {
+            if (task.id !== action.taskId) {
               return task;
             }
             return { ...task, requestPending: false };
@@ -634,7 +634,7 @@ function tasksReducer(
           ...state.pendingTasks,
           batchActionPending: true,
           data: state.pendingTasks.data.map((task) => {
-            if (!action.taskKeys.includes(task.key)) {
+            if (!action.taskIds.includes(task.id)) {
               return task;
             }
             return {
@@ -647,7 +647,7 @@ function tasksReducer(
 
     case BATCH_ARCHIVE_PENDING_TASKS_SUCCESS: {
       const newData = state.pendingTasks.data.filter(
-        (task) => !action.payload.archived_keys.includes(task.key)
+        (task) => !action.payload.archived_ids.includes(task.id)
       );
       return {
         ...state,
@@ -661,7 +661,7 @@ function tasksReducer(
 
     case BATCH_DELETE_PENDING_TASKS_SUCCESS: {
       const newData = state.pendingTasks.data.filter(
-        (task) => !action.payload.deleted_keys.includes(task.key)
+        (task) => !action.payload.deleted_ids.includes(task.id)
       );
       return {
         ...state,
@@ -681,7 +681,7 @@ function tasksReducer(
           ...state.pendingTasks,
           batchActionPending: false,
           data: state.pendingTasks.data.map((task) => {
-            if (!action.taskKeys.includes(task.key)) {
+            if (!action.taskIds.includes(task.id)) {
               return task;
             }
             return {
@@ -700,7 +700,7 @@ function tasksReducer(
         scheduledTasks: {
           ...state.scheduledTasks,
           data: state.scheduledTasks.data.map((task) => {
-            if (task.key !== action.taskKey) {
+            if (task.id !== action.taskId) {
               return task;
             }
             return { ...task, requestPending: true };
@@ -716,7 +716,7 @@ function tasksReducer(
         scheduledTasks: {
           ...state.scheduledTasks,
           data: state.scheduledTasks.data.filter(
-            (task) => task.key !== action.taskKey
+            (task) => task.id !== action.taskId
           ),
         },
       };
@@ -729,7 +729,7 @@ function tasksReducer(
         scheduledTasks: {
           ...state.scheduledTasks,
           data: state.scheduledTasks.data.map((task) => {
-            if (task.key !== action.taskKey) {
+            if (task.id !== action.taskId) {
               return task;
             }
             return { ...task, requestPending: false };
@@ -780,7 +780,7 @@ function tasksReducer(
           ...state.scheduledTasks,
           batchActionPending: true,
           data: state.scheduledTasks.data.map((task) => {
-            if (!action.taskKeys.includes(task.key)) {
+            if (!action.taskIds.includes(task.id)) {
               return task;
             }
             return {
@@ -793,7 +793,7 @@ function tasksReducer(
 
     case BATCH_RUN_SCHEDULED_TASKS_SUCCESS: {
       const newData = state.scheduledTasks.data.filter(
-        (task) => !action.payload.pending_keys.includes(task.key)
+        (task) => !action.payload.pending_ids.includes(task.id)
       );
       return {
         ...state,
@@ -807,7 +807,7 @@ function tasksReducer(
 
     case BATCH_ARCHIVE_SCHEDULED_TASKS_SUCCESS: {
       const newData = state.scheduledTasks.data.filter(
-        (task) => !action.payload.archived_keys.includes(task.key)
+        (task) => !action.payload.archived_ids.includes(task.id)
       );
       return {
         ...state,
@@ -821,7 +821,7 @@ function tasksReducer(
 
     case BATCH_DELETE_SCHEDULED_TASKS_SUCCESS: {
       const newData = state.scheduledTasks.data.filter(
-        (task) => !action.payload.deleted_keys.includes(task.key)
+        (task) => !action.payload.deleted_ids.includes(task.id)
       );
       return {
         ...state,
@@ -842,7 +842,7 @@ function tasksReducer(
           ...state.scheduledTasks,
           batchActionPending: false,
           data: state.scheduledTasks.data.map((task) => {
-            if (!action.taskKeys.includes(task.key)) {
+            if (!action.taskIds.includes(task.id)) {
               return task;
             }
             return {
@@ -861,7 +861,7 @@ function tasksReducer(
         retryTasks: {
           ...state.retryTasks,
           data: state.retryTasks.data.map((task) => {
-            if (task.key !== action.taskKey) {
+            if (task.id !== action.taskId) {
               return task;
             }
             return { ...task, requestPending: true };
@@ -877,7 +877,7 @@ function tasksReducer(
         retryTasks: {
           ...state.retryTasks,
           data: state.retryTasks.data.filter(
-            (task) => task.key !== action.taskKey
+            (task) => task.id !== action.taskId
           ),
         },
       };
@@ -890,7 +890,7 @@ function tasksReducer(
         retryTasks: {
           ...state.retryTasks,
           data: state.retryTasks.data.map((task) => {
-            if (task.key !== action.taskKey) {
+            if (task.id !== action.taskId) {
               return task;
             }
             return { ...task, requestPending: false };
@@ -941,7 +941,7 @@ function tasksReducer(
           ...state.retryTasks,
           batchActionPending: true,
           data: state.retryTasks.data.map((task) => {
-            if (!action.taskKeys.includes(task.key)) {
+            if (!action.taskIds.includes(task.id)) {
               return task;
             }
             return {
@@ -954,7 +954,7 @@ function tasksReducer(
 
     case BATCH_RUN_RETRY_TASKS_SUCCESS: {
       const newData = state.retryTasks.data.filter(
-        (task) => !action.payload.pending_keys.includes(task.key)
+        (task) => !action.payload.pending_ids.includes(task.id)
       );
       return {
         ...state,
@@ -968,7 +968,7 @@ function tasksReducer(
 
     case BATCH_ARCHIVE_RETRY_TASKS_SUCCESS: {
       const newData = state.retryTasks.data.filter(
-        (task) => !action.payload.archived_keys.includes(task.key)
+        (task) => !action.payload.archived_ids.includes(task.id)
       );
       return {
         ...state,
@@ -982,7 +982,7 @@ function tasksReducer(
 
     case BATCH_DELETE_RETRY_TASKS_SUCCESS: {
       const newData = state.retryTasks.data.filter(
-        (task) => !action.payload.deleted_keys.includes(task.key)
+        (task) => !action.payload.deleted_ids.includes(task.id)
       );
       return {
         ...state,
@@ -1003,7 +1003,7 @@ function tasksReducer(
           ...state.retryTasks,
           batchActionPending: false,
           data: state.retryTasks.data.map((task) => {
-            if (!action.taskKeys.includes(task.key)) {
+            if (!action.taskIds.includes(task.id)) {
               return task;
             }
             return {
@@ -1021,7 +1021,7 @@ function tasksReducer(
         archivedTasks: {
           ...state.archivedTasks,
           data: state.archivedTasks.data.map((task) => {
-            if (task.key !== action.taskKey) {
+            if (task.id !== action.taskId) {
               return task;
             }
             return { ...task, requestPending: true };
@@ -1036,7 +1036,7 @@ function tasksReducer(
         archivedTasks: {
           ...state.archivedTasks,
           data: state.archivedTasks.data.filter(
-            (task) => task.key !== action.taskKey
+            (task) => task.id !== action.taskId
           ),
         },
       };
@@ -1048,7 +1048,7 @@ function tasksReducer(
         archivedTasks: {
           ...state.archivedTasks,
           data: state.archivedTasks.data.map((task) => {
-            if (task.key !== action.taskKey) {
+            if (task.id !== action.taskId) {
               return task;
             }
             return { ...task, requestPending: false };
@@ -1095,7 +1095,7 @@ function tasksReducer(
           ...state.archivedTasks,
           batchActionPending: true,
           data: state.archivedTasks.data.map((task) => {
-            if (!action.taskKeys.includes(task.key)) {
+            if (!action.taskIds.includes(task.id)) {
               return task;
             }
             return {
@@ -1108,7 +1108,7 @@ function tasksReducer(
 
     case BATCH_RUN_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.archivedTasks.data.filter(
-        (task) => !action.payload.pending_keys.includes(task.key)
+        (task) => !action.payload.pending_ids.includes(task.id)
       );
       return {
         ...state,
@@ -1122,7 +1122,7 @@ function tasksReducer(
 
     case BATCH_DELETE_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.archivedTasks.data.filter(
-        (task) => !action.payload.deleted_keys.includes(task.key)
+        (task) => !action.payload.deleted_ids.includes(task.id)
       );
       return {
         ...state,
@@ -1142,7 +1142,7 @@ function tasksReducer(
           ...state.archivedTasks,
           batchActionPending: false,
           data: state.archivedTasks.data.map((task) => {
-            if (!action.taskKeys.includes(task.key)) {
+            if (!action.taskIds.includes(task.id)) {
               return task;
             }
             return {
