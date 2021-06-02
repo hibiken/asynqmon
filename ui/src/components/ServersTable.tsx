@@ -282,7 +282,7 @@ function Row(props: RowProps) {
                             language="json"
                             customStyle={{ margin: 0 }}
                           >
-                            {JSON.stringify(worker.task_payload)}
+                            {worker.task_payload}
                           </SyntaxHighlighter>
                         </TableCell>
                         <TableCell>{worker.queue}</TableCell>

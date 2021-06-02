@@ -288,7 +288,7 @@ function Row(props: RowProps) {
       </TableCell>
       <TableCell className={clsx(isLastRow && classes.noBorder)}>
         <SyntaxHighlighter language="json">
-          {JSON.stringify(entry.task_payload)}
+          {entry.task_payload}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell className={clsx(isLastRow && classes.noBorder)}>

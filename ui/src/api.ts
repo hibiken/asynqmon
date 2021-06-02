@@ -242,7 +242,7 @@ export interface DailyStat {
 // BaseTask corresponds to asynq.Task type.
 interface BaseTask {
   type: string;
-  payload: { [key: string]: any };
+  payload: string;
 }
 
 export interface ActiveTask extends BaseTask {
@@ -314,7 +314,7 @@ export interface SchedulerEntry {
   id: string;
   spec: string;
   task_type: string;
-  task_payload: { [key: string]: any };
+  task_payload: string;
   options: string[];
   next_enqueue_at: string;
   // prev_enqueue_at will be omitted

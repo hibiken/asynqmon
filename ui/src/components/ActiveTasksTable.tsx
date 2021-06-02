@@ -288,7 +288,7 @@ function Row(props: RowProps) {
           language="json"
           customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {JSON.stringify(task.payload)}
+          {task.payload}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>{task.canceling ? "Canceling" : "Running"}</TableCell>

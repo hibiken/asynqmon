@@ -2,6 +2,8 @@ package main
 
 import (
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/hibiken/asynq"
 )
@@ -86,7 +88,7 @@ func toDailyStatsList(in []*asynq.DailyStats) []*DailyStats {
 type BaseTask struct {
 	ID        string `json:"id"`
 	Type      string `json:"type"`
-	Payload   []byte `json:"payload"`
+	Payload   string `json:"payload"`
 	Queue     string `json:"queue"`
 	MaxRetry  int    `json:"max_retry"`
 	Retried   int    `json:"retried"`
@@ -114,7 +116,7 @@ func toActiveTask(t *asynq.TaskInfo) *ActiveTask {
 	base := &BaseTask{
 		ID:        t.ID(),
 		Type:      t.Type(),
-		Payload:   t.Payload(),
+		Payload:   toPrintablePayload(t.Payload()),
 		Queue:     t.Queue(),
 		MaxRetry:  t.MaxRetry(),
 		Retried:   t.Retried(),
@@ -140,7 +142,7 @@ func toPendingTask(t *asynq.TaskInfo) *PendingTask {
 	base := &BaseTask{
 		ID:        t.ID(),
 		Type:      t.Type(),
-		Payload:   t.Payload(),
+		Payload:   toPrintablePayload(t.Payload()),
 		Queue:     t.Queue(),
 		MaxRetry:  t.MaxRetry(),
 		Retried:   t.Retried(),
@@ -164,11 +166,31 @@ type ScheduledTask struct {
 	NextProcessAt time.Time `json:"next_process_at"`
 }
 
+// isPrintable reports whether the given data is comprised of all printable runes.
+func isPrintable(data []byte) bool {
+	if !utf8.Valid(data) {
+		return false
+	}
+	for _, r := range string(data) {
+		if !unicode.IsPrint(r) {
+			return false
+		}
+	}
+	return true
+}
+
+func toPrintablePayload(payload []byte) string {
+	if !isPrintable(payload) {
+		return "non-printable bytes"
+	}
+	return string(payload)
+}
+
 func toScheduledTask(t *asynq.TaskInfo) *ScheduledTask {
 	base := &BaseTask{
 		ID:        t.ID(),
 		Type:      t.Type(),
-		Payload:   t.Payload(),
+		Payload:   toPrintablePayload(t.Payload()),
 		Queue:     t.Queue(),
 		MaxRetry:  t.MaxRetry(),
 		Retried:   t.Retried(),
@@ -197,7 +219,7 @@ func toRetryTask(t *asynq.TaskInfo) *RetryTask {
 	base := &BaseTask{
 		ID:        t.ID(),
 		Type:      t.Type(),
-		Payload:   t.Payload(),
+		Payload:   toPrintablePayload(t.Payload()),
 		Queue:     t.Queue(),
 		MaxRetry:  t.MaxRetry(),
 		Retried:   t.Retried(),
@@ -226,7 +248,7 @@ func toArchivedTask(t *asynq.TaskInfo) *ArchivedTask {
 	base := &BaseTask{
 		ID:        t.ID(),
 		Type:      t.Type(),
-		Payload:   t.Payload(),
+		Payload:   toPrintablePayload(t.Payload()),
 		Queue:     t.Queue(),
 		MaxRetry:  t.MaxRetry(),
 		Retried:   t.Retried(),
@@ -250,7 +272,7 @@ type SchedulerEntry struct {
 	ID            string   `json:"id"`
 	Spec          string   `json:"spec"`
 	TaskType      string   `json:"task_type"`
-	TaskPayload   []byte   `json:"task_payload"`
+	TaskPayload   string   `json:"task_payload"`
 	Opts          []string `json:"options"`
 	NextEnqueueAt string   `json:"next_enqueue_at"`
 	// This field is omitted if there were no previous enqueue events.
@@ -270,7 +292,7 @@ func toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry {
 		ID:            e.ID,
 		Spec:          e.Spec,
 		TaskType:      e.Task.Type(),
-		TaskPayload:   e.Task.Payload(),
+		TaskPayload:   toPrintablePayload(e.Task.Payload()),
 		Opts:          opts,
 		NextEnqueueAt: e.Next.Format(time.RFC3339),
 		PrevEnqueueAt: prev,
@@ -343,7 +365,7 @@ type WorkerInfo struct {
 	TaskID     string `json:"task_id"`
 	Queue      string `json:"queue"`
 	TaskType   string `json:"task_type"`
-	TakPayload []byte `json:"task_payload"`
+	TakPayload string `json:"task_payload"`
 	Started    string `json:"start_time"`
 }
 
@@ -352,7 +374,7 @@ func toWorkerInfo(info *asynq.WorkerInfo) *WorkerInfo {
 		TaskID:     info.TaskID,
 		Queue:      info.Queue,
 		TaskType:   info.TaskType,
-		TakPayload: info.TaskPayload,
+		TakPayload: toPrintablePayload(info.TaskPayload),
 		Started:    info.Started.Format(time.RFC3339),
 	}
 }
