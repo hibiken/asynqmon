@@ -171,12 +171,16 @@ func isPrintable(data []byte) bool {
 	if !utf8.Valid(data) {
 		return false
 	}
+	isAllSpace := true
 	for _, r := range string(data) {
 		if !unicode.IsPrint(r) {
 			return false
 		}
+		if !unicode.IsSpace(r) {
+			isAllSpace = false
+		}
 	}
-	return true
+	return !isAllSpace
 }
 
 func toPrintablePayload(payload []byte) string {
