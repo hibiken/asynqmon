@@ -365,7 +365,7 @@ function Row(props: RowProps) {
           language="json"
           customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {JSON.stringify(task.payload)}
+          {task.payload}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>{durationBefore(task.next_process_at)}</TableCell>
