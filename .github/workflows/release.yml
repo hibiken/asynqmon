@@ -20,10 +20,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15
-
-      - name: Install Go1.16
-        run: go get golang.org/dl/go1.16rc1 && go1.16rc1 download
+          go-version: 1.16
 
       - name: Set up Node
         uses: actions/setup-node@v2
