@@ -98,7 +98,7 @@ func newCancelAllActiveTasksHandlerFunc(inspector *asynq.Inspector) http.Handler
 				return
 			}
 			for _, t := range tasks {
-				if err := inspector.CancelProcessing(t.ID()); err != nil {
+				if err := inspector.CancelProcessing(t.ID); err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
