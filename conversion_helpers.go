@@ -114,13 +114,13 @@ type ActiveTask struct {
 
 func toActiveTask(t *asynq.TaskInfo) *ActiveTask {
 	base := &BaseTask{
-		ID:        t.ID(),
-		Type:      t.Type(),
-		Payload:   toPrintablePayload(t.Payload()),
-		Queue:     t.Queue(),
-		MaxRetry:  t.MaxRetry(),
-		Retried:   t.Retried(),
-		LastError: t.LastErr(),
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   toPrintablePayload(t.Payload),
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastErr,
 	}
 	return &ActiveTask{BaseTask: base}
 }
@@ -140,13 +140,13 @@ type PendingTask struct {
 
 func toPendingTask(t *asynq.TaskInfo) *PendingTask {
 	base := &BaseTask{
-		ID:        t.ID(),
-		Type:      t.Type(),
-		Payload:   toPrintablePayload(t.Payload()),
-		Queue:     t.Queue(),
-		MaxRetry:  t.MaxRetry(),
-		Retried:   t.Retried(),
-		LastError: t.LastErr(),
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   toPrintablePayload(t.Payload),
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastErr,
 	}
 	return &PendingTask{
 		BaseTask: base,
@@ -192,17 +192,17 @@ func toPrintablePayload(payload []byte) string {
 
 func toScheduledTask(t *asynq.TaskInfo) *ScheduledTask {
 	base := &BaseTask{
-		ID:        t.ID(),
-		Type:      t.Type(),
-		Payload:   toPrintablePayload(t.Payload()),
-		Queue:     t.Queue(),
-		MaxRetry:  t.MaxRetry(),
-		Retried:   t.Retried(),
-		LastError: t.LastErr(),
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   toPrintablePayload(t.Payload),
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastErr,
 	}
 	return &ScheduledTask{
 		BaseTask:      base,
-		NextProcessAt: t.NextProcessAt(),
+		NextProcessAt: t.NextProcessAt,
 	}
 }
 
@@ -221,17 +221,17 @@ type RetryTask struct {
 
 func toRetryTask(t *asynq.TaskInfo) *RetryTask {
 	base := &BaseTask{
-		ID:        t.ID(),
-		Type:      t.Type(),
-		Payload:   toPrintablePayload(t.Payload()),
-		Queue:     t.Queue(),
-		MaxRetry:  t.MaxRetry(),
-		Retried:   t.Retried(),
-		LastError: t.LastErr(),
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   toPrintablePayload(t.Payload),
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastErr,
 	}
 	return &RetryTask{
 		BaseTask:      base,
-		NextProcessAt: t.NextProcessAt(),
+		NextProcessAt: t.NextProcessAt,
 	}
 }
 
@@ -250,17 +250,17 @@ type ArchivedTask struct {
 
 func toArchivedTask(t *asynq.TaskInfo) *ArchivedTask {
 	base := &BaseTask{
-		ID:        t.ID(),
-		Type:      t.Type(),
-		Payload:   toPrintablePayload(t.Payload()),
-		Queue:     t.Queue(),
-		MaxRetry:  t.MaxRetry(),
-		Retried:   t.Retried(),
-		LastError: t.LastErr(),
+		ID:        t.ID,
+		Type:      t.Type,
+		Payload:   toPrintablePayload(t.Payload),
+		Queue:     t.Queue,
+		MaxRetry:  t.MaxRetry,
+		Retried:   t.Retried,
+		LastError: t.LastErr,
 	}
 	return &ArchivedTask{
 		BaseTask:     base,
-		LastFailedAt: t.LastFailedAt(),
+		LastFailedAt: t.LastFailedAt,
 	}
 }
 
