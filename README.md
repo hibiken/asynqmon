@@ -2,7 +2,7 @@
 
 # A modern web based tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues, tasks and message broker
 
-> ☝️ **Important Note**: Current version of Asynqmon is compatible with Asynq [`v0.15.x`](https://github.com/hibiken/asynq/releases) or above.
+> ☝️ **Important Note**: Current version of Asynqmon is compatible with Asynq [`v0.18.x`](https://github.com/hibiken/asynq/releases) or above.
 
 ## Install
 
