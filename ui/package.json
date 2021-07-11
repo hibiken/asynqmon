@@ -18,7 +18,7 @@
     "@types/react-redux": "7.1.16",
     "@types/react-router-dom": "5.1.7",
     "@types/react-syntax-highlighter": "13.5.2",
-    "@types/recharts": "1.8.19",
+    "@types/recharts": "2.0.0",
     "axios": "0.21.1",
     "clsx": "1.1.1",
     "lodash.uniqby": "4.7.0",
