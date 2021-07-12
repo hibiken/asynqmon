@@ -9,6 +9,7 @@ import QueueBreadCrumb from "../components/QueueBreadcrumb";
 import { useParams, useLocation } from "react-router-dom";
 import { listQueuesAsync } from "../actions/queuesActions";
 import { AppState } from "../store";
+import { QueueDetailsRouteParams } from "../paths";
 
 function mapStateToProps(state: AppState) {
   return {
@@ -37,16 +38,12 @@ function useQuery(): URLSearchParams {
   return new URLSearchParams(useLocation().search);
 }
 
-interface RouteParams {
-  qname: string;
-}
-
 const validStatus = ["active", "pending", "scheduled", "retry", "archived"];
 const defaultStatus = "active";
 
 function TasksView(props: ConnectedProps<typeof connector>) {
   const classes = useStyles();
-  const { qname } = useParams<RouteParams>();
+  const { qname } = useParams<QueueDetailsRouteParams>();
   const query = useQuery();
   let selected = query.get("status");
   if (!selected || !validStatus.includes(selected)) {
