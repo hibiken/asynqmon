@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useHistory } from "react-router-dom";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
@@ -34,6 +35,7 @@ import { usePolling } from "../hooks";
 import { ActiveTaskExtended } from "../reducers/tasksReducer";
 import { durationBefore, timeAgo, uuidPrefix } from "../utils";
 import { TableColumn } from "../types/table";
+import { taskDetailsPath } from "../paths";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -257,6 +259,12 @@ function ActiveTasksTable(props: Props & ReduxProps) {
   );
 }
 
+const useRowStyles = makeStyles({
+  root: {
+    cursor: "pointer",
+  },
+});
+
 interface RowProps {
   task: ActiveTaskExtended;
   isSelected: boolean;
@@ -269,9 +277,16 @@ interface RowProps {
 
 function Row(props: RowProps) {
   const { task } = props;
+  const classes = useRowStyles();
+  const history = useHistory();
   return (
-    <TableRow key={task.id} selected={props.isSelected}>
-      <TableCell padding="checkbox">
+    <TableRow
+      key={task.id}
+      className={classes.root}
+      selected={props.isSelected}
+      onClick={() => history.push(taskDetailsPath(task.queue, task.id))}
+    >
+      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
         <Checkbox
           onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
             props.onSelectChange(event.target.checked)
@@ -302,6 +317,7 @@ function Row(props: RowProps) {
         align="center"
         onMouseEnter={props.onActionCellEnter}
         onMouseLeave={props.onActionCellLeave}
+        onClick={(e) => e.stopPropagation()}
       >
         {props.showActions ? (
           <React.Fragment>
