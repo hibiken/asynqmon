@@ -292,6 +292,12 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
 const useRowStyles = makeStyles((theme) => ({
   root: {
     cursor: "pointer",
+    "&:hover": {
+      boxShadow: theme.shadows[2],
+    },
+    "&:hover .MuiTableCell-root": {
+      borderBottomColor: theme.palette.background.paper,
+    },
   },
   actionCell: {
     width: "96px",

@@ -322,9 +322,15 @@ function RetryTasksTable(props: Props & ReduxProps) {
   );
 }
 
-const useRowStyles = makeStyles({
+const useRowStyles = makeStyles((theme) => ({
   root: {
     cursor: "pointer",
+    "&:hover": {
+      boxShadow: theme.shadows[2],
+    },
+    "&:hover .MuiTableCell-root": {
+      borderBottomColor: theme.palette.background.paper,
+    },
   },
   actionCell: {
     width: "140px",
@@ -333,7 +339,7 @@ const useRowStyles = makeStyles({
     marginLeft: 3,
     marginRight: 3,
   },
-});
+}));
 
 interface RowProps {
   task: RetryTaskExtended;
