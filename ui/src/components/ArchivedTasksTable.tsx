@@ -218,14 +218,16 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
                 padding="checkbox"
                 classes={{ stickyHeader: classes.stickyHeaderCell }}
               >
-                <Checkbox
-                  indeterminate={numSelected > 0 && numSelected < rowCount}
-                  checked={rowCount > 0 && numSelected === rowCount}
-                  onChange={handleSelectAllClick}
-                  inputProps={{
-                    "aria-label": "select all tasks shown in the table",
-                  }}
-                />
+                <IconButton>
+                  <Checkbox
+                    indeterminate={numSelected > 0 && numSelected < rowCount}
+                    checked={rowCount > 0 && numSelected === rowCount}
+                    onChange={handleSelectAllClick}
+                    inputProps={{
+                      "aria-label": "select all tasks shown in the table",
+                    }}
+                  />
+                </IconButton>
               </TableCell>
               {columns.map((col) => (
                 <TableCell
@@ -332,12 +334,14 @@ function Row(props: RowProps) {
       onClick={() => history.push(taskDetailsPath(task.queue, task.id))}
     >
       <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-        <Checkbox
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-            props.onSelectChange(event.target.checked)
-          }
-          checked={props.isSelected}
-        />
+        <IconButton>
+          <Checkbox
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              props.onSelectChange(event.target.checked)
+            }
+            checked={props.isSelected}
+          />
+        </IconButton>
       </TableCell>
       <TableCell component="th" scope="row">
         {uuidPrefix(task.id)}
