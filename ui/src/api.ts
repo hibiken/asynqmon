@@ -245,6 +245,19 @@ interface BaseTask {
   payload: string;
 }
 
+export interface TaskInfo {
+  id: string;
+  queue: string;
+  type: string;
+  max_retry: number;
+  retried: number;
+  last_failed_at: string;
+  error_message: string;
+  next_process_at: string;
+  timeout_seconds: number;
+  deadline: string;
+}
+
 export interface ActiveTask extends BaseTask {
   id: string;
   queue: string;
@@ -365,6 +378,15 @@ export async function listQueueStats(): Promise<ListQueueStatsResponse> {
   const resp = await axios({
     method: "get",
     url: `${BASE_URL}/queue_stats`,
+  });
+  return resp.data;
+}
+
+export async function getTaskInfo(qname: string, id: string): Promise<TaskInfo> {
+  const url = `${BASE_URL}/queues/${qname}/tasks/${id}`;
+  const resp = await axios({
+    method: "get",
+    url,
   });
   return resp.data;
 }

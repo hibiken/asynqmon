@@ -114,6 +114,9 @@ import {
   BATCH_DELETE_PENDING_TASKS_SUCCESS,
   BATCH_ARCHIVE_PENDING_TASKS_ERROR,
   BATCH_DELETE_PENDING_TASKS_ERROR,
+  GET_TASK_INFO_BEGIN,
+  GET_TASK_INFO_ERROR,
+  GET_TASK_INFO_SUCCESS,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -121,6 +124,7 @@ import {
   PendingTask,
   RetryTask,
   ScheduledTask,
+  TaskInfo,
 } from "../api";
 
 export interface ActiveTaskExtended extends ActiveTask {
@@ -193,6 +197,11 @@ interface TasksState {
     error: string;
     data: ArchivedTaskExtended[];
   };
+  taskInfo: {
+    loading: boolean;
+    error: string;
+    data?: TaskInfo;
+  },
 }
 
 const initialState: TasksState = {
@@ -231,6 +240,10 @@ const initialState: TasksState = {
     error: "",
     data: [],
   },
+  taskInfo: {
+    loading: false,
+    error: "",
+  }
 };
 
 function tasksReducer(
@@ -238,6 +251,34 @@ function tasksReducer(
   action: TasksActionTypes
 ): TasksState {
   switch (action.type) {
+    case GET_TASK_INFO_BEGIN:
+      return {
+        ...state,
+        taskInfo: {
+          loading: true,
+          error: "",
+        },
+      }
+
+    case GET_TASK_INFO_ERROR:
+        return {
+          ...state,
+          taskInfo: {
+            loading: false,
+            error: action.error,
+          },
+        };
+
+    case GET_TASK_INFO_SUCCESS:
+      return {
+        ...state,
+        taskInfo: {
+          loading: false,
+          error: "",
+          data: action.payload,
+        },
+      };
+
     case LIST_ACTIVE_TASKS_BEGIN:
       return {
         ...state,

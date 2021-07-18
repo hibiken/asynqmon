@@ -47,11 +47,16 @@ import {
   archivePendingTask,
   batchArchivePendingTasks,
   archiveAllPendingTasks,
+  TaskInfo,
+  getTaskInfo,
 } from "../api";
 import { Dispatch } from "redux";
 import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 
 // List of tasks related action types.
+export const GET_TASK_INFO_BEGIN = "GET_TASK_INFO_BEGIN";
+export const GET_TASK_INFO_SUCCESS = "GET_TASK_INFO_SUCCESS";
+export const GET_TASK_INFO_ERROR = "GET_TASK_INFO_ERROR";
 export const LIST_ACTIVE_TASKS_BEGIN = "LIST_ACTIVE_TASKS_BEGIN";
 export const LIST_ACTIVE_TASKS_SUCCESS = "LIST_ACTIVE_TASKS_SUCCESS";
 export const LIST_ACTIVE_TASKS_ERROR = "LIST_ACTIVE_TASKS_ERROR";
@@ -208,6 +213,20 @@ export const DELETE_ALL_ARCHIVED_TASKS_SUCCESS =
   "DELETE_ALL_ARCHIVED_TASKS_SUCCESS";
 export const DELETE_ALL_ARCHIVED_TASKS_ERROR =
   "DELETE_ALL_ARCHIVED_TASKS_ERROR";
+
+interface GetTaskInfoBeginAction {
+  type: typeof GET_TASK_INFO_BEGIN;
+}
+
+interface GetTaskInfoErrorAction {
+  type: typeof GET_TASK_INFO_ERROR;
+  error: string; // error description
+}
+
+interface GetTaskInfoSuccessAction {
+  type: typeof GET_TASK_INFO_SUCCESS;
+  payload: TaskInfo;
+}
 
 interface ListActiveTasksBeginAction {
   type: typeof LIST_ACTIVE_TASKS_BEGIN;
@@ -894,6 +913,9 @@ interface DeleteAllArchivedTasksErrorAction {
 
 // Union of all tasks related action types.
 export type TasksActionTypes =
+  | GetTaskInfoBeginAction
+  | GetTaskInfoErrorAction
+  | GetTaskInfoSuccessAction
   | ListActiveTasksBeginAction
   | ListActiveTasksSuccessAction
   | ListActiveTasksErrorAction
@@ -1008,6 +1030,25 @@ export type TasksActionTypes =
   | DeleteAllArchivedTasksBeginAction
   | DeleteAllArchivedTasksSuccessAction
   | DeleteAllArchivedTasksErrorAction;
+
+export function getTaskInfoAsync(qname: string, id: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: GET_TASK_INFO_BEGIN });
+    try {
+      const response = await getTaskInfo(qname, id);
+      dispatch({
+        type: GET_TASK_INFO_SUCCESS,
+        payload: response,
+      })
+    } catch (error) {
+      console.error("getTaskInfoAsync: ", toErrorStringWithHttpStatus(error));
+      dispatch({
+        type: GET_TASK_INFO_ERROR,
+        error: toErrorString(error),
+      })
+    }
+  }
+}
 
 export function listActiveTasksAsync(
   qname: string,
