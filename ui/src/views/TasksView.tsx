@@ -51,6 +51,7 @@ function TasksView(props: ConnectedProps<typeof connector>) {
   }
   const { listQueuesAsync } = props;
 
+  // Shoudn't we polling here?
   useEffect(() => {
     listQueuesAsync();
   }, [listQueuesAsync]);

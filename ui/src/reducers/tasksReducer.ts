@@ -255,8 +255,8 @@ function tasksReducer(
       return {
         ...state,
         taskInfo: {
+          ...state.taskInfo,
           loading: true,
-          error: "",
         },
       }
 
