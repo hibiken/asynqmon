@@ -51,7 +51,6 @@ function TasksView(props: ConnectedProps<typeof connector>) {
   }
   const { listQueuesAsync } = props;
 
-  // Shoudn't we polling here?
   useEffect(() => {
     listQueuesAsync();
   }, [listQueuesAsync]);
@@ -60,7 +59,7 @@ function TasksView(props: ConnectedProps<typeof connector>) {
     <Container maxWidth="lg">
       <Grid container spacing={0} className={classes.container}>
         <Grid item xs={12} className={classes.breadcrumbs}>
-          <QueueBreadCrumb queues={props.queues} selectedQueue={qname} />
+          <QueueBreadCrumb queues={props.queues} queueName={qname} />
         </Grid>
         <Grid item xs={12} className={classes.banner}>
           <QueueInfoBanner qname={qname} />

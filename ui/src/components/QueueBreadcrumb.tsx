@@ -31,7 +31,9 @@ interface Props {
   // All queue names.
   queues: string[];
   // Name of the queue currently selected.
-  selectedQueue: string;
+  queueName: string;
+  // ID of the task currently selected (optional).
+  taskId?: string;
 }
 
 export default function QueueBreadcrumbs(props: Props) {
@@ -57,11 +59,12 @@ export default function QueueBreadcrumbs(props: Props) {
           onClick={() => history.push(paths.HOME)}
         />
         <StyledBreadcrumb
-          label={props.selectedQueue}
+          label={props.queueName}
           deleteIcon={<ExpandMoreIcon />}
           onClick={handleClick}
           onDelete={handleClick}
         />
+        {props.taskId && <StyledBreadcrumb label={`task:${props.taskId}`} />}
       </Breadcrumbs>
       <Menu
         id="queue-breadcrumb-menu"

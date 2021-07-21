@@ -1,14 +1,16 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import { useParams } from "react-router-dom";
+import QueueBreadCrumb from "../components/QueueBreadcrumb";
 import { AppState } from "../store";
 import { getTaskInfoAsync } from "../actions/tasksActions";
 import { TaskDetailsRouteParams } from "../paths";
 import { usePolling } from "../hooks";
+import { listQueuesAsync } from "../actions/queuesActions";
 
 function mapStateToProps(state: AppState) {
   return {
@@ -16,14 +18,21 @@ function mapStateToProps(state: AppState) {
     error: state.tasks.taskInfo.error,
     taskInfo: state.tasks.taskInfo.data,
     pollInterval: state.settings.pollInterval,
+    queues: state.queues.data.map((q) => q.name), // FIXME: This data may not be available
   };
 }
 
-const connector = connect(mapStateToProps, { getTaskInfoAsync });
+const connector = connect(mapStateToProps, {
+  getTaskInfoAsync,
+  listQueuesAsync,
+});
 
 const useStyles = makeStyles((theme) => ({
   container: {
     paddingTop: theme.spacing(2),
+  },
+  breadcrumbs: {
+    marginBottom: theme.spacing(2),
   },
 }));
 
@@ -32,7 +41,7 @@ type Props = ConnectedProps<typeof connector>;
 function TaskDetailsView(props: Props) {
   const classes = useStyles();
   const { qname, taskId } = useParams<TaskDetailsRouteParams>();
-  const { getTaskInfoAsync, pollInterval } = props;
+  const { getTaskInfoAsync, pollInterval, listQueuesAsync } = props;
 
   const fetchTaskInfo = useMemo(() => {
     return () => {
@@ -42,9 +51,21 @@ function TaskDetailsView(props: Props) {
 
   usePolling(fetchTaskInfo, pollInterval);
 
+  // Fetch queues data to populate props.queues
+  useEffect(() => {
+    listQueuesAsync();
+  }, [listQueuesAsync]);
+
   return (
     <Container maxWidth="lg" className={classes.container}>
-      <Grid container spacing={3}>
+      <Grid container spacing={0}>
+        <Grid item xs={12} className={classes.breadcrumbs}>
+          <QueueBreadCrumb
+            queues={props.queues}
+            queueName={qname}
+            taskId={taskId}
+          />
+        </Grid>
         <Grid item xs={12}>
           <Typography>
             Task Details View Queue: {qname} TaskID: {taskId}
