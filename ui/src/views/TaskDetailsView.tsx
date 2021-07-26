@@ -1,10 +1,13 @@
 import React, { useMemo, useEffect } from "react";
 import { connect, ConnectedProps } from "react-redux";
+import { useHistory } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
+import Button from "@material-ui/core/Button";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { useParams } from "react-router-dom";
 import QueueBreadCrumb from "../components/QueueBreadcrumb";
 import { AppState } from "../store";
@@ -50,6 +53,10 @@ const useStyles = makeStyles((theme) => ({
   infoValueCell: {
     width: "auto",
   },
+  footer: {
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+  },
 }));
 
 type Props = ConnectedProps<typeof connector>;
@@ -58,6 +65,7 @@ function TaskDetailsView(props: Props) {
   const classes = useStyles();
   const { qname, taskId } = useParams<TaskDetailsRouteParams>();
   const { getTaskInfoAsync, pollInterval, listQueuesAsync, taskInfo } = props;
+  const history = useHistory();
 
   const fetchTaskInfo = useMemo(() => {
     return () => {
@@ -176,6 +184,14 @@ function TaskDetailsView(props: Props) {
               </Typography>
             </div>
           </Paper>
+          <div className={classes.footer}>
+            <Button
+              startIcon={<ArrowBackIcon />}
+              onClick={() => history.goBack()}
+            >
+              Go Back
+            </Button>
+          </div>
         </Grid>
       </Grid>
     </Container>
