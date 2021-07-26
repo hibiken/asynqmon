@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -641,10 +642,10 @@ func newGetTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 		info, err := inspector.GetTaskInfo(qname, taskid)
 		switch {
 		case errors.Is(err, asynq.ErrQueueNotFound), errors.Is(err, asynq.ErrTaskNotFound):
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, strings.TrimPrefix(err.Error(), "asynq: "), http.StatusNotFound)
 			return
 		case err != nil:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, strings.TrimPrefix(err.Error(), "asynq: "), http.StatusInternalServerError)
 			return
 		}
 

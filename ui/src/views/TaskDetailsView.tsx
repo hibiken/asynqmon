@@ -7,6 +7,8 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
+import Alert from "@material-ui/lab/Alert";
+import AlertTitle from "@material-ui/lab/AlertTitle";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { useParams } from "react-router-dom";
 import QueueBreadCrumb from "../components/QueueBreadcrumb";
@@ -34,6 +36,10 @@ const connector = connect(mapStateToProps, {
 const useStyles = makeStyles((theme) => ({
   container: {
     paddingTop: theme.spacing(2),
+  },
+  alert: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
   },
   paper: {
     padding: theme.spacing(2),
@@ -91,58 +97,108 @@ function TaskDetailsView(props: Props) {
           />
         </Grid>
         <Grid item xs={12} md={6}>
-          <Paper className={classes.paper} variant="outlined">
-            <Typography variant="h6">Task Info</Typography>
-            <div>
-              <div className={classes.infoRow}>
-                <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                  ID:{" "}
-                </Typography>
-                <Typography className={classes.infoValueCell}>
-                  {taskInfo?.id}
-                </Typography>
+          {props.error ? (
+            <Alert severity="error" className={classes.alert}>
+              <AlertTitle>Error</AlertTitle>
+              {props.error}
+            </Alert>
+          ) : (
+            <Paper className={classes.paper} variant="outlined">
+              <Typography variant="h6">Task Info</Typography>
+              <div>
+                <div className={classes.infoRow}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.infoKeyCell}
+                  >
+                    ID:{" "}
+                  </Typography>
+                  <Typography className={classes.infoValueCell}>
+                    {taskInfo?.id}
+                  </Typography>
+                </div>
+                <div className={classes.infoRow}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.infoKeyCell}
+                  >
+                    Type:{" "}
+                  </Typography>
+                  <Typography className={classes.infoValueCell}>
+                    {taskInfo?.type}
+                  </Typography>
+                </div>
+                <div className={classes.infoRow}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.infoKeyCell}
+                  >
+                    State:{" "}
+                  </Typography>
+                  <Typography className={classes.infoValueCell}>
+                    {taskInfo?.state}
+                  </Typography>
+                </div>
+                <div className={classes.infoRow}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.infoKeyCell}
+                  >
+                    Queue:{" "}
+                  </Typography>
+                  <Typography className={classes.infoValueCell}>
+                    {taskInfo?.queue}
+                  </Typography>
+                </div>
+                <div className={classes.infoRow}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.infoKeyCell}
+                  >
+                    Retry:{" "}
+                  </Typography>
+                  <Typography className={classes.infoValueCell}>
+                    {taskInfo?.retried}/{taskInfo?.max_retry}
+                  </Typography>
+                </div>
+                <div className={classes.infoRow}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.infoKeyCell}
+                  >
+                    Last Failure:{" "}
+                  </Typography>
+                  <Typography className={classes.infoValueCell}>
+                    {taskInfo?.last_failed_at ? (
+                      <Typography>
+                        {taskInfo?.error_message} ({taskInfo?.last_failed_at})
+                      </Typography>
+                    ) : (
+                      <Typography>n/a</Typography>
+                    )}
+                  </Typography>
+                </div>
+                <div className={classes.infoRow}>
+                  <Typography
+                    variant="subtitle2"
+                    className={classes.infoKeyCell}
+                  >
+                    Next Process Time:{" "}
+                  </Typography>
+                  {taskInfo?.next_process_at ? (
+                    <Typography>{taskInfo?.next_process_at}</Typography>
+                  ) : (
+                    <Typography>n/a</Typography>
+                  )}
+                </div>
               </div>
               <div className={classes.infoRow}>
                 <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                  Type:{" "}
+                  Timeout:{" "}
                 </Typography>
                 <Typography className={classes.infoValueCell}>
-                  {taskInfo?.type}
-                </Typography>
-              </div>
-              <div className={classes.infoRow}>
-                <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                  State:{" "}
-                </Typography>
-                <Typography className={classes.infoValueCell}>
-                  {taskInfo?.state}
-                </Typography>
-              </div>
-              <div className={classes.infoRow}>
-                <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                  Queue:{" "}
-                </Typography>
-                <Typography className={classes.infoValueCell}>
-                  {taskInfo?.queue}
-                </Typography>
-              </div>
-              <div className={classes.infoRow}>
-                <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                  Retry:{" "}
-                </Typography>
-                <Typography className={classes.infoValueCell}>
-                  {taskInfo?.retried}/{taskInfo?.max_retry}
-                </Typography>
-              </div>
-              <div className={classes.infoRow}>
-                <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                  Last Failure:{" "}
-                </Typography>
-                <Typography className={classes.infoValueCell}>
-                  {taskInfo?.last_failed_at ? (
-                    <Typography>
-                      {taskInfo?.error_message} ({taskInfo?.last_failed_at})
-                    </Typography>
+                  {taskInfo?.timeout_seconds ? (
+                    <Typography>{taskInfo?.timeout_seconds} seconds</Typography>
                   ) : (
                     <Typography>n/a</Typography>
                   )}
@@ -150,40 +206,18 @@ function TaskDetailsView(props: Props) {
               </div>
               <div className={classes.infoRow}>
                 <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                  Next Process Time:{" "}
+                  Deadline:{" "}
                 </Typography>
-                {taskInfo?.next_process_at ? (
-                  <Typography>{taskInfo?.next_process_at}</Typography>
-                ) : (
-                  <Typography>n/a</Typography>
-                )}
+                <Typography className={classes.infoValueCell}>
+                  {taskInfo?.deadline ? (
+                    <Typography>{taskInfo?.deadline}</Typography>
+                  ) : (
+                    <Typography>n/a</Typography>
+                  )}
+                </Typography>
               </div>
-            </div>
-            <div className={classes.infoRow}>
-              <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                Timeout:{" "}
-              </Typography>
-              <Typography className={classes.infoValueCell}>
-                {taskInfo?.timeout_seconds ? (
-                  <Typography>{taskInfo?.timeout_seconds} seconds</Typography>
-                ) : (
-                  <Typography>n/a</Typography>
-                )}
-              </Typography>
-            </div>
-            <div className={classes.infoRow}>
-              <Typography variant="subtitle2" className={classes.infoKeyCell}>
-                Deadline:{" "}
-              </Typography>
-              <Typography className={classes.infoValueCell}>
-                {taskInfo?.deadline ? (
-                  <Typography>{taskInfo?.deadline}</Typography>
-                ) : (
-                  <Typography>n/a</Typography>
-                )}
-              </Typography>
-            </div>
-          </Paper>
+            </Paper>
+          )}
           <div className={classes.footer}>
             <Button
               startIcon={<ArrowBackIcon />}
