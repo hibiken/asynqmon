@@ -110,9 +110,9 @@ const useStyles = makeStyles((theme) => ({
     position: "relative",
     width: "312px",
     borderRadius: "18px",
-    backgroundColor: theme.palette.grey[100],
+    backgroundColor: isDarkTheme(theme) ? "#303030" : theme.palette.grey[100],
     "&:hover, &:focus": {
-      backgroundColor: theme.palette.grey[200],
+      backgroundColor: isDarkTheme(theme) ? "#303030" : theme.palette.grey[200],
     },
   },
   searchIcon: {

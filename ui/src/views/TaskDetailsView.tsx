@@ -221,7 +221,7 @@ function TaskDetailsView(props: Props) {
                 <Typography variant="subtitle2" className={classes.infoKeyCell}>
                   Payload:{" "}
                 </Typography>
-                <div>
+                <div className={classes.infoValueCell}>
                   {taskInfo?.payload && (
                     <SyntaxHighlighter
                       language="json"
