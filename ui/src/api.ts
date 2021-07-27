@@ -249,6 +249,7 @@ export interface TaskInfo {
   id: string;
   queue: string;
   type: string;
+  payload: string;
   state: string;
   max_retry: number;
   retried: number;

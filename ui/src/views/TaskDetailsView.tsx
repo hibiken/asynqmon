@@ -17,6 +17,7 @@ import { getTaskInfoAsync } from "../actions/tasksActions";
 import { TaskDetailsRouteParams } from "../paths";
 import { usePolling } from "../hooks";
 import { listQueuesAsync } from "../actions/queuesActions";
+import SyntaxHighlighter from "../components/SyntaxHighlighter";
 
 function mapStateToProps(state: AppState) {
   return {
@@ -215,6 +216,21 @@ function TaskDetailsView(props: Props) {
                     <Typography>n/a</Typography>
                   )}
                 </Typography>
+              </div>
+              <div className={classes.infoRow}>
+                <Typography variant="subtitle2" className={classes.infoKeyCell}>
+                  Payload:{" "}
+                </Typography>
+                <div>
+                  {taskInfo?.payload && (
+                    <SyntaxHighlighter
+                      language="json"
+                      customStyle={{ margin: 0, maxWidth: 400 }}
+                    >
+                      {taskInfo.payload}
+                    </SyntaxHighlighter>
+                  )}
+                </div>
               </div>
             </Paper>
           )}
