@@ -197,6 +197,8 @@ func main() {
 	api.HandleFunc("/queues/{qname}/archived_tasks:run_all", newRunAllArchivedTasksHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/archived_tasks:batch_run", newBatchRunTasksHandlerFunc(inspector)).Methods("POST")
 
+	api.HandleFunc("/queues/{qname}/tasks/{task_id}", newGetTaskHandlerFunc(inspector)).Methods("GET")
+
 	// Servers endpoints.
 	api.HandleFunc("/servers", newListServersHandlerFunc(inspector)).Methods("GET")
 

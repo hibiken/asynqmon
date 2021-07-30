@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -622,4 +624,34 @@ func getPageOptions(r *http.Request) (pageSize, pageNum int) {
 		}
 	}
 	return pageSize, pageNum
+}
+
+func newGetTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname, taskid := vars["qname"], vars["task_id"]
+		if qname == "" {
+			http.Error(w, "queue name cannot be empty", http.StatusBadRequest)
+			return
+		}
+		if taskid == "" {
+			http.Error(w, "task_id cannot be empty", http.StatusBadRequest)
+			return
+		}
+
+		info, err := inspector.GetTaskInfo(qname, taskid)
+		switch {
+		case errors.Is(err, asynq.ErrQueueNotFound), errors.Is(err, asynq.ErrTaskNotFound):
+			http.Error(w, strings.TrimPrefix(err.Error(), "asynq: "), http.StatusNotFound)
+			return
+		case err != nil:
+			http.Error(w, strings.TrimPrefix(err.Error(), "asynq: "), http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(toTaskInfo(info)); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 }

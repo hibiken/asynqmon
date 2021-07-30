@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useHistory } from "react-router-dom";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
@@ -42,6 +43,7 @@ import { durationBefore, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
 import { ScheduledTaskExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
+import { taskDetailsPath } from "../paths";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -243,14 +245,16 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
                 padding="checkbox"
                 classes={{ stickyHeader: classes.stickyHeaderCell }}
               >
-                <Checkbox
-                  indeterminate={numSelected > 0 && numSelected < rowCount}
-                  checked={rowCount > 0 && numSelected === rowCount}
-                  onChange={handleSelectAllClick}
-                  inputProps={{
-                    "aria-label": "select all tasks shown in the table",
-                  }}
-                />
+                <IconButton>
+                  <Checkbox
+                    indeterminate={numSelected > 0 && numSelected < rowCount}
+                    checked={rowCount > 0 && numSelected === rowCount}
+                    onChange={handleSelectAllClick}
+                    inputProps={{
+                      "aria-label": "select all tasks shown in the table",
+                    }}
+                  />
+                </IconButton>
               </TableCell>
               {columns.map((col) => (
                 <TableCell
@@ -317,7 +321,16 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
   );
 }
 
-const useRowStyles = makeStyles({
+const useRowStyles = makeStyles((theme) => ({
+  root: {
+    cursor: "pointer",
+    "&:hover": {
+      boxShadow: theme.shadows[2],
+    },
+    "&:hover .MuiTableCell-root": {
+      borderBottomColor: theme.palette.background.paper,
+    },
+  },
   actionCell: {
     width: "140px",
   },
@@ -325,7 +338,7 @@ const useRowStyles = makeStyles({
     marginLeft: 3,
     marginRight: 3,
   },
-});
+}));
 
 interface RowProps {
   task: ScheduledTaskExtended;
@@ -343,15 +356,23 @@ interface RowProps {
 function Row(props: RowProps) {
   const { task } = props;
   const classes = useRowStyles();
+  const history = useHistory();
   return (
-    <TableRow key={task.id} selected={props.isSelected}>
-      <TableCell padding="checkbox">
-        <Checkbox
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-            props.onSelectChange(event.target.checked)
-          }
-          checked={props.isSelected}
-        />
+    <TableRow
+      key={task.id}
+      className={classes.root}
+      selected={props.isSelected}
+      onClick={() => history.push(taskDetailsPath(task.queue, task.id))}
+    >
+      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+        <IconButton>
+          <Checkbox
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              props.onSelectChange(event.target.checked)
+            }
+            checked={props.isSelected}
+          />
+        </IconButton>
       </TableCell>
       <TableCell component="th" scope="row">
         {uuidPrefix(task.id)}
@@ -371,6 +392,7 @@ function Row(props: RowProps) {
         className={classes.actionCell}
         onMouseEnter={props.onActionCellEnter}
         onMouseLeave={props.onActionCellLeave}
+        onClick={(e) => e.stopPropagation()}
       >
         {props.showActions ? (
           <React.Fragment>

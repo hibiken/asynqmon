@@ -85,6 +85,61 @@ func toDailyStatsList(in []*asynq.DailyStats) []*DailyStats {
 	return out
 }
 
+type TaskInfo struct {
+	// ID is the identifier of the task.
+	ID string `json:"id"`
+	// Queue is the name of the queue in which the task belongs.
+	Queue string `json:"queue"`
+	// Type is the type name of the task.
+	Type string `json:"type"`
+	// Payload is the payload data of the task.
+	Payload string `json:"payload"`
+	// State indicates the task state.
+	State string `json:"state"`
+	// MaxRetry is the maximum number of times the task can be retried.
+	MaxRetry int `json:"max_retry"`
+	// Retried is the number of times the task has retried so far.
+	Retried int `json:"retried"`
+	// LastErr is the error message from the last failure.
+	LastErr string `json:"error_message"`
+	// LastFailedAt is the time time of the last failure in RFC3339 format.
+	// If the task has no failures, empty string.
+	LastFailedAt string `json:"last_failed_at"`
+	// Timeout is the number of seconds the task can be processed by Handler before being retried.
+	Timeout int `json:"timeout_seconds"`
+	// Deadline is the deadline for the task in RFC3339 format. If not set, empty string.
+	Deadline string `json:"deadline"`
+	// NextProcessAt is the time the task is scheduled to be processed in RFC3339 format.
+	// If not applicable, empty string.
+	NextProcessAt string `json:"next_process_at"`
+}
+
+// formatTimeInRFC3339 formats t in RFC3339 if the value is non-zero.
+// If t is zero time (i.e. time.Time{}), returns empty string
+func formatTimeInRFC3339(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(time.RFC3339)
+}
+
+func toTaskInfo(info *asynq.TaskInfo) *TaskInfo {
+	return &TaskInfo{
+		ID:            info.ID,
+		Queue:         info.Queue,
+		Type:          info.Type,
+		Payload:       toPrintablePayload(info.Payload),
+		State:         info.State.String(),
+		MaxRetry:      info.MaxRetry,
+		Retried:       info.Retried,
+		LastErr:       info.LastErr,
+		LastFailedAt:  formatTimeInRFC3339(info.LastFailedAt),
+		Timeout:       int(info.Timeout.Seconds()),
+		Deadline:      formatTimeInRFC3339(info.Deadline),
+		NextProcessAt: formatTimeInRFC3339(info.NextProcessAt),
+	}
+}
+
 type BaseTask struct {
 	ID        string `json:"id"`
 	Type      string `json:"type"`

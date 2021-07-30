@@ -33,6 +33,7 @@ import ListItemLink from "./components/ListItemLink";
 import SchedulersView from "./views/SchedulersView";
 import DashboardView from "./views/DashboardView";
 import TasksView from "./views/TasksView";
+import TaskDetailsView from "./views/TaskDetailsView";
 import SettingsView from "./views/SettingsView";
 import ServersView from "./views/ServersView";
 import RedisInfoView from "./views/RedisInfoView";
@@ -269,6 +270,9 @@ function App(props: ConnectedProps<typeof connector>) {
             <main className={classes.content}>
               <div className={classes.contentWrapper}>
                 <Switch>
+                  <Route exact path={paths.TASK_DETAILS}>
+                    <TaskDetailsView />
+                  </Route>
                   <Route exact path={paths.QUEUE_DETAILS}>
                     <TasksView />
                   </Route>
