@@ -13,6 +13,9 @@ import { getRedisInfoAsync } from "../actions/redisInfoActions";
 import { usePolling } from "../hooks";
 import { AppState } from "../store";
 import { timeAgoUnix } from "../utils";
+import { RedisInfo } from "../api";
+import QueueLocationTable from "../components/QueueLocationTable";
+import Link from "@material-ui/core/Link";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -28,6 +31,9 @@ function mapStateToProps(state: AppState) {
     redisInfo: state.redis.data,
     redisAddress: state.redis.address,
     redisInfoRaw: state.redis.rawData,
+    redisClusterEnabled: state.redis.cluster,
+    redisClusterNodesRaw: state.redis.rawClusterNodes,
+    queueLocations: state.redis.queueLocations,
     pollInterval: state.settings.pollInterval,
     themePreference: state.settings.themePreference,
   };
@@ -38,7 +44,15 @@ type Props = ConnectedProps<typeof connector>;
 
 function RedisInfoView(props: Props) {
   const classes = useStyles();
-  const { pollInterval, getRedisInfoAsync, redisInfo, redisInfoRaw } = props;
+  const {
+    pollInterval,
+    getRedisInfoAsync,
+    redisInfo,
+    redisInfoRaw,
+    redisClusterEnabled,
+    redisClusterNodesRaw,
+    queueLocations,
+  } = props;
   usePolling(getRedisInfoAsync, pollInterval);
 
   // Metrics to show
@@ -56,101 +70,60 @@ function RedisInfoView(props: Props) {
           <>
             <Grid item xs={12}>
               <Typography variant="h5" color="textPrimary">
-                Redis Info
+                {redisClusterEnabled ? "Redis Cluster Info" : "Redis Info"}
               </Typography>
-              <Typography variant="subtitle1" color="textSecondary">
-                Connected to: {props.redisAddress}
-              </Typography>
+              {!redisClusterEnabled && (
+                <Typography variant="subtitle1" color="textSecondary">
+                  Connected to: {props.redisAddress}
+                </Typography>
+              )}
             </Grid>
-            {redisInfo !== null && (
+            {queueLocations && queueLocations.length > 0 && (
+              <Grid item xs={12}>
+                <Typography variant="h6" color="textSecondary">
+                  Queue Location in Cluster
+                </Typography>
+                <QueueLocationTable queueLocations={queueLocations} />
+              </Grid>
+            )}
+            {redisClusterNodesRaw && (
               <>
                 <Grid item xs={12}>
                   <Typography variant="h6" color="textSecondary">
-                    Server
+                    <Link
+                      href="https://redis.io/commands/cluster-nodes"
+                      target="_"
+                    >
+                      CLUSTER NODES
+                    </Link>{" "}
+                    Command Output
                   </Typography>
+                  <SyntaxHighlighter language="yaml">
+                    {redisClusterNodesRaw}
+                  </SyntaxHighlighter>
                 </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Version"
-                    content={redisInfo.redis_version}
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Uptime"
-                    content={`${redisInfo.uptime_in_days} days`}
-                  />
-                </Grid>
-                <Grid item xs={6} />
-                <Grid item xs={12}>
-                  <Typography variant="h6" color="textSecondary">
-                    Memory
-                  </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Used Memory"
-                    content={redisInfo.used_memory_human}
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Peak Memory Used"
-                    content={redisInfo.used_memory_peak_human}
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Memory Fragmentation Ratio"
-                    content={redisInfo.mem_fragmentation_ratio}
-                  />
-                </Grid>
-                <Grid item xs={3} />
-                <Grid item xs={12}>
-                  <Typography variant="h6" color="textSecondary">
-                    Connections
-                  </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Connected Clients"
-                    content={redisInfo.connected_clients}
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Connected Replicas"
-                    content={redisInfo.connected_slaves}
-                  />
-                </Grid>
-                <Grid item xs={6} />
-                <Grid item xs={12}>
-                  <Typography variant="h6" color="textSecondary">
-                    Persistence
-                  </Typography>
-                </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Last Save to Disk"
-                    content={timeAgoUnix(
-                      parseInt(redisInfo.rdb_last_save_time)
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <MetricCard
-                    title="Number of Changes Since Last Dump"
-                    content={redisInfo.rdb_changes_since_last_save}
-                  />
-                </Grid>
-                <Grid item xs={6} />
               </>
             )}
-            {redisInfoRaw !== null && (
+            {redisInfo && !redisClusterEnabled && (
+              <RedisMetricCards redisInfo={redisInfo} />
+            )}
+            {redisInfoRaw && (
               <>
                 <Grid item xs={6}>
                   <Typography variant="h6" color="textSecondary">
-                    INFO Command Output
+                    {redisClusterEnabled ? (
+                      <Link
+                        href="https://redis.io/commands/cluster-info"
+                        target="_"
+                      >
+                        CLUSTER INFO
+                      </Link>
+                    ) : (
+                      <Link href="https://redis.io/commands/info" target="_">
+                        INFO
+                      </Link>
+                    )}{" "}
+                    Command Output
                   </Typography>
                   <SyntaxHighlighter language="yaml">
                     {redisInfoRaw}
@@ -170,6 +143,86 @@ function RedisInfoView(props: Props) {
         )}
       </Grid>
     </Container>
+  );
+}
+
+function RedisMetricCards(props: { redisInfo: RedisInfo }) {
+  const { redisInfo } = props;
+  return (
+    <>
+      <Grid item xs={12}>
+        <Typography variant="h6" color="textSecondary">
+          Server
+        </Typography>
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard title="Version" content={redisInfo.redis_version} />
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard
+          title="Uptime"
+          content={`${redisInfo.uptime_in_days} days`}
+        />
+      </Grid>
+      <Grid item xs={6} />
+      <Grid item xs={12}>
+        <Typography variant="h6" color="textSecondary">
+          Memory
+        </Typography>
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard title="Used Memory" content={redisInfo.used_memory_human} />
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard
+          title="Peak Memory Used"
+          content={redisInfo.used_memory_peak_human}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard
+          title="Memory Fragmentation Ratio"
+          content={redisInfo.mem_fragmentation_ratio}
+        />
+      </Grid>
+      <Grid item xs={3} />
+      <Grid item xs={12}>
+        <Typography variant="h6" color="textSecondary">
+          Connections
+        </Typography>
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard
+          title="Connected Clients"
+          content={redisInfo.connected_clients}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard
+          title="Connected Replicas"
+          content={redisInfo.connected_slaves}
+        />
+      </Grid>
+      <Grid item xs={6} />
+      <Grid item xs={12}>
+        <Typography variant="h6" color="textSecondary">
+          Persistence
+        </Typography>
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard
+          title="Last Save to Disk"
+          content={timeAgoUnix(parseInt(redisInfo.rdb_last_save_time))}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <MetricCard
+          title="Number of Changes Since Last Dump"
+          content={redisInfo.rdb_changes_since_last_save}
+        />
+      </Grid>
+      <Grid item xs={6} />
+    </>
   );
 }
 

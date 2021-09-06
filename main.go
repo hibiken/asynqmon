@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -20,13 +21,14 @@ import (
 
 // Command-line flags
 var (
-	flagPort             int
-	flagRedisAddr        string
-	flagRedisDB          int
-	flagRedisPassword    string
-	flagRedisTLS         string
-	flagRedisURL         string
-	flagRedisInsecureTLS bool
+	flagPort              int
+	flagRedisAddr         string
+	flagRedisDB           int
+	flagRedisPassword     string
+	flagRedisTLS          string
+	flagRedisURL          string
+	flagRedisInsecureTLS  bool
+	flagRedisClusterNodes string
 )
 
 func init() {
@@ -36,7 +38,8 @@ func init() {
 	flag.StringVar(&flagRedisPassword, "redis-password", "", "password to use when connecting to redis server")
 	flag.StringVar(&flagRedisTLS, "redis-tls", "", "server name for TLS validation used when connecting to redis server")
 	flag.StringVar(&flagRedisURL, "redis-url", "", "URL to redis server")
-	flag.BoolVar(&flagRedisInsecureTLS, "redis-insecure-tls", false, "Disable TLS certificate host checks")
+	flag.BoolVar(&flagRedisInsecureTLS, "redis-insecure-tls", false, "disable TLS certificate host checks")
+	flag.StringVar(&flagRedisClusterNodes, "redis-cluster-nodes", "", "comma separated list of host:port addresses of cluster nodes")
 }
 
 // staticFileServer implements the http.Handler interface, so we can use it
@@ -88,20 +91,26 @@ func (srv *staticFileServer) indexFilePath() string {
 	return filepath.Join(srv.staticDirPath, srv.indexFileName)
 }
 
-func getRedisOptionsFromFlags() (*redis.Options, error) {
-	var err error
-	var opts *redis.Options
+func getRedisOptionsFromFlags() (*redis.UniversalOptions, error) {
+	var opts redis.UniversalOptions
 
-	if flagRedisURL != "" {
-		opts, err = redis.ParseURL(flagRedisURL)
-		if err != nil {
-			return nil, err
-		}
+	if flagRedisClusterNodes != "" {
+		opts.Addrs = strings.Split(flagRedisClusterNodes, ",")
+		opts.Password = flagRedisPassword
 	} else {
-		opts = &redis.Options{
-			Addr:     flagRedisAddr,
-			DB:       flagRedisDB,
-			Password: flagRedisPassword,
+		if flagRedisURL != "" {
+			res, err := redis.ParseURL(flagRedisURL)
+			if err != nil {
+				return nil, err
+			}
+			opts.Addrs = append(opts.Addrs, res.Addr)
+			opts.DB = res.DB
+			opts.Password = res.Password
+
+		} else {
+			opts.Addrs = []string{flagRedisAddr}
+			opts.DB = flagRedisDB
+			opts.Password = flagRedisPassword
 		}
 	}
 
@@ -114,7 +123,7 @@ func getRedisOptionsFromFlags() (*redis.Options, error) {
 		}
 		opts.TLSConfig.InsecureSkipVerify = true
 	}
-	return opts, nil
+	return &opts, nil
 }
 
 //go:embed ui/build/*
@@ -128,16 +137,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	inspector := asynq.NewInspector(asynq.RedisClientOpt{
-		Addr:      opts.Addr,
-		DB:        opts.DB,
-		Password:  opts.Password,
-		TLSConfig: opts.TLSConfig,
-	})
+	useRedisCluster := flagRedisClusterNodes != ""
+
+	var redisConnOpt asynq.RedisConnOpt
+	if useRedisCluster {
+		redisConnOpt = asynq.RedisClusterClientOpt{
+			Addrs:     opts.Addrs,
+			Password:  opts.Password,
+			TLSConfig: opts.TLSConfig,
+		}
+	} else {
+		redisConnOpt = asynq.RedisClientOpt{
+			Addr:      opts.Addrs[0],
+			DB:        opts.DB,
+			Password:  opts.Password,
+			TLSConfig: opts.TLSConfig,
+		}
+	}
+
+	inspector := asynq.NewInspector(redisConnOpt)
 	defer inspector.Close()
 
-	rdb := redis.NewClient(opts)
-	defer rdb.Close()
+	var redisClient redis.UniversalClient
+	if useRedisCluster {
+		redisClient = redis.NewClusterClient(opts.Cluster())
+	} else {
+		redisClient = redis.NewClient(opts.Simple())
+	}
+	defer redisClient.Close()
 
 	router := mux.NewRouter()
 	router.Use(loggingMiddleware)
@@ -207,7 +234,11 @@ func main() {
 	api.HandleFunc("/scheduler_entries/{entry_id}/enqueue_events", newListSchedulerEnqueueEventsHandlerFunc(inspector)).Methods("GET")
 
 	// Redis info endpoint.
-	api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(rdb)).Methods("GET")
+	if useRedisCluster {
+		api.HandleFunc("/redis_info", newRedisClusterInfoHandlerFunc(redisClient.(*redis.ClusterClient), inspector)).Methods("GET")
+	} else {
+		api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(redisClient.(*redis.Client))).Methods("GET")
+	}
 
 	fs := &staticFileServer{
 		contents:      staticContents,
