@@ -80,6 +80,18 @@ export interface RedisInfoResponse {
   address: string;
   info: RedisInfo;
   raw_info: string;
+  cluster: boolean;
+
+  // following fields are set only when cluster=true
+  raw_cluster_nodes: string;
+  queue_locations: QueueLocation[] | null;
+}
+
+// Describes location of a queue in cluster.
+export interface QueueLocation {
+  queue: string; // queue name
+  keyslot: number; // cluster keyslot
+  nodes: string[]; // node addresses
 }
 
 // Return value from redis INFO command.

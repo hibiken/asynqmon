@@ -4,7 +4,7 @@ import {
   GET_REDIS_INFO_SUCCESS,
   RedisInfoActionTypes,
 } from "../actions/redisInfoActions";
-import { RedisInfo } from "../api";
+import { QueueLocation, RedisInfo } from "../api";
 
 interface RedisInfoState {
   loading: boolean;
@@ -12,6 +12,9 @@ interface RedisInfoState {
   address: string;
   data: RedisInfo | null;
   rawData: string | null;
+  cluster: boolean;
+  rawClusterNodes: string | null;
+  queueLocations: QueueLocation[] | null;
 }
 
 const initialState: RedisInfoState = {
@@ -20,6 +23,9 @@ const initialState: RedisInfoState = {
   address: "",
   data: null,
   rawData: null,
+  cluster: false,
+  rawClusterNodes: null,
+  queueLocations: null,
 };
 
 export default function redisInfoReducer(
@@ -47,6 +53,9 @@ export default function redisInfoReducer(
         address: action.payload.address,
         data: action.payload.info,
         rawData: action.payload.raw_info,
+        cluster: action.payload.cluster,
+        rawClusterNodes: action.payload.raw_cluster_nodes,
+        queueLocations: action.payload.queue_locations,
       };
 
     default:
