@@ -2,7 +2,12 @@
 
 # A modern web based tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues, tasks and message broker
 
-> ☝️ **Important Note**: Current version of Asynqmon is compatible with Asynq [`v0.18.x`](https://github.com/hibiken/asynq/releases) or above.
+## Version Compatibility
+
+| Asynq version  | WebUI (asynqmon) version |
+| -------------- | ------------------------ |
+| 0.18.x         | 0.2.x                    |
+| 0.16.x, 0.17.x | 0.1.x                    |
 
 ## Install
 
@@ -57,12 +62,37 @@ docker run --rm \
     hibiken/asynqmon
 ```
 
-By default, Asynqmon web server listens on port `8080` and connects to a Redis server listening on `127.0.0.1:6379`.
+By default, Asynqmon web server listens on port `8080` and connects to a Redis server running on `127.0.0.1:6379`.
 
-Pass flags to specify port, redis server address, etc.
+To see all available flags, run:
 
 ```bash
 # with a local binary
+./asynqmon --help
+
+# with Docker
+docker run hibiken/asynqmon --help
+```
+
+Here's the available flags:
+
+_Note_: Use `--redis-url` to specify address, db-number, and password with one flag value; Alternatively, use `--redis-addr`, `--redis-db`, and `--redis-password` to specify each value.
+
+| Flag                            | Description                                                         | Default          |
+| ------------------------------- | ------------------------------------------------------------------- | ---------------- |
+| `--port`(int)                   | port number to use for web ui server                                | 8080             |
+| `---redis-url`(string)          | URL to redis server                                                 | ""               |
+| `--redis-addr`(string)          | address of redis server to connect to                               | "127.0.0.1:6379" |
+| `--redis-db`(int)               | redis database number                                               | 0                |
+| `--redis-password`(string)      | password to use when connecting to redis server                     | ""               |
+| `--redis-cluster-nodes`(string) | comma separated list of host:port addresses of cluster nodes        | ""               |
+| `--redis-tls`(string)           | server name for TLS validation used when connecting to redis server | ""               |
+| `--redis-insecure-tls`(bool)    | disable TLS certificate host checks                                 | false            |
+
+### Examples
+
+```bash
+# with a local binary; custom port and connect to redis server at localhost:6380
 ./asynqmon --port=3000 --redis-addr=localhost:6380
 
 # with Docker (connect to a Redis server running on the host machine)
@@ -77,16 +107,6 @@ docker run --rm \
     --network dev-network \
     -p 8080:8080 \
     hibiken/asynqmon --redis-addr=dev-redis:6379
-```
-
-To see all available flags, run:
-
-```bash
-# with a local binary
-./asynqmon --help
-
-# with Docker
-docker run hibiken/asynqmon --help
 ```
 
 Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
