@@ -1,13 +1,16 @@
-.PHONY: assets go_binary build docker
+.PHONY: assets sync go_binary build docker
 
-NODE_PATH = $(PWD)/ui/node_modules
+NODE_PATH ?= $(PWD)/ui/node_modules
 
 assets:
-	@cd ./ui && yarn install --modules-folder $(NODE_PATH) && yarn build --modules-folder $(NODE_PATH)
-	@rsync -avu --delete "./ui/build/" "./internal/assets"
+	@if [ ! -d "$(NODE_PATH)" ]; then cd ./ui && yarn install --modules-folder $(NODE_PATH); fi
+	cd ./ui && yarn build --modules-folder $(NODE_PATH)
+
+sync:
+	rsync -avu --delete "./ui/build/" "./cmd/asynqmon/ui-assets"
 
 # Build go binary.
-go_binary: assets
+go_binary: assets sync
 	go build -o asynqmon ./cmd/asynqmon
 
 # Target to build a release binary.

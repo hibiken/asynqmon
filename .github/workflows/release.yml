@@ -36,14 +36,31 @@ jobs:
       - name: Install NPM packages
         run: cd ui && rm yarn.lock && yarn install
 
+      - name: Build UI Bundle
+        run: cd ui && yarn build
+
+      - name: Create Release Archive
+        run: tar -czvf ui-assets.tar.gz -C ui/build .
+
       - name: Build release binary
         run: |
           GOOS=${{ matrix.goos }} GOARCH=amd64 make build
           tar -czvf asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}_amd64.tar.gz asynqmon
           ls
 
-      - name: Upload Release Asset
-        id: upload-release-asset
+      - name: Upload UI Release Asset
+        id: upload-ui-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ./ui-assets.tar.gz
+          asset_name: ui-assets.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Go Release Asset
+        id: upload-go-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -51,4 +68,4 @@ jobs:
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_path: ./asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}_amd64.tar.gz
           asset_name: asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}_amd64.tar.gz
-          asset_content_type: application/zip
+          asset_content_type: application/gzip

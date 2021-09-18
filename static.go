@@ -6,15 +6,13 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
-
-	"github.com/ajatprabha/asynqmon/internal"
 )
 
-func NewStaticContentHandler() http.Handler {
+func NewStaticContentHandler(contents embed.FS, staticDirPath, indexFileName string) http.Handler {
 	return &staticContentHandler{
-		contents:      internal.StaticContents,
-		staticDirPath: "assets",
-		indexFileName: "index.html",
+		contents:      contents,
+		staticDirPath: staticDirPath,
+		indexFileName: indexFileName,
 	}
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"embed"
 	"flag"
 	"fmt"
 	"log"
@@ -75,6 +76,9 @@ func getRedisOptionsFromFlags() (*redis.UniversalOptions, error) {
 	return &opts, nil
 }
 
+//go:embed ui-assets/*
+var staticContents embed.FS
+
 func main() {
 	flag.Parse()
 
@@ -113,12 +117,13 @@ func main() {
 	defer redisClient.Close()
 
 	router := asynqmon.NewRouter(asynqmon.RouterOptions{
-		Inspector:        inspector,
-		Middlewares:      []mux.MiddlewareFunc{loggingMiddleware},
-		RedisClient:      redisClient,
+		Inspector:   inspector,
+		Middlewares: []mux.MiddlewareFunc{loggingMiddleware},
+		RedisClient: redisClient,
 	})
 
-	router.PathPrefix("/").Handler(asynqmon.NewStaticContentHandler())
+	router.PathPrefix("/").
+		Handler(asynqmon.NewStaticContentHandler(staticContents, "ui-assets", "index.html"))
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
