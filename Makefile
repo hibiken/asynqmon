@@ -1,15 +1,14 @@
 .PHONY: assets go_binary build docker
 
-NODE_MODULES_PATH = $(PWD)/ui/node_modules
+NODE_PATH = $(PWD)/ui/node_modules
 
-# Checking for a node_modules folder before building.
 assets:
-	@if [ -d "$(NODE_MODULES_PATH)" ]; then cd ./ui && yarn install; fi
-	cd ./ui && yarn build
+	@cd ./ui && yarn install --modules-folder $(NODE_PATH) && yarn build --modules-folder $(NODE_PATH)
+	@rsync -avu --delete "./ui/build/" "./internal/assets"
 
 # Build go binary.
 go_binary: assets
-	go build -o asynqmon .
+	go build -o asynqmon ./cmd/asynqmon
 
 # Target to build a release binary.
 build: go_binary
@@ -21,4 +20,3 @@ docker:
 		--name asynqmon \
 		-p 8080:8080 \
 		asynqmon --redis-addr=host.docker.internal:6379
-
