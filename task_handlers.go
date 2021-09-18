@@ -23,7 +23,7 @@ type ListActiveTasksResponse struct {
 	Stats *QueueStateSnapshot `json:"stats"`
 }
 
-func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListActiveTasksHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -54,7 +54,7 @@ func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 				}
 			}
 		}
-		activeTasks := toActiveTasks(tasks)
+		activeTasks := t.toActiveTasks(tasks)
 		for _, t := range activeTasks {
 			workerInfo, ok := m[t.ID]
 			if ok {
@@ -68,7 +68,7 @@ func newListActiveTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc 
 
 		resp := ListActiveTasksResponse{
 			Tasks: activeTasks,
-			Stats: toQueueStateSnapshot(qinfo),
+			Stats: t.toQueueStateSnapshot(qinfo),
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -155,7 +155,7 @@ func newBatchCancelActiveTasksHandlerFunc(inspector *asynq.Inspector) http.Handl
 	}
 }
 
-func newListPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListPendingTasksHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -176,9 +176,9 @@ func newListPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc
 			// avoid nil for the tasks field in json output.
 			payload["tasks"] = make([]*PendingTask, 0)
 		} else {
-			payload["tasks"] = toPendingTasks(tasks)
+			payload["tasks"] = t.toPendingTasks(tasks)
 		}
-		payload["stats"] = toQueueStateSnapshot(qinfo)
+		payload["stats"] = t.toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -186,7 +186,7 @@ func newListPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc
 	}
 }
 
-func newListScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListScheduledTasksHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -207,9 +207,9 @@ func newListScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFu
 			// avoid nil for the tasks field in json output.
 			payload["tasks"] = make([]*ScheduledTask, 0)
 		} else {
-			payload["tasks"] = toScheduledTasks(tasks)
+			payload["tasks"] = t.toScheduledTasks(tasks)
 		}
-		payload["stats"] = toQueueStateSnapshot(qinfo)
+		payload["stats"] = t.toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -217,7 +217,7 @@ func newListScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFu
 	}
 }
 
-func newListRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListRetryTasksHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -238,9 +238,9 @@ func newListRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			// avoid nil for the tasks field in json output.
 			payload["tasks"] = make([]*RetryTask, 0)
 		} else {
-			payload["tasks"] = toRetryTasks(tasks)
+			payload["tasks"] = t.toRetryTasks(tasks)
 		}
-		payload["stats"] = toQueueStateSnapshot(qinfo)
+		payload["stats"] = t.toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -248,7 +248,7 @@ func newListRetryTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-func newListArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListArchivedTasksHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -269,9 +269,9 @@ func newListArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFun
 			// avoid nil for the tasks field in json output.
 			payload["tasks"] = make([]*ArchivedTask, 0)
 		} else {
-			payload["tasks"] = toArchivedTasks(tasks)
+			payload["tasks"] = t.toArchivedTasks(tasks)
 		}
-		payload["stats"] = toQueueStateSnapshot(qinfo)
+		payload["stats"] = t.toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -626,7 +626,7 @@ func getPageOptions(r *http.Request) (pageSize, pageNum int) {
 	return pageSize, pageNum
 }
 
-func newGetTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newGetTaskHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname, taskid := vars["qname"], vars["task_id"]
@@ -649,7 +649,7 @@ func newGetTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(toTaskInfo(info)); err != nil {
+		if err := json.NewEncoder(w).Encode(t.toTaskInfo(info)); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

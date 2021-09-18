@@ -13,7 +13,7 @@ import (
 //   - http.Handler(s) for scheduler entry related endpoints
 // ****************************************************************************
 
-func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		entries, err := inspector.SchedulerEntries()
 		if err != nil {
@@ -25,7 +25,7 @@ func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector) http.Handler
 			// avoid nil for the entries field in json output.
 			payload["entries"] = make([]*SchedulerEntry, 0)
 		} else {
-			payload["entries"] = toSchedulerEntries(entries)
+			payload["entries"] = t.toSchedulerEntries(entries)
 		}
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -38,7 +38,7 @@ type ListSchedulerEnqueueEventsResponse struct {
 	Events []*SchedulerEnqueueEvent `json:"events"`
 }
 
-func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		entryID := mux.Vars(r)["entry_id"]
 		pageSize, pageNum := getPageOptions(r)
@@ -49,7 +49,7 @@ func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.H
 			return
 		}
 		resp := ListSchedulerEnqueueEventsResponse{
-			Events: toSchedulerEnqueueEvents(events),
+			Events: t.toSchedulerEnqueueEvents(events),
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
