@@ -12,9 +12,10 @@ import (
 
 	"github.com/go-redis/redis/v7"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
+
 	"github.com/hibiken/asynq"
 	"github.com/hibiken/asynqmon"
-	"github.com/rs/cors"
 )
 
 // Command-line flags

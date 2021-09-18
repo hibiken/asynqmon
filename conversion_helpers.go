@@ -1,10 +1,11 @@
 package asynqmon
 
 import (
-	"github.com/hibiken/asynq"
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/hibiken/asynq"
 )
 
 // ****************************************************************************
