@@ -1,6 +1,7 @@
 package asynqmon
 
 import (
+	"encoding/json"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -225,6 +226,9 @@ type ScheduledTask struct {
 func isPrintable(data []byte) bool {
 	if !utf8.Valid(data) {
 		return false
+	}
+	if json.Valid(data) {
+		return true
 	}
 	isAllSpace := true
 	for _, r := range string(data) {
