@@ -1,4 +1,4 @@
-package main
+package asynqmon
 
 import (
 	"encoding/json"
