@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ajatprabha/asynqmon"
 	"github.com/go-redis/redis/v7"
 	"github.com/gorilla/mux"
 	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
 	"github.com/rs/cors"
 )
 
