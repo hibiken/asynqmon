@@ -16,7 +16,7 @@ type ListServersResponse struct {
 	Servers []*ServerInfo `json:"servers"`
 }
 
-func newListServersHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListServersHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		srvs, err := inspector.Servers()
 		if err != nil {
@@ -24,7 +24,7 @@ func newListServersHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			return
 		}
 		resp := ListServersResponse{
-			Servers: toServerInfoList(srvs),
+			Servers: t.toServerInfoList(srvs),
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
