@@ -64,7 +64,7 @@ function ServersView(props: Props) {
           <Grid item xs={12}>
             <Alert severity="error">
               <AlertTitle>Error</AlertTitle>
-              Could not retreive servers live data —{" "}
+              Could not retrieve servers live data —{" "}
               <strong>See the logs for details</strong>
             </Alert>
           </Grid>
