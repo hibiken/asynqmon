@@ -128,7 +128,7 @@ function DashboardView(props: Props) {
           <Grid item xs={12}>
             <Alert severity="error">
               <AlertTitle>Error</AlertTitle>
-              Could not retreive queues live data —{" "}
+              Could not retrieve queues live data —{" "}
               <strong>See the logs for details</strong>
             </Alert>
           </Grid>

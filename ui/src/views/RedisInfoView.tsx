@@ -136,7 +136,7 @@ function RedisInfoView(props: Props) {
           <Grid item xs={12}>
             <Alert severity="error">
               <AlertTitle>Error</AlertTitle>
-              Could not retreive redis live data —{" "}
+              Could not retrieve redis live data —{" "}
               <strong>See the logs for details</strong>
             </Alert>
           </Grid>
