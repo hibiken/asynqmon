@@ -1,9 +1,10 @@
 package asynqmon
 
 import (
+	"net/http"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
-	"net/http"
 
 	"github.com/hibiken/asynq"
 )

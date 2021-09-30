@@ -5,13 +5,13 @@ import (
 	"embed"
 	"flag"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 
 	"github.com/hibiken/asynq"
