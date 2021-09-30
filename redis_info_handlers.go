@@ -1,11 +1,12 @@
 package asynqmon
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
 
-	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis/v8"
 
 	"github.com/hibiken/asynq"
 )
@@ -34,7 +35,7 @@ type QueueLocationInfo struct {
 
 func newRedisInfoHandlerFunc(client *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, err := client.Info().Result()
+		res, err := client.Info(context.Background()).Result()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -55,13 +56,14 @@ func newRedisInfoHandlerFunc(client *redis.Client) http.HandlerFunc {
 
 func newRedisClusterInfoHandlerFunc(client *redis.ClusterClient, inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rawClusterInfo, err := client.ClusterInfo().Result()
+		ctx := context.Background()
+		rawClusterInfo, err := client.ClusterInfo(ctx).Result()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		info := parseRedisInfo(rawClusterInfo)
-		rawClusterNodes, err := client.ClusterNodes().Result()
+		rawClusterNodes, err := client.ClusterNodes(ctx).Result()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
