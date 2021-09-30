@@ -15,7 +15,7 @@ import (
 //   - http.Handler(s) for queue related endpoints
 // ****************************************************************************
 
-func newListQueuesHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
+func newListQueuesHandlerFunc(inspector *asynq.Inspector, t BytesStringer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()
 		if err != nil {
@@ -29,14 +29,14 @@ func newListQueuesHandlerFunc(inspector *asynq.Inspector, t *transformer) http.H
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			snapshots[i] = t.toQueueStateSnapshot(qinfo)
+			snapshots[i] = toQueueStateSnapshot(qinfo)
 		}
 		payload := map[string]interface{}{"queues": snapshots}
 		json.NewEncoder(w).Encode(payload)
 	}
 }
 
-func newGetQueueHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
+func newGetQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -48,7 +48,7 @@ func newGetQueueHandlerFunc(inspector *asynq.Inspector, t *transformer) http.Han
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		payload["current"] = t.toQueueStateSnapshot(qinfo)
+		payload["current"] = toQueueStateSnapshot(qinfo)
 
 		// TODO: make this n a variable
 		data, err := inspector.History(qname, 10)
@@ -58,14 +58,14 @@ func newGetQueueHandlerFunc(inspector *asynq.Inspector, t *transformer) http.Han
 		}
 		var dailyStats []*DailyStats
 		for _, s := range data {
-			dailyStats = append(dailyStats, t.toDailyStats(s))
+			dailyStats = append(dailyStats, toDailyStats(s))
 		}
 		payload["history"] = dailyStats
 		json.NewEncoder(w).Encode(payload)
 	}
 }
 
-func newDeleteQueueHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
+func newDeleteQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -113,7 +113,7 @@ type ListQueueStatsResponse struct {
 	Stats map[string][]*DailyStats `json:"stats"`
 }
 
-func newListQueueStatsHandlerFunc(inspector *asynq.Inspector, t *transformer) http.HandlerFunc {
+func newListQueueStatsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()
 		if err != nil {
@@ -128,7 +128,7 @@ func newListQueueStatsHandlerFunc(inspector *asynq.Inspector, t *transformer) ht
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			resp.Stats[qname] = t.toDailyStatsList(stats)
+			resp.Stats[qname] = toDailyStatsList(stats)
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

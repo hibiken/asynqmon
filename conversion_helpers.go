@@ -49,10 +49,6 @@ func isPrintable(data []byte) bool {
 	return !isAllSpace
 }
 
-type transformer struct {
-	bs BytesStringer
-}
-
 type QueueStateSnapshot struct {
 	// Name of the queue.
 	Queue string `json:"queue"`
@@ -80,7 +76,7 @@ type QueueStateSnapshot struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func (t *transformer) toQueueStateSnapshot(s *asynq.QueueInfo) *QueueStateSnapshot {
+func toQueueStateSnapshot(s *asynq.QueueInfo) *QueueStateSnapshot {
 	return &QueueStateSnapshot{
 		Queue:       s.Queue,
 		MemoryUsage: s.MemoryUsage,
@@ -106,7 +102,7 @@ type DailyStats struct {
 	Date      string `json:"date"`
 }
 
-func (t *transformer) toDailyStats(s *asynq.DailyStats) *DailyStats {
+func toDailyStats(s *asynq.DailyStats) *DailyStats {
 	return &DailyStats{
 		Queue:     s.Queue,
 		Processed: s.Processed,
@@ -116,10 +112,10 @@ func (t *transformer) toDailyStats(s *asynq.DailyStats) *DailyStats {
 	}
 }
 
-func (t *transformer) toDailyStatsList(in []*asynq.DailyStats) []*DailyStats {
+func toDailyStatsList(in []*asynq.DailyStats) []*DailyStats {
 	out := make([]*DailyStats, len(in))
 	for i, s := range in {
-		out[i] = t.toDailyStats(s)
+		out[i] = toDailyStats(s)
 	}
 	return out
 }
@@ -162,12 +158,12 @@ func formatTimeInRFC3339(t time.Time) string {
 	return t.Format(time.RFC3339)
 }
 
-func (t *transformer) toTaskInfo(info *asynq.TaskInfo) *TaskInfo {
+func toTaskInfo(info *asynq.TaskInfo, bs BytesStringer) *TaskInfo {
 	return &TaskInfo{
 		ID:            info.ID,
 		Queue:         info.Queue,
 		Type:          info.Type,
-		Payload:       t.bs.String(info.Payload),
+		Payload:       bs.String(info.Payload),
 		State:         info.State.String(),
 		MaxRetry:      info.MaxRetry,
 		Retried:       info.Retried,
@@ -206,11 +202,11 @@ type ActiveTask struct {
 	Deadline string `json:"deadline"`
 }
 
-func (t *transformer) toActiveTask(ti *asynq.TaskInfo) *ActiveTask {
+func toActiveTask(ti *asynq.TaskInfo, bs BytesStringer) *ActiveTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.bs.String(ti.Payload),
+		Payload:   bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -219,10 +215,10 @@ func (t *transformer) toActiveTask(ti *asynq.TaskInfo) *ActiveTask {
 	return &ActiveTask{BaseTask: base}
 }
 
-func (t *transformer) toActiveTasks(in []*asynq.TaskInfo) []*ActiveTask {
+func toActiveTasks(in []*asynq.TaskInfo, bs BytesStringer) []*ActiveTask {
 	out := make([]*ActiveTask, len(in))
 	for i, ti := range in {
-		out[i] = t.toActiveTask(ti)
+		out[i] = toActiveTask(ti, bs)
 	}
 	return out
 }
@@ -232,11 +228,11 @@ type PendingTask struct {
 	*BaseTask
 }
 
-func (t *transformer) toPendingTask(ti *asynq.TaskInfo) *PendingTask {
+func toPendingTask(ti *asynq.TaskInfo, bs BytesStringer) *PendingTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.bs.String(ti.Payload),
+		Payload:   bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -247,10 +243,10 @@ func (t *transformer) toPendingTask(ti *asynq.TaskInfo) *PendingTask {
 	}
 }
 
-func (t *transformer) toPendingTasks(in []*asynq.TaskInfo) []*PendingTask {
+func toPendingTasks(in []*asynq.TaskInfo, bs BytesStringer) []*PendingTask {
 	out := make([]*PendingTask, len(in))
 	for i, ti := range in {
-		out[i] = t.toPendingTask(ti)
+		out[i] = toPendingTask(ti, bs)
 	}
 	return out
 }
@@ -260,11 +256,11 @@ type ScheduledTask struct {
 	NextProcessAt time.Time `json:"next_process_at"`
 }
 
-func (t *transformer) toScheduledTask(ti *asynq.TaskInfo) *ScheduledTask {
+func toScheduledTask(ti *asynq.TaskInfo, bs BytesStringer) *ScheduledTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.bs.String(ti.Payload),
+		Payload:   bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -276,10 +272,10 @@ func (t *transformer) toScheduledTask(ti *asynq.TaskInfo) *ScheduledTask {
 	}
 }
 
-func (t *transformer) toScheduledTasks(in []*asynq.TaskInfo) []*ScheduledTask {
+func toScheduledTasks(in []*asynq.TaskInfo, bs BytesStringer) []*ScheduledTask {
 	out := make([]*ScheduledTask, len(in))
 	for i, ti := range in {
-		out[i] = t.toScheduledTask(ti)
+		out[i] = toScheduledTask(ti, bs)
 	}
 	return out
 }
@@ -289,11 +285,11 @@ type RetryTask struct {
 	NextProcessAt time.Time `json:"next_process_at"`
 }
 
-func (t *transformer) toRetryTask(ti *asynq.TaskInfo) *RetryTask {
+func toRetryTask(ti *asynq.TaskInfo, bs BytesStringer) *RetryTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.bs.String(ti.Payload),
+		Payload:   bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -305,10 +301,10 @@ func (t *transformer) toRetryTask(ti *asynq.TaskInfo) *RetryTask {
 	}
 }
 
-func (t *transformer) toRetryTasks(in []*asynq.TaskInfo) []*RetryTask {
+func toRetryTasks(in []*asynq.TaskInfo, bs BytesStringer) []*RetryTask {
 	out := make([]*RetryTask, len(in))
 	for i, ti := range in {
-		out[i] = t.toRetryTask(ti)
+		out[i] = toRetryTask(ti, bs)
 	}
 	return out
 }
@@ -318,11 +314,11 @@ type ArchivedTask struct {
 	LastFailedAt time.Time `json:"last_failed_at"`
 }
 
-func (t *transformer) toArchivedTask(ti *asynq.TaskInfo) *ArchivedTask {
+func toArchivedTask(ti *asynq.TaskInfo, bs BytesStringer) *ArchivedTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.bs.String(ti.Payload),
+		Payload:   bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -334,10 +330,10 @@ func (t *transformer) toArchivedTask(ti *asynq.TaskInfo) *ArchivedTask {
 	}
 }
 
-func (t *transformer) toArchivedTasks(in []*asynq.TaskInfo) []*ArchivedTask {
+func toArchivedTasks(in []*asynq.TaskInfo, bs BytesStringer) []*ArchivedTask {
 	out := make([]*ArchivedTask, len(in))
 	for i, ti := range in {
-		out[i] = t.toArchivedTask(ti)
+		out[i] = toArchivedTask(ti, bs)
 	}
 	return out
 }
@@ -353,7 +349,7 @@ type SchedulerEntry struct {
 	PrevEnqueueAt string `json:"prev_enqueue_at,omitempty"`
 }
 
-func (t *transformer) toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry {
+func toSchedulerEntry(e *asynq.SchedulerEntry, bs BytesStringer) *SchedulerEntry {
 	opts := make([]string, 0) // create a non-nil, empty slice to avoid null in json output
 	for _, o := range e.Opts {
 		opts = append(opts, o.String())
@@ -366,17 +362,17 @@ func (t *transformer) toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry 
 		ID:            e.ID,
 		Spec:          e.Spec,
 		TaskType:      e.Task.Type(),
-		TaskPayload:   t.bs.String(e.Task.Payload()),
+		TaskPayload:   bs.String(e.Task.Payload()),
 		Opts:          opts,
 		NextEnqueueAt: e.Next.Format(time.RFC3339),
 		PrevEnqueueAt: prev,
 	}
 }
 
-func (t *transformer) toSchedulerEntries(in []*asynq.SchedulerEntry) []*SchedulerEntry {
+func toSchedulerEntries(in []*asynq.SchedulerEntry, bs BytesStringer) []*SchedulerEntry {
 	out := make([]*SchedulerEntry, len(in))
 	for i, e := range in {
-		out[i] = t.toSchedulerEntry(e)
+		out[i] = toSchedulerEntry(e, bs)
 	}
 	return out
 }
@@ -386,17 +382,17 @@ type SchedulerEnqueueEvent struct {
 	EnqueuedAt string `json:"enqueued_at"`
 }
 
-func (t *transformer) toSchedulerEnqueueEvent(e *asynq.SchedulerEnqueueEvent) *SchedulerEnqueueEvent {
+func toSchedulerEnqueueEvent(e *asynq.SchedulerEnqueueEvent) *SchedulerEnqueueEvent {
 	return &SchedulerEnqueueEvent{
 		TaskID:     e.TaskID,
 		EnqueuedAt: e.EnqueuedAt.Format(time.RFC3339),
 	}
 }
 
-func (t *transformer) toSchedulerEnqueueEvents(in []*asynq.SchedulerEnqueueEvent) []*SchedulerEnqueueEvent {
+func toSchedulerEnqueueEvents(in []*asynq.SchedulerEnqueueEvent) []*SchedulerEnqueueEvent {
 	out := make([]*SchedulerEnqueueEvent, len(in))
 	for i, e := range in {
-		out[i] = t.toSchedulerEnqueueEvent(e)
+		out[i] = toSchedulerEnqueueEvent(e)
 	}
 	return out
 }
@@ -413,7 +409,7 @@ type ServerInfo struct {
 	ActiveWorkers  []*WorkerInfo  `json:"active_workers"`
 }
 
-func (t *transformer) toServerInfo(info *asynq.ServerInfo) *ServerInfo {
+func toServerInfo(info *asynq.ServerInfo, bs BytesStringer) *ServerInfo {
 	return &ServerInfo{
 		ID:             info.ID,
 		Host:           info.Host,
@@ -423,14 +419,14 @@ func (t *transformer) toServerInfo(info *asynq.ServerInfo) *ServerInfo {
 		StrictPriority: info.StrictPriority,
 		Started:        info.Started.Format(time.RFC3339),
 		Status:         info.Status,
-		ActiveWorkers:  t.toWorkerInfoList(info.ActiveWorkers),
+		ActiveWorkers:  toWorkerInfoList(info.ActiveWorkers, bs),
 	}
 }
 
-func (t *transformer) toServerInfoList(in []*asynq.ServerInfo) []*ServerInfo {
+func toServerInfoList(in []*asynq.ServerInfo, bs BytesStringer) []*ServerInfo {
 	out := make([]*ServerInfo, len(in))
 	for i, s := range in {
-		out[i] = t.toServerInfo(s)
+		out[i] = toServerInfo(s, bs)
 	}
 	return out
 }
@@ -443,20 +439,20 @@ type WorkerInfo struct {
 	Started    string `json:"start_time"`
 }
 
-func (t *transformer) toWorkerInfo(info *asynq.WorkerInfo) *WorkerInfo {
+func toWorkerInfo(info *asynq.WorkerInfo, bs BytesStringer) *WorkerInfo {
 	return &WorkerInfo{
 		TaskID:     info.TaskID,
 		Queue:      info.Queue,
 		TaskType:   info.TaskType,
-		TakPayload: t.bs.String(info.TaskPayload),
+		TakPayload: bs.String(info.TaskPayload),
 		Started:    info.Started.Format(time.RFC3339),
 	}
 }
 
-func (t *transformer) toWorkerInfoList(in []*asynq.WorkerInfo) []*WorkerInfo {
+func toWorkerInfoList(in []*asynq.WorkerInfo, bs BytesStringer) []*WorkerInfo {
 	out := make([]*WorkerInfo, len(in))
 	for i, w := range in {
-		out[i] = t.toWorkerInfo(w)
+		out[i] = toWorkerInfo(w, bs)
 	}
 	return out
 }
