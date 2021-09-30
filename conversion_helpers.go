@@ -14,18 +14,18 @@ import (
 //   - conversion function from an external type to an internal type
 // ****************************************************************************
 
-// PayloadStringer can be used to convert payload bytes to string to show in web ui.
-type PayloadStringer interface {
+// BytesStringer can be used to convert payload bytes to string to show in web ui.
+type BytesStringer interface {
 	String([]byte) string
 }
 
-type PayloadStringerFunc func([]byte) string
+type BytesStringerFunc func([]byte) string
 
-func (f PayloadStringerFunc) String(b []byte) string {
+func (f BytesStringerFunc) String(b []byte) string {
 	return f(b)
 }
 
-var defaultPayloadStringer = PayloadStringerFunc(func(payload []byte) string {
+var defaultBytesStringer = BytesStringerFunc(func(payload []byte) string {
 	if !isPrintable(payload) {
 		return "non-printable bytes"
 	}
@@ -50,7 +50,7 @@ func isPrintable(data []byte) bool {
 }
 
 type transformer struct {
-	ps PayloadStringer
+	bs BytesStringer
 }
 
 type QueueStateSnapshot struct {
@@ -167,7 +167,7 @@ func (t *transformer) toTaskInfo(info *asynq.TaskInfo) *TaskInfo {
 		ID:            info.ID,
 		Queue:         info.Queue,
 		Type:          info.Type,
-		Payload:       t.ps.String(info.Payload),
+		Payload:       t.bs.String(info.Payload),
 		State:         info.State.String(),
 		MaxRetry:      info.MaxRetry,
 		Retried:       info.Retried,
@@ -210,7 +210,7 @@ func (t *transformer) toActiveTask(ti *asynq.TaskInfo) *ActiveTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.ps.String(ti.Payload),
+		Payload:   t.bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -236,7 +236,7 @@ func (t *transformer) toPendingTask(ti *asynq.TaskInfo) *PendingTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.ps.String(ti.Payload),
+		Payload:   t.bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -264,7 +264,7 @@ func (t *transformer) toScheduledTask(ti *asynq.TaskInfo) *ScheduledTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.ps.String(ti.Payload),
+		Payload:   t.bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -293,7 +293,7 @@ func (t *transformer) toRetryTask(ti *asynq.TaskInfo) *RetryTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.ps.String(ti.Payload),
+		Payload:   t.bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -322,7 +322,7 @@ func (t *transformer) toArchivedTask(ti *asynq.TaskInfo) *ArchivedTask {
 	base := &BaseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
-		Payload:   t.ps.String(ti.Payload),
+		Payload:   t.bs.String(ti.Payload),
 		Queue:     ti.Queue,
 		MaxRetry:  ti.MaxRetry,
 		Retried:   ti.Retried,
@@ -366,7 +366,7 @@ func (t *transformer) toSchedulerEntry(e *asynq.SchedulerEntry) *SchedulerEntry 
 		ID:            e.ID,
 		Spec:          e.Spec,
 		TaskType:      e.Task.Type(),
-		TaskPayload:   t.ps.String(e.Task.Payload()),
+		TaskPayload:   t.bs.String(e.Task.Payload()),
 		Opts:          opts,
 		NextEnqueueAt: e.Next.Format(time.RFC3339),
 		PrevEnqueueAt: prev,
@@ -448,7 +448,7 @@ func (t *transformer) toWorkerInfo(info *asynq.WorkerInfo) *WorkerInfo {
 		TaskID:     info.TaskID,
 		Queue:      info.Queue,
 		TaskType:   info.TaskType,
-		TakPayload: t.ps.String(info.TaskPayload),
+		TakPayload: t.bs.String(info.TaskPayload),
 		Started:    info.Started.Format(time.RFC3339),
 	}
 }
