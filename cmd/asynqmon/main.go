@@ -5,13 +5,13 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v7"
-	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 
 	"github.com/hibiken/asynq"
@@ -117,23 +117,23 @@ func main() {
 	}
 	defer redisClient.Close()
 
-	router := asynqmon.NewRouter(asynqmon.RouterOptions{
+	h := asynqmon.NewHandler(asynqmon.HandlerOptions{
 		Inspector:   inspector,
 		Middlewares: []mux.MiddlewareFunc{loggingMiddleware},
 		RedisClient: redisClient,
+		StaticContentHandler: asynqmon.NewStaticContentHandler(
+			staticContents,
+			"ui-assets",
+			"index.html",
+		),
 	})
-
-	router.PathPrefix("/").
-		Handler(asynqmon.NewStaticContentHandler(staticContents, "ui-assets", "index.html"))
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
 	})
 
-	handler := c.Handler(router)
-
 	srv := &http.Server{
-		Handler:      handler,
+		Handler:      c.Handler(h),
 		Addr:         fmt.Sprintf(":%d", flagPort),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,

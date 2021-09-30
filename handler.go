@@ -3,18 +3,20 @@ package asynqmon
 import (
 	"github.com/go-redis/redis/v7"
 	"github.com/gorilla/mux"
+	"net/http"
 
 	"github.com/hibiken/asynq"
 )
 
-type RouterOptions struct {
-	RedisClient   redis.UniversalClient
-	Inspector     *asynq.Inspector
-	Middlewares   []mux.MiddlewareFunc
-	BytesStringer BytesStringer
+type HandlerOptions struct {
+	RedisClient          redis.UniversalClient
+	Inspector            *asynq.Inspector
+	Middlewares          []mux.MiddlewareFunc
+	BytesStringer        BytesStringer
+	StaticContentHandler http.Handler
 }
 
-func NewRouter(opts RouterOptions) *mux.Router {
+func NewHandler(opts HandlerOptions) http.Handler {
 	router := mux.NewRouter()
 	inspector := opts.Inspector
 	t := &transformer{bs: defaultBytesStringer}
@@ -97,6 +99,8 @@ func NewRouter(opts RouterOptions) *mux.Router {
 	case *redis.Client:
 		api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(c)).Methods("GET")
 	}
+
+	api.Handle("/", opts.StaticContentHandler)
 
 	return router
 }
