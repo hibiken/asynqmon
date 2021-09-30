@@ -8,18 +8,18 @@ import (
 )
 
 type RouterOptions struct {
-	RedisClient     redis.UniversalClient
-	Inspector       *asynq.Inspector
-	Middlewares     []mux.MiddlewareFunc
-	PayloadStringer PayloadStringer
+	RedisClient   redis.UniversalClient
+	Inspector     *asynq.Inspector
+	Middlewares   []mux.MiddlewareFunc
+	BytesStringer BytesStringer
 }
 
 func NewRouter(opts RouterOptions) *mux.Router {
 	router := mux.NewRouter()
 	inspector := opts.Inspector
-	t := &transformer{ps: defaultPayloadStringer}
-	if opts.PayloadStringer != nil {
-		t = &transformer{ps: opts.PayloadStringer}
+	t := &transformer{bs: defaultBytesStringer}
+	if opts.BytesStringer != nil {
+		t = &transformer{bs: opts.BytesStringer}
 	}
 
 	for _, mf := range opts.Middlewares {
