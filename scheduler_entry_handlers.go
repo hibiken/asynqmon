@@ -14,7 +14,7 @@ import (
 //   - http.Handler(s) for scheduler entry related endpoints
 // ****************************************************************************
 
-func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector, bs BytesStringer) http.HandlerFunc {
+func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		entries, err := inspector.SchedulerEntries()
 		if err != nil {
@@ -26,7 +26,7 @@ func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector, bs BytesStri
 			// avoid nil for the entries field in json output.
 			payload["entries"] = make([]*SchedulerEntry, 0)
 		} else {
-			payload["entries"] = toSchedulerEntries(entries, bs)
+			payload["entries"] = toSchedulerEntries(entries, pf)
 		}
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
