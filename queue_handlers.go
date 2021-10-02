@@ -15,7 +15,7 @@ import (
 //   - http.Handler(s) for queue related endpoints
 // ****************************************************************************
 
-func newListQueuesHandlerFunc(inspector *asynq.Inspector, t BytesStringer) http.HandlerFunc {
+func newListQueuesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()
 		if err != nil {

@@ -13,7 +13,7 @@ type HandlerOptions struct {
 	RedisClient          redis.UniversalClient
 	Inspector            *asynq.Inspector
 	Middlewares          []mux.MiddlewareFunc
-	BytesStringer        BytesStringer
+	PayloadFormatter     PayloadFormatter
 	StaticContentHandler http.Handler
 }
 
@@ -21,9 +21,9 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	router := mux.NewRouter()
 	inspector := opts.Inspector
 
-	var bs BytesStringer = defaultBytesStringer
-	if opts.BytesStringer != nil {
-		bs = opts.BytesStringer
+	var pf PayloadFormatter = defaultPayloadFormatter
+	if opts.PayloadFormatter != nil {
+		pf = opts.PayloadFormatter
 	}
 
 	for _, mf := range opts.Middlewares {
@@ -32,7 +32,7 @@ func NewHandler(opts HandlerOptions) http.Handler {
 
 	api := router.PathPrefix("/api").Subrouter()
 	// Queue endpoints.
-	api.HandleFunc("/queues", newListQueuesHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/queues", newListQueuesHandlerFunc(inspector)).Methods("GET")
 	api.HandleFunc("/queues/{qname}", newGetQueueHandlerFunc(inspector)).Methods("GET")
 	api.HandleFunc("/queues/{qname}", newDeleteQueueHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}:pause", newPauseQueueHandlerFunc(inspector)).Methods("POST")
@@ -42,12 +42,12 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	api.HandleFunc("/queue_stats", newListQueueStatsHandlerFunc(inspector)).Methods("GET")
 
 	// Task endpoints.
-	api.HandleFunc("/queues/{qname}/active_tasks", newListActiveTasksHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/active_tasks", newListActiveTasksHandlerFunc(inspector, pf)).Methods("GET")
 	api.HandleFunc("/queues/{qname}/active_tasks/{task_id}:cancel", newCancelActiveTaskHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/active_tasks:cancel_all", newCancelAllActiveTasksHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/active_tasks:batch_cancel", newBatchCancelActiveTasksHandlerFunc(inspector)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/pending_tasks", newListPendingTasksHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/pending_tasks", newListPendingTasksHandlerFunc(inspector, pf)).Methods("GET")
 	api.HandleFunc("/queues/{qname}/pending_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/pending_tasks:delete_all", newDeleteAllPendingTasksHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/pending_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
@@ -55,7 +55,7 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	api.HandleFunc("/queues/{qname}/pending_tasks:archive_all", newArchiveAllPendingTasksHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/pending_tasks:batch_archive", newBatchArchiveTasksHandlerFunc(inspector)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/scheduled_tasks", newListScheduledTasksHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks", newListScheduledTasksHandlerFunc(inspector, pf)).Methods("GET")
 	api.HandleFunc("/queues/{qname}/scheduled_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/scheduled_tasks:delete_all", newDeleteAllScheduledTasksHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/scheduled_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
@@ -66,7 +66,7 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	api.HandleFunc("/queues/{qname}/scheduled_tasks:archive_all", newArchiveAllScheduledTasksHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/scheduled_tasks:batch_archive", newBatchArchiveTasksHandlerFunc(inspector)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/retry_tasks", newListRetryTasksHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/retry_tasks", newListRetryTasksHandlerFunc(inspector, pf)).Methods("GET")
 	api.HandleFunc("/queues/{qname}/retry_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/retry_tasks:delete_all", newDeleteAllRetryTasksHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/retry_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
@@ -77,7 +77,7 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	api.HandleFunc("/queues/{qname}/retry_tasks:archive_all", newArchiveAllRetryTasksHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/retry_tasks:batch_archive", newBatchArchiveTasksHandlerFunc(inspector)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/archived_tasks", newListArchivedTasksHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/archived_tasks", newListArchivedTasksHandlerFunc(inspector, pf)).Methods("GET")
 	api.HandleFunc("/queues/{qname}/archived_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/archived_tasks:delete_all", newDeleteAllArchivedTasksHandlerFunc(inspector)).Methods("DELETE")
 	api.HandleFunc("/queues/{qname}/archived_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
@@ -85,13 +85,13 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	api.HandleFunc("/queues/{qname}/archived_tasks:run_all", newRunAllArchivedTasksHandlerFunc(inspector)).Methods("POST")
 	api.HandleFunc("/queues/{qname}/archived_tasks:batch_run", newBatchRunTasksHandlerFunc(inspector)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/tasks/{task_id}", newGetTaskHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/tasks/{task_id}", newGetTaskHandlerFunc(inspector, pf)).Methods("GET")
 
 	// Servers endpoints.
-	api.HandleFunc("/servers", newListServersHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/servers", newListServersHandlerFunc(inspector, pf)).Methods("GET")
 
 	// Scheduler Entry endpoints.
-	api.HandleFunc("/scheduler_entries", newListSchedulerEntriesHandlerFunc(inspector, bs)).Methods("GET")
+	api.HandleFunc("/scheduler_entries", newListSchedulerEntriesHandlerFunc(inspector, pf)).Methods("GET")
 	api.HandleFunc("/scheduler_entries/{entry_id}/enqueue_events", newListSchedulerEnqueueEventsHandlerFunc(inspector)).Methods("GET")
 
 	// Redis info endpoint.
