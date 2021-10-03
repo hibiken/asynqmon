@@ -6,6 +6,7 @@ assets:
 	@if [ ! -d "$(NODE_PATH)" ]; then cd ./ui && yarn install --modules-folder $(NODE_PATH); fi
 	cd ./ui && yarn build --modules-folder $(NODE_PATH)
 
+# sync will copy the ui build assets to cmd/asynqmon so that it can be embedded into the go binary
 sync:
 	rsync -avu --delete "./ui/build/" "./cmd/asynqmon/ui-assets"
 
