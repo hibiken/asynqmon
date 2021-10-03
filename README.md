@@ -72,7 +72,7 @@ import (
 var staticContents embed.FS
 
 func main() {
-	api := asynqmon.NewAPI(asynqmon.APIOptions{
+	api := asynqmon.NewHTTPHandler(asynqmon.Options{
 		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
 		StaticContentHandler: asynqmon.NewStaticContentHandler(
 			staticContents,

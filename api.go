@@ -13,32 +13,32 @@ import (
 // MiddlewareFunc helps chain http.Handler(s).
 type MiddlewareFunc func(http.Handler) http.Handler
 
-type APIOptions struct {
+type Options struct {
 	RedisConnOpt         asynq.RedisConnOpt
 	Middlewares          []MiddlewareFunc
 	PayloadFormatter     PayloadFormatter
 	StaticContentHandler http.Handler
 }
 
-type API struct {
+type HTTPHandler struct {
 	router  *mux.Router
 	closers []func() error
 }
 
-func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (a *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.router.ServeHTTP(w, r)
 }
 
-func NewAPI(opts APIOptions) *API {
+func NewHTTPHandler(opts Options) *HTTPHandler {
 	rc, ok := opts.RedisConnOpt.MakeRedisClient().(redis.UniversalClient)
 	if !ok {
-		panic(fmt.Sprintf("asnyqmon.API: unsupported RedisConnOpt type %T", opts.RedisConnOpt))
+		panic(fmt.Sprintf("asnyqmon.HTTPHandler: unsupported RedisConnOpt type %T", opts.RedisConnOpt))
 	}
 	i := asynq.NewInspector(opts.RedisConnOpt)
-	return &API{router: muxRouter(opts, rc, i), closers: []func() error{rc.Close, i.Close}}
+	return &HTTPHandler{router: muxRouter(opts, rc, i), closers: []func() error{rc.Close, i.Close}}
 }
 
-func (a *API) Close() error {
+func (a *HTTPHandler) Close() error {
 	for _, f := range a.closers {
 		if err := f(); err != nil {
 			return err
@@ -48,7 +48,7 @@ func (a *API) Close() error {
 	return nil
 }
 
-func muxRouter(opts APIOptions, rc redis.UniversalClient, inspector *asynq.Inspector) *mux.Router {
+func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspector) *mux.Router {
 	router := mux.NewRouter()
 
 	var pf PayloadFormatter = defaultPayloadFormatter

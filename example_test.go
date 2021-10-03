@@ -12,8 +12,8 @@ import (
 //go:embed ui-assets/*
 var staticContents embed.FS
 
-func ExampleNewAPI() {
-	api := asynqmon.NewAPI(asynqmon.APIOptions{
+func ExampleNewHTTPHandler() {
+	api := asynqmon.NewHTTPHandler(asynqmon.Options{
 		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
 		StaticContentHandler: asynqmon.NewStaticContentHandler(
 			staticContents,
