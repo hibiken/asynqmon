@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 
 	"github.com/hibiken/asynq"
@@ -106,34 +105,23 @@ func main() {
 		}
 	}
 
-	inspector := asynq.NewInspector(redisConnOpt)
-	defer inspector.Close()
-
-	var redisClient redis.UniversalClient
-	if useRedisCluster {
-		redisClient = redis.NewClusterClient(opts.Cluster())
-	} else {
-		redisClient = redis.NewClient(opts.Simple())
-	}
-	defer redisClient.Close()
-
-	h := asynqmon.NewHandler(asynqmon.HandlerOptions{
-		Inspector:   inspector,
-		Middlewares: []mux.MiddlewareFunc{loggingMiddleware},
-		RedisClient: redisClient,
+	api := asynqmon.NewAPI(asynqmon.APIOptions{
+		RedisConnOpt: redisConnOpt,
+		Middlewares:  []asynqmon.MiddlewareFunc{loggingMiddleware},
 		StaticContentHandler: asynqmon.NewStaticContentHandler(
 			staticContents,
 			"ui-assets",
 			"index.html",
 		),
 	})
+	defer api.Close()
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
 	})
 
 	srv := &http.Server{
-		Handler:      c.Handler(h),
+		Handler:      c.Handler(api),
 		Addr:         fmt.Sprintf(":%d", flagPort),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
