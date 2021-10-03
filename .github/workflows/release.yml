@@ -48,7 +48,7 @@ jobs:
           tar -czvf asynqmon_${{ steps.release.outputs.tag_name }}_${{ matrix.goos }}_amd64.tar.gz asynqmon
           ls
 
-      - name: Upload UI Release Asset
+      - name: Upload UI Bundle
         id: upload-ui-release-asset
         uses: actions/upload-release-asset@v1
         env:
@@ -59,7 +59,7 @@ jobs:
           asset_name: ui-assets.tar.gz
           asset_content_type: application/gzip
 
-      - name: Upload Go Release Asset
+      - name: Upload Release Binary
         id: upload-go-release-asset
         uses: actions/upload-release-asset@v1
         env:
