@@ -47,6 +47,54 @@ To build Docker image locally, run:
 make docker
 ```
 
+### Importing into projects
+
+You can import `asynqmon` into other projects and create a single binary to serve other components of `asynq` and `asynqmon` from a single binary.
+
+<details><summary>Example</summary>
+<p>
+
+> `staticContents` can be embedded by using the pre-built UI bundle from the Releases section.
+
+```go
+package main
+
+import (
+	"embed"
+	"log"
+	"net/http"
+
+	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
+)
+
+//go:embed ui-assets/*
+var staticContents embed.FS
+
+func main() {
+	api := asynqmon.NewAPI(asynqmon.APIOptions{
+		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
+		StaticContentHandler: asynqmon.NewStaticContentHandler(
+			staticContents,
+			"ui-assets",
+			"index.html",
+		),
+	})
+	defer api.Close()
+
+	srv := &http.Server{
+		Handler: api,
+		Addr:    ":8080",
+	}
+
+	log.Fatal(srv.ListenAndServe())
+}
+```
+
+</p>
+</details>
+
+
 ## Run
 
 To use the defaults, simply run and open http://localhost:8080.
