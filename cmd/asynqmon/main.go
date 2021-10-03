@@ -105,7 +105,7 @@ func main() {
 		}
 	}
 
-	api := asynqmon.NewAPI(asynqmon.APIOptions{
+	api := asynqmon.NewHTTPHandler(asynqmon.Options{
 		RedisConnOpt: redisConnOpt,
 		Middlewares:  []asynqmon.MiddlewareFunc{loggingMiddleware},
 		StaticContentHandler: asynqmon.NewStaticContentHandler(
