@@ -1,6 +1,7 @@
 package asynqmon
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-redis/redis/v8"
@@ -9,17 +10,46 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-type HandlerOptions struct {
-	RedisClient          redis.UniversalClient
-	Inspector            *asynq.Inspector
-	Middlewares          []mux.MiddlewareFunc
+// MiddlewareFunc helps chain http.Handler(s).
+type MiddlewareFunc func(http.Handler) http.Handler
+
+type APIOptions struct {
+	RedisConnOpt         asynq.RedisConnOpt
+	Middlewares          []MiddlewareFunc
 	PayloadFormatter     PayloadFormatter
 	StaticContentHandler http.Handler
 }
 
-func NewHandler(opts HandlerOptions) http.Handler {
+type API struct {
+	router  *mux.Router
+	closers []func() error
+}
+
+func (a *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	a.router.ServeHTTP(w, r)
+}
+
+func NewAPI(opts APIOptions) *API {
+	rc, ok := opts.RedisConnOpt.MakeRedisClient().(redis.UniversalClient)
+	if !ok {
+		panic(fmt.Sprintf("asnyqmon.API: unsupported RedisConnOpt type %T", opts.RedisConnOpt))
+	}
+	i := asynq.NewInspector(opts.RedisConnOpt)
+	return &API{router: muxRouter(opts, rc, i), closers: []func() error{rc.Close, i.Close}}
+}
+
+func (a *API) Close() error {
+	for _, f := range a.closers {
+		if err := f(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func muxRouter(opts APIOptions, rc redis.UniversalClient, inspector *asynq.Inspector) *mux.Router {
 	router := mux.NewRouter()
-	inspector := opts.Inspector
 
 	var pf PayloadFormatter = defaultPayloadFormatter
 	if opts.PayloadFormatter != nil {
@@ -27,7 +57,7 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	}
 
 	for _, mf := range opts.Middlewares {
-		router.Use(mf)
+		router.Use(mux.MiddlewareFunc(mf))
 	}
 
 	api := router.PathPrefix("/api").Subrouter()
@@ -95,7 +125,7 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	api.HandleFunc("/scheduler_entries/{entry_id}/enqueue_events", newListSchedulerEnqueueEventsHandlerFunc(inspector)).Methods("GET")
 
 	// Redis info endpoint.
-	switch c := opts.RedisClient.(type) {
+	switch c := rc.(type) {
 	case *redis.ClusterClient:
 		api.HandleFunc("/redis_info", newRedisClusterInfoHandlerFunc(c, inspector)).Methods("GET")
 	case *redis.Client:
@@ -103,6 +133,5 @@ func NewHandler(opts HandlerOptions) http.Handler {
 	}
 
 	router.PathPrefix("/").Handler(opts.StaticContentHandler)
-
 	return router
 }
