@@ -29,7 +29,7 @@ func (a *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.router.ServeHTTP(w, r)
 }
 
-func NewHTTPHandler(opts Options) *HTTPHandler {
+func New(opts Options) *HTTPHandler {
 	rc, ok := opts.RedisConnOpt.MakeRedisClient().(redis.UniversalClient)
 	if !ok {
 		panic(fmt.Sprintf("asnyqmon.HTTPHandler: unsupported RedisConnOpt type %T", opts.RedisConnOpt))

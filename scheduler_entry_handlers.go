@@ -24,7 +24,7 @@ func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector, pf PayloadFo
 		payload := make(map[string]interface{})
 		if len(entries) == 0 {
 			// avoid nil for the entries field in json output.
-			payload["entries"] = make([]*SchedulerEntry, 0)
+			payload["entries"] = make([]*schedulerEntry, 0)
 		} else {
 			payload["entries"] = toSchedulerEntries(entries, pf)
 		}
@@ -35,8 +35,8 @@ func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector, pf PayloadFo
 	}
 }
 
-type ListSchedulerEnqueueEventsResponse struct {
-	Events []*SchedulerEnqueueEvent `json:"events"`
+type listSchedulerEnqueueEventsResponse struct {
+	Events []*schedulerEnqueueEvent `json:"events"`
 }
 
 func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
@@ -49,7 +49,7 @@ func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.H
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		resp := ListSchedulerEnqueueEventsResponse{
+		resp := listSchedulerEnqueueEventsResponse{
 			Events: toSchedulerEnqueueEvents(events),
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
