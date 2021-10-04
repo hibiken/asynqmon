@@ -12,8 +12,8 @@ import (
 //go:embed ui-assets/*
 var staticContents embed.FS
 
-func ExampleNewHTTPHandler() {
-	api := asynqmon.NewHTTPHandler(asynqmon.Options{
+func ExampleNew() {
+	h := asynqmon.New(asynqmon.Options{
 		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
 		StaticContentHandler: asynqmon.NewStaticContentHandler(
 			staticContents,
@@ -21,10 +21,10 @@ func ExampleNewHTTPHandler() {
 			"index.html",
 		),
 	})
-	defer api.Close()
+	defer h.Close()
 
 	srv := &http.Server{
-		Handler: api,
+		Handler: h,
 		Addr:    ":8080",
 	}
 

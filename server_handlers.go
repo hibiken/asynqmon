@@ -12,8 +12,8 @@ import (
 //   - http.Handler(s) for server related endpoints
 // ****************************************************************************
 
-type ListServersResponse struct {
-	Servers []*ServerInfo `json:"servers"`
+type listServersResponse struct {
+	Servers []*serverInfo `json:"servers"`
 }
 
 func newListServersHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http.HandlerFunc {
@@ -23,7 +23,7 @@ func newListServersHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) 
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		resp := ListServersResponse{
+		resp := listServersResponse{
 			Servers: toServerInfoList(srvs, pf),
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {

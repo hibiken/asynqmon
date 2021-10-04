@@ -105,7 +105,7 @@ func main() {
 		}
 	}
 
-	api := asynqmon.NewHTTPHandler(asynqmon.Options{
+	h := asynqmon.New(asynqmon.Options{
 		RedisConnOpt: redisConnOpt,
 		Middlewares:  []asynqmon.MiddlewareFunc{loggingMiddleware},
 		StaticContentHandler: asynqmon.NewStaticContentHandler(
@@ -114,14 +114,14 @@ func main() {
 			"index.html",
 		),
 	})
-	defer api.Close()
+	defer h.Close()
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
 	})
 
 	srv := &http.Server{
-		Handler:      c.Handler(api),
+		Handler:      c.Handler(h),
 		Addr:         fmt.Sprintf(":%d", flagPort),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,

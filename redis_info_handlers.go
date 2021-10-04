@@ -16,7 +16,7 @@ import (
 //   - http.Handler(s) for redis info related endpoints
 // ****************************************************************************
 
-type RedisInfoResponse struct {
+type redisInfoResponse struct {
 	Addr    string            `json:"address"`
 	Info    map[string]string `json:"info"`
 	RawInfo string            `json:"raw_info"`
@@ -24,10 +24,10 @@ type RedisInfoResponse struct {
 
 	// Following fields are only set when connected to redis cluster.
 	RawClusterNodes string               `json:"raw_cluster_nodes"`
-	QueueLocations  []*QueueLocationInfo `json:"queue_locations"`
+	QueueLocations  []*queueLocationInfo `json:"queue_locations"`
 }
 
-type QueueLocationInfo struct {
+type queueLocationInfo struct {
 	Queue   string   `json:"queue"`   // queue name
 	KeySlot int64    `json:"keyslot"` // cluster key slot for the queue
 	Nodes   []string `json:"nodes"`   // list of cluster node addresses
@@ -41,7 +41,7 @@ func newRedisInfoHandlerFunc(client *redis.Client) http.HandlerFunc {
 			return
 		}
 		info := parseRedisInfo(res)
-		resp := RedisInfoResponse{
+		resp := redisInfoResponse{
 			Addr:    client.Options().Addr,
 			Info:    info,
 			RawInfo: res,
@@ -73,9 +73,9 @@ func newRedisClusterInfoHandlerFunc(client *redis.ClusterClient, inspector *asyn
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		var queueLocations []*QueueLocationInfo
+		var queueLocations []*queueLocationInfo
 		for _, qname := range queues {
-			q := QueueLocationInfo{Queue: qname}
+			q := queueLocationInfo{Queue: qname}
 			q.KeySlot, err = inspector.ClusterKeySlot(qname)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -92,7 +92,7 @@ func newRedisClusterInfoHandlerFunc(client *redis.ClusterClient, inspector *asyn
 			queueLocations = append(queueLocations, &q)
 		}
 
-		resp := RedisInfoResponse{
+		resp := redisInfoResponse{
 			Addr:            strings.Join(client.Options().Addrs, ","),
 			Info:            info,
 			RawInfo:         rawClusterInfo,
