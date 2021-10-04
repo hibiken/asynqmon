@@ -13,6 +13,7 @@ import (
 // MiddlewareFunc helps chain http.Handler(s).
 type MiddlewareFunc func(http.Handler) http.Handler
 
+// Options can be used to customise HTTPHandler.
 type Options struct {
 	RedisConnOpt         asynq.RedisConnOpt
 	Middlewares          []MiddlewareFunc
@@ -20,15 +21,18 @@ type Options struct {
 	StaticContentHandler http.Handler
 }
 
+// HTTPHandler can serve the API and UI required for asynq monitoring.
 type HTTPHandler struct {
 	router  *mux.Router
 	closers []func() error
 }
 
+// ServeHTTP will serve the API request as well as any static resources.
 func (a *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.router.ServeHTTP(w, r)
 }
 
+// New creates an HTTPHandler that can be used to serve asynqmon web API with static contents.
 func New(opts Options) *HTTPHandler {
 	rc, ok := opts.RedisConnOpt.MakeRedisClient().(redis.UniversalClient)
 	if !ok {
@@ -38,6 +42,7 @@ func New(opts Options) *HTTPHandler {
 	return &HTTPHandler{router: muxRouter(opts, rc, i), closers: []func() error{rc.Close, i.Close}}
 }
 
+// Close will close connections to redis.
 func (a *HTTPHandler) Close() error {
 	for _, f := range a.closers {
 		if err := f(); err != nil {

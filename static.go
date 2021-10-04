@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 )
 
+// NewStaticContentHandler creates a http.Handler which can be used to serve static files.
 func NewStaticContentHandler(contents embed.FS, staticDirPath, indexFileName string) http.Handler {
 	return &staticContentHandler{
 		contents:      contents,
