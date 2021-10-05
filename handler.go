@@ -12,7 +12,9 @@ import (
 
 // Options can be used to customise HTTPHandler.
 type Options struct {
+	// RedisConnOpt is a discriminated union of types that represent Redis connection configuration option.
 	RedisConnOpt         asynq.RedisConnOpt
+	// PayloadFormatter can be used to convert payload bytes to string to show in web UI.
 	PayloadFormatter     PayloadFormatter
 }
 
