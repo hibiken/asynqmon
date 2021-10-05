@@ -14,7 +14,7 @@ import (
 //   - conversion function from an external type to an internal type
 // ****************************************************************************
 
-// PayloadFormatter can be used to convert payload bytes to string to show in web ui.
+// PayloadFormatter can be used to convert payload bytes to string to show in web UI.
 type PayloadFormatter interface {
 	FormatPayload(taskType string, payload []byte) string
 }
