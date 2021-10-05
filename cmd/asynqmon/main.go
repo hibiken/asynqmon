@@ -5,6 +5,7 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strings"
@@ -107,21 +108,25 @@ func main() {
 
 	h := asynqmon.New(asynqmon.Options{
 		RedisConnOpt: redisConnOpt,
-		Middlewares:  []asynqmon.MiddlewareFunc{loggingMiddleware},
-		StaticContentHandler: asynqmon.NewStaticContentHandler(
-			staticContents,
-			"ui-assets",
-			"index.html",
-		),
 	})
 	defer h.Close()
+
+	r := mux.NewRouter()
+	r.PathPrefix("/api").Handler(h)
+	r.PathPrefix("/").Handler(&staticContentHandler{
+		contents:      staticContents,
+		staticDirPath: "ui-assets",
+		indexFileName: "index.html",
+	})
+
+	r.Use(loggingMiddleware)
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
 	})
 
 	srv := &http.Server{
-		Handler:      c.Handler(h),
+		Handler:      c.Handler(r),
 		Addr:         fmt.Sprintf(":%d", flagPort),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,

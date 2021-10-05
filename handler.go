@@ -10,15 +10,10 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-// MiddlewareFunc helps chain http.Handler(s).
-type MiddlewareFunc func(http.Handler) http.Handler
-
 // Options can be used to customise HTTPHandler.
 type Options struct {
 	RedisConnOpt         asynq.RedisConnOpt
-	Middlewares          []MiddlewareFunc
 	PayloadFormatter     PayloadFormatter
-	StaticContentHandler http.Handler
 }
 
 // HTTPHandler can serve the API and UI required for asynq monitoring.
@@ -32,7 +27,7 @@ func (a *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.router.ServeHTTP(w, r)
 }
 
-// New creates an HTTPHandler that can be used to serve asynqmon web API with static contents.
+// New creates an HTTPHandler that can be used to serve asynqmon web API, it is prefixed with `/api`.
 func New(opts Options) *HTTPHandler {
 	rc, ok := opts.RedisConnOpt.MakeRedisClient().(redis.UniversalClient)
 	if !ok {
@@ -59,10 +54,6 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 	var pf PayloadFormatter = defaultPayloadFormatter
 	if opts.PayloadFormatter != nil {
 		pf = opts.PayloadFormatter
-	}
-
-	for _, mf := range opts.Middlewares {
-		router.Use(mux.MiddlewareFunc(mf))
 	}
 
 	api := router.PathPrefix("/api").Subrouter()
@@ -137,6 +128,5 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 		api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(c)).Methods("GET")
 	}
 
-	router.PathPrefix("/").Handler(opts.StaticContentHandler)
 	return router
 }

@@ -1,4 +1,4 @@
-package asynqmon
+package main
 
 import (
 	"embed"
@@ -7,15 +7,6 @@ import (
 	"net/http"
 	"path/filepath"
 )
-
-// NewStaticContentHandler creates a http.Handler which can be used to serve static files.
-func NewStaticContentHandler(contents embed.FS, staticDirPath, indexFileName string) http.Handler {
-	return &staticContentHandler{
-		contents:      contents,
-		staticDirPath: staticDirPath,
-		indexFileName: indexFileName,
-	}
-}
 
 // staticFileServer implements the http.Handler interface, so we can use it
 // to respond to HTTP requests. The path to the static directory and
