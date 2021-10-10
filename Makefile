@@ -1,21 +1,8 @@
-.PHONY: assets sync go_binary build docker
+.PHONY: build docker
 
-NODE_PATH ?= $(PWD)/ui/node_modules
-
-assets:
-	@if [ ! -d "$(NODE_PATH)" ]; then cd ./ui && yarn install --modules-folder $(NODE_PATH); fi
-	cd ./ui && yarn build --modules-folder $(NODE_PATH)
-
-# sync will copy the ui build assets to cmd/asynqmon so that it can be embedded into the go binary
-sync:
-	rsync -avu --delete "./ui/build/" "./cmd/asynqmon/ui-assets"
-
-# Build go binary.
-go_binary: assets sync
+# Build a release binary.
+build:
 	go build -o asynqmon ./cmd/asynqmon
-
-# Target to build a release binary.
-build: go_binary
 
 # Build image and run Asynqmon server (with default settings).
 docker:

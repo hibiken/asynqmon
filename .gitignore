@@ -26,9 +26,11 @@ package-json.lock
 # main binary
 asynqmon
 dist/
-cmd/asynqmon/ui-assets
 
 # Editor configs
 .idea/
 .vscode/
 .editorconfig
+
+# examples
+examples/

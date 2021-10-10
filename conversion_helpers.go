@@ -14,15 +14,15 @@ import (
 //   - conversion function from an external type to an internal type
 // ****************************************************************************
 
-// PayloadFormatter can be used to convert payload bytes to string to show in web UI.
+// PayloadFormatter is used to convert payload bytes to string shown in the UI.
 type PayloadFormatter interface {
+	// FormatPayload takes the task's typename and payload and returns a string representation of the payload.
 	FormatPayload(taskType string, payload []byte) string
 }
 
-// PayloadFormatterFunc can be used to create a PayloadFormatter.
 type PayloadFormatterFunc func(string, []byte) string
 
-// FormatPayload returns the string representation of the payload of a type.
+// FormatPayload returns a string representation of the payload of the given taskType.
 func (f PayloadFormatterFunc) FormatPayload(taskType string, payload []byte) string {
 	return f(taskType, payload)
 }
@@ -407,8 +407,8 @@ type serverInfo struct {
 	Queues         map[string]int `json:"queue_priorities"`
 	StrictPriority bool           `json:"strict_priority_enabled"`
 	Started        string         `json:"start_time"`
-	Status         string        `json:"status"`
-	ActiveWorkers  []*workerInfo `json:"active_workers"`
+	Status         string         `json:"status"`
+	ActiveWorkers  []*workerInfo  `json:"active_workers"`
 }
 
 func toServerInfo(info *asynq.ServerInfo, pf PayloadFormatter) *serverInfo {

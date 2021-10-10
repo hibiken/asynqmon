@@ -1,8 +1,10 @@
 package asynqmon
 
 import (
+	"embed"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
@@ -10,48 +12,81 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-// Options can be used to customise HTTPHandler.
+// Options is used to configure HTTPHandler.
 type Options struct {
-	// RedisConnOpt is a discriminated union of types that represent Redis connection configuration option.
-	RedisConnOpt         asynq.RedisConnOpt
-	// PayloadFormatter can be used to convert payload bytes to string to show in web UI.
-	PayloadFormatter     PayloadFormatter
+	// URL path the handler is responsible for.
+	// The path is used for the homepage of asynqmon, and every other page is rooted in this subtree.
+	//
+	// This field is optional. Default is "/".
+	RootPath string
+
+	// RedisConnOpt specifies the connection to a redis-server or redis-cluster.
+	//
+	// This field is required.
+	RedisConnOpt asynq.RedisConnOpt
+
+	// PayloadFormatter is used to convert payload bytes to string shown in the UI.
+	//
+	// This field is optional.
+	PayloadFormatter PayloadFormatter
 }
 
-// HTTPHandler can serve the API and UI required for asynq monitoring.
+// HTTPHandler is a http.Handler for asynqmon application.
 type HTTPHandler struct {
-	router  *mux.Router
-	closers []func() error
+	router   *mux.Router
+	closers  []func() error
+	rootPath string // the value should not have the trailing slash
 }
 
-// ServeHTTP will serve the API request as well as any static resources.
-func (a *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a.router.ServeHTTP(w, r)
+func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.router.ServeHTTP(w, r)
 }
 
-// New creates an HTTPHandler that can be used to serve asynqmon web API, it is prefixed with `/api`.
+// New creates a HTTPHandler with the given options.
 func New(opts Options) *HTTPHandler {
+	if opts.RedisConnOpt == nil {
+		panic("asynqmon.New: RedisConnOpt field is required")
+	}
 	rc, ok := opts.RedisConnOpt.MakeRedisClient().(redis.UniversalClient)
 	if !ok {
-		panic(fmt.Sprintf("asnyqmon.HTTPHandler: unsupported RedisConnOpt type %T", opts.RedisConnOpt))
+		panic(fmt.Sprintf("asnyqmon.New: unsupported RedisConnOpt type %T", opts.RedisConnOpt))
 	}
 	i := asynq.NewInspector(opts.RedisConnOpt)
-	return &HTTPHandler{router: muxRouter(opts, rc, i), closers: []func() error{rc.Close, i.Close}}
+
+	// Make sure that RootPath starts with a slash if provided.
+	if opts.RootPath != "" && !strings.HasPrefix(opts.RootPath, "/") {
+		panic(fmt.Sprintf("asynqmon.New: RootPath must start with a slash"))
+	}
+	// Remove tailing slash from RootPath.
+	opts.RootPath = strings.TrimSuffix(opts.RootPath, "/")
+
+	return &HTTPHandler{
+		router:   muxRouter(opts, rc, i),
+		closers:  []func() error{rc.Close, i.Close},
+		rootPath: opts.RootPath,
+	}
 }
 
-// Close will close connections to redis.
-func (a *HTTPHandler) Close() error {
-	for _, f := range a.closers {
+// Close closes connections to redis.
+func (h *HTTPHandler) Close() error {
+	for _, f := range h.closers {
 		if err := f(); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
+// RootPath returns the root URL path used for asynqmon application.
+func (h *HTTPHandler) RootPath() string {
+	return h.rootPath + "/"
+}
+
+//go:embed ui/build/*
+var staticContents embed.FS
+
 func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspector) *mux.Router {
-	router := mux.NewRouter()
+	router := mux.NewRouter().PathPrefix(opts.RootPath).Subrouter()
 
 	var pf PayloadFormatter = defaultPayloadFormatter
 	if opts.PayloadFormatter != nil {
@@ -130,5 +165,12 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 		api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(c)).Methods("GET")
 	}
 
+	// Everything else, route to uiAssetsHandler.
+	router.NotFoundHandler = &uiAssetsHandler{
+		rootPath:      opts.RootPath,
+		contents:      staticContents,
+		staticDirPath: "ui/build",
+		indexFileName: "index.html",
+	}
 	return router
 }

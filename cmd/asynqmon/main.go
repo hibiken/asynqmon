@@ -2,10 +2,8 @@ package main
 
 import (
 	"crypto/tls"
-	"embed"
 	"flag"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"strings"
@@ -41,7 +39,9 @@ func init() {
 	flag.StringVar(&flagRedisClusterNodes, "redis-cluster-nodes", "", "comma separated list of host:port addresses of cluster nodes")
 }
 
-func getRedisOptionsFromFlags() (*redis.UniversalOptions, error) {
+// TODO: Write test and refactor this code.
+// IDEA: https://eli.thegreenplace.net/2020/testing-flag-parsing-in-go-programs/
+func getRedisOptionsFromFlags() (asynq.RedisConnOpt, error) {
 	var opts redis.UniversalOptions
 
 	if flagRedisClusterNodes != "" {
@@ -74,36 +74,27 @@ func getRedisOptionsFromFlags() (*redis.UniversalOptions, error) {
 		opts.TLSConfig.InsecureSkipVerify = true
 	}
 
-	return &opts, nil
+	if flagRedisClusterNodes != "" {
+		return asynq.RedisClusterClientOpt{
+			Addrs:     opts.Addrs,
+			Password:  opts.Password,
+			TLSConfig: opts.TLSConfig,
+		}, nil
+	}
+	return asynq.RedisClientOpt{
+		Addr:      opts.Addrs[0],
+		DB:        opts.DB,
+		Password:  opts.Password,
+		TLSConfig: opts.TLSConfig,
+	}, nil
 }
-
-//go:embed ui-assets/*
-var staticContents embed.FS
 
 func main() {
 	flag.Parse()
 
-	opts, err := getRedisOptionsFromFlags()
+	redisConnOpt, err := getRedisOptionsFromFlags()
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	useRedisCluster := flagRedisClusterNodes != ""
-
-	var redisConnOpt asynq.RedisConnOpt
-	if useRedisCluster {
-		redisConnOpt = asynq.RedisClusterClientOpt{
-			Addrs:     opts.Addrs,
-			Password:  opts.Password,
-			TLSConfig: opts.TLSConfig,
-		}
-	} else {
-		redisConnOpt = asynq.RedisClientOpt{
-			Addr:      opts.Addrs[0],
-			DB:        opts.DB,
-			Password:  opts.Password,
-			TLSConfig: opts.TLSConfig,
-		}
 	}
 
 	h := asynqmon.New(asynqmon.Options{
@@ -111,22 +102,12 @@ func main() {
 	})
 	defer h.Close()
 
-	r := mux.NewRouter()
-	r.PathPrefix("/api").Handler(h)
-	r.PathPrefix("/").Handler(&staticContentHandler{
-		contents:      staticContents,
-		staticDirPath: "ui-assets",
-		indexFileName: "index.html",
-	})
-
-	r.Use(loggingMiddleware)
-
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
 	})
 
 	srv := &http.Server{
-		Handler:      c.Handler(r),
+		Handler:      c.Handler(h),
 		Addr:         fmt.Sprintf(":%d", flagPort),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
