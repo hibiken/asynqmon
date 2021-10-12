@@ -10,7 +10,7 @@ Asynqmon is both a library that you can include in your web application, as well
 
 | Asynq version  | WebUI (asynqmon) version |
 | -------------- | ------------------------ |
-| 0.18.x         | 0.2.x                    |
+| 0.18.x         | 0.2.x, 0.3.x             |
 | 0.16.x, 0.17.x | 0.1.x                    |
 
 ## Install the binary
@@ -125,7 +125,7 @@ Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
 
 ![Web UI Settings and adaptive dark mode](https://user-images.githubusercontent.com/11155743/114697149-3517c380-9d26-11eb-9f7a-ae2dd00aad5b.png)
 
-### Importing into projects
+## Import as a Library
 
 Asynqmon is also a library which can be imported into an existing web application.
 
