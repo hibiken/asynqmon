@@ -127,6 +127,8 @@ Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
 
 ## Import as a Library
 
+[![GoDoc](https://godoc.org/github.com/hibiken/asynqmon?status.svg)](https://godoc.org/github.com/hibiken/asynqmon)
+
 Asynqmon is also a library which can be imported into an existing web application.
 
 Example with [net/http](https://pkg.go.dev/net/http):
