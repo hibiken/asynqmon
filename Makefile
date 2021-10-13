@@ -1,7 +1,12 @@
-.PHONY: build docker
+.PHONY: assets build docker
+
+NODE_PATH ?= $(PWD)/ui/node_modules
+assets:
+	@if [ ! -d "$(NODE_PATH)"  ]; then cd ./ui && yarn install --modules-folder $(NODE_PATH); fi
+	cd ./ui && yarn build --modules-folder $(NODE_PATH)
 
 # Build a release binary.
-build:
+build: assets
 	go build -o asynqmon ./cmd/asynqmon
 
 # Build image and run Asynqmon server (with default settings).
