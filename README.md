@@ -153,7 +153,7 @@ func main() {
 	http.Handle(h.RootPath(), h)
 
 	// Go to http://localhost:8080/monitoring to see asynqmon homepage.
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 ```
 
