@@ -78,8 +78,9 @@ func (h *HTTPHandler) Close() error {
 }
 
 // RootPath returns the root URL path used for asynqmon application.
+// Returned path string does not have the trailing slash.
 func (h *HTTPHandler) RootPath() string {
-	return h.rootPath + "/"
+	return h.rootPath
 }
 
 //go:embed ui/build/*
