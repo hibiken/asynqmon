@@ -42,7 +42,7 @@ COPY --from=frontend ["/static/build", "ui/build"]
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 
 # Run go build (with ldflags to reduce binary size).
-RUN go build -ldflags="-s -w" -o asynqmon .
+RUN go build -ldflags="-s -w" -o asynqmon ./cmd/asynqmon
 
 #
 # Third stage: 

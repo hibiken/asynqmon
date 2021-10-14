@@ -1,3 +1,7 @@
+<!--
+  This file is used as a template for go's html/template package.
+  Use delimiter "/[[", "]]" to denote actions.
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -45,6 +49,9 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
+    <script>
+      window.ROOT_PATH=/[[.RootPath]];
+    </script>
     <title>Asynq - Monitoring</title>
   </head>
   <body>

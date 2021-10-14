@@ -1,4 +1,4 @@
-package main
+package asynqmon
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+
 	"github.com/hibiken/asynq"
 )
 
@@ -21,7 +22,7 @@ func newListQueuesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		snapshots := make([]*QueueStateSnapshot, len(qnames))
+		snapshots := make([]*queueStateSnapshot, len(qnames))
 		for i, qname := range qnames {
 			qinfo, err := inspector.GetQueueInfo(qname)
 			if err != nil {
@@ -55,7 +56,7 @@ func newGetQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		var dailyStats []*DailyStats
+		var dailyStats []*dailyStats
 		for _, s := range data {
 			dailyStats = append(dailyStats, toDailyStats(s))
 		}
@@ -108,8 +109,8 @@ func newResumeQueueHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	}
 }
 
-type ListQueueStatsResponse struct {
-	Stats map[string][]*DailyStats `json:"stats"`
+type listQueueStatsResponse struct {
+	Stats map[string][]*dailyStats `json:"stats"`
 }
 
 func newListQueueStatsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
@@ -119,7 +120,7 @@ func newListQueueStatsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		resp := ListQueueStatsResponse{Stats: make(map[string][]*DailyStats)}
+		resp := listQueueStatsResponse{Stats: make(map[string][]*dailyStats)}
 		const numdays = 90 // Get stats for the last 90 days.
 		for _, qname := range qnames {
 			stats, err := inspector.History(qname, numdays)

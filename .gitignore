@@ -28,5 +28,9 @@ asynqmon
 dist/
 
 # Editor configs
+.idea/
 .vscode/
 .editorconfig
+
+# examples
+examples/

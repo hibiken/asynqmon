@@ -1,10 +1,11 @@
-package main
+package asynqmon
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
+
 	"github.com/hibiken/asynq"
 )
 
@@ -13,7 +14,7 @@ import (
 //   - http.Handler(s) for scheduler entry related endpoints
 // ****************************************************************************
 
-func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		entries, err := inspector.SchedulerEntries()
 		if err != nil {
@@ -23,9 +24,9 @@ func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector) http.Handler
 		payload := make(map[string]interface{})
 		if len(entries) == 0 {
 			// avoid nil for the entries field in json output.
-			payload["entries"] = make([]*SchedulerEntry, 0)
+			payload["entries"] = make([]*schedulerEntry, 0)
 		} else {
-			payload["entries"] = toSchedulerEntries(entries)
+			payload["entries"] = toSchedulerEntries(entries, pf)
 		}
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -34,8 +35,8 @@ func newListSchedulerEntriesHandlerFunc(inspector *asynq.Inspector) http.Handler
 	}
 }
 
-type ListSchedulerEnqueueEventsResponse struct {
-	Events []*SchedulerEnqueueEvent `json:"events"`
+type listSchedulerEnqueueEventsResponse struct {
+	Events []*schedulerEnqueueEvent `json:"events"`
 }
 
 func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
@@ -48,7 +49,7 @@ func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.H
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		resp := ListSchedulerEnqueueEventsResponse{
+		resp := listSchedulerEnqueueEventsResponse{
 			Events: toSchedulerEnqueueEvents(events),
 		}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {

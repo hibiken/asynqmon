@@ -5,7 +5,7 @@ import queryString from "query-string";
 // the static file server.
 // In developement, we assume that the API server is listening on port 8080.
 const BASE_URL =
-  process.env.NODE_ENV === "production" ? "/api" : "http://localhost:8080/api";
+  process.env.NODE_ENV === "production" ? `${window.ROOT_PATH}/api` : `http://localhost:8080${window.ROOT_PATH}/api`;
 
 export interface ListQueuesResponse {
   queues: Queue[];

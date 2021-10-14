@@ -1,11 +1,11 @@
 export const paths = {
-  HOME: "/",
-  SETTINGS: "/settings",
-  SERVERS: "/servers",
-  SCHEDULERS: "/schedulers",
-  QUEUE_DETAILS: "/queues/:qname",
-  REDIS: "/redis",
-  TASK_DETAILS: "/queues/:qname/tasks/:taskId",
+  HOME: `${window.ROOT_PATH}/`,
+  SETTINGS: `${window.ROOT_PATH}/settings`,
+  SERVERS: `${window.ROOT_PATH}/servers`,
+  SCHEDULERS: `${window.ROOT_PATH}/schedulers`,
+  QUEUE_DETAILS: `${window.ROOT_PATH}/queues/:qname`,
+  REDIS: `${window.ROOT_PATH}/redis`,
+  TASK_DETAILS: `${window.ROOT_PATH}/queues/:qname/tasks/:taskId`,
 };
 
 /**************************************************************

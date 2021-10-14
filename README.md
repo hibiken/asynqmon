@@ -2,14 +2,18 @@
 
 # A modern web based tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues, tasks and message broker
 
+## Overview
+
+Asynqmon is both a library that you can include in your web application, as well as a binary that you can simply install and run.
+
 ## Version Compatibility
 
 | Asynq version  | WebUI (asynqmon) version |
 | -------------- | ------------------------ |
-| 0.18.x         | 0.2.x                    |
+| 0.18.x         | 0.2.x, 0.3.x             |
 | 0.16.x, 0.17.x | 0.1.x                    |
 
-## Install
+## Install the binary
 
 ### Release binaries
 
@@ -47,7 +51,7 @@ To build Docker image locally, run:
 make docker
 ```
 
-## Run
+## Run the binary
 
 To use the defaults, simply run and open http://localhost:8080.
 
@@ -120,6 +124,71 @@ Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
 **Settings and adaptive dark mode**
 
 ![Web UI Settings and adaptive dark mode](https://user-images.githubusercontent.com/11155743/114697149-3517c380-9d26-11eb-9f7a-ae2dd00aad5b.png)
+
+## Import as a Library
+
+[![GoDoc](https://godoc.org/github.com/hibiken/asynqmon?status.svg)](https://godoc.org/github.com/hibiken/asynqmon)
+
+Asynqmon is also a library which can be imported into an existing web application.
+
+Example with [net/http](https://pkg.go.dev/net/http):
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
+)
+
+func main() {
+	h := asynqmon.New(asynqmon.Options{
+		RootPath: "/monitoring", // RootPath specifies the root for asynqmon app
+		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
+	})
+
+	http.Handle(h.RootPath(), h)
+
+	// Go to http://localhost:8080/monitoring to see asynqmon homepage.
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+Example with [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux):
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
+)
+
+func main() {
+	h := asynqmon.New(asynqmon.Options{
+		RootPath: "/monitoring", // RootPath specifies the root for asynqmon app
+		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
+	})
+
+	r := mux.NewRouter()
+	r.PathPrefix(h.RootPath()).Handler(h)
+
+	srv := &http.Server{
+		Handler: r,
+		Addr:    ":8080",
+	}
+
+	// Go to http://localhost:8080/monitoring to see asynqmon homepage.
+	log.Fatal(srv.ListenAndServe())
+}
+```
 
 ## License
 
