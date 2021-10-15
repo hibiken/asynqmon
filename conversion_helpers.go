@@ -67,6 +67,7 @@ type queueStateSnapshot struct {
 	Scheduled int `json:"scheduled"`
 	Retry     int `json:"retry"`
 	Archived  int `json:"archived"`
+	Completed int `json:"completed"`
 
 	// Total number of tasks processed during the given date.
 	// The number includes both succeeded and failed tasks.
@@ -91,6 +92,7 @@ func toQueueStateSnapshot(s *asynq.QueueInfo) *queueStateSnapshot {
 		Scheduled:   s.Scheduled,
 		Retry:       s.Retry,
 		Archived:    s.Archived,
+		Completed:   s.Completed,
 		Processed:   s.Processed,
 		Succeeded:   s.Processed - s.Failed,
 		Failed:      s.Failed,

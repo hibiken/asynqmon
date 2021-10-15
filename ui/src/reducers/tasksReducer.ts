@@ -15,6 +15,9 @@ import {
   LIST_ARCHIVED_TASKS_BEGIN,
   LIST_ARCHIVED_TASKS_SUCCESS,
   LIST_ARCHIVED_TASKS_ERROR,
+  LIST_COMPLETED_TASKS_BEGIN,
+  LIST_COMPLETED_TASKS_SUCCESS,
+  LIST_COMPLETED_TASKS_ERROR,
   CANCEL_ACTIVE_TASK_BEGIN,
   CANCEL_ACTIVE_TASK_SUCCESS,
   CANCEL_ACTIVE_TASK_ERROR,
@@ -121,6 +124,7 @@ import {
 import {
   ActiveTask,
   ArchivedTask,
+  CompletedTask,
   PendingTask,
   RetryTask,
   ScheduledTask,
@@ -156,6 +160,12 @@ export interface RetryTaskExtended extends RetryTask {
 }
 
 export interface ArchivedTaskExtended extends ArchivedTask {
+  // Indicates that a request has been sent for this
+  // task and awaiting for a response.
+  requestPending: boolean;
+}
+
+export interface CompletedTaskExtended extends CompletedTask {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;
@@ -197,6 +207,13 @@ interface TasksState {
     error: string;
     data: ArchivedTaskExtended[];
   };
+  completedTasks: {
+    loading: boolean;
+    batchActionPending: boolean;
+    allActionPending: boolean;
+    error: string;
+    data: CompletedTaskExtended[];
+  }
   taskInfo: {
     loading: boolean;
     error: string;
@@ -234,6 +251,13 @@ const initialState: TasksState = {
     data: [],
   },
   archivedTasks: {
+    loading: false,
+    batchActionPending: false,
+    allActionPending: false,
+    error: "",
+    data: [],
+  },
+  completedTasks: {
     loading: false,
     batchActionPending: false,
     allActionPending: false,
@@ -444,6 +468,40 @@ function tasksReducer(
         ...state,
         archivedTasks: {
           ...state.archivedTasks,
+          loading: false,
+          error: action.error,
+          data: [],
+        },
+      };
+
+    case LIST_COMPLETED_TASKS_BEGIN:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          loading: true,
+        },
+      };
+
+    case LIST_COMPLETED_TASKS_SUCCESS:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          loading: false,
+          error: "",
+          data: action.payload.tasks.map((task) => ({
+            ...task,
+            requestPending: false,
+          })),
+        },
+      };
+
+    case LIST_COMPLETED_TASKS_ERROR:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
           loading: false,
           error: action.error,
           data: [],

@@ -1,0 +1,344 @@
+import React, { useCallback, useState } from "react";
+import { useHistory } from "react-router-dom";
+import { connect, ConnectedProps } from "react-redux";
+import { makeStyles } from "@material-ui/core/styles";
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import Checkbox from "@material-ui/core/Checkbox";
+import TableContainer from "@material-ui/core/TableContainer";
+import TableHead from "@material-ui/core/TableHead";
+import TableRow from "@material-ui/core/TableRow";
+import Tooltip from "@material-ui/core/Tooltip";
+import Paper from "@material-ui/core/Paper";
+import IconButton from "@material-ui/core/IconButton";
+import DeleteIcon from "@material-ui/icons/Delete";
+import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
+import TableFooter from "@material-ui/core/TableFooter";
+import TablePagination from "@material-ui/core/TablePagination";
+import Alert from "@material-ui/lab/Alert";
+import AlertTitle from "@material-ui/lab/AlertTitle";
+import SyntaxHighlighter from "./SyntaxHighlighter";
+import { AppState } from "../store";
+import { listCompletedTasksAsync } from "../actions/tasksActions";
+import TablePaginationActions, {
+  rowsPerPageOptions,
+} from "./TablePaginationActions";
+import { taskRowsPerPageChange } from "../actions/settingsActions";
+import TableActions from "./TableActions";
+import { timeAgo, uuidPrefix } from "../utils";
+import { usePolling } from "../hooks";
+import { CompletedTaskExtended } from "../reducers/tasksReducer";
+import { TableColumn } from "../types/table";
+import { taskDetailsPath } from "../paths";
+
+const useStyles = makeStyles((theme) => ({
+  table: {
+    minWidth: 650,
+  },
+  stickyHeaderCell: {
+    background: theme.palette.background.paper,
+  },
+  alert: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+  pagination: {
+    border: "none",
+  },
+}));
+
+function mapStateToProps(state: AppState) {
+  return {
+    loading: state.tasks.completedTasks.loading,
+    error: state.tasks.completedTasks.error,
+    tasks: state.tasks.completedTasks.data,
+    batchActionPending: state.tasks.completedTasks.batchActionPending,
+    allActionPending: state.tasks.completedTasks.allActionPending,
+    pollInterval: state.settings.pollInterval,
+    pageSize: state.settings.taskRowsPerPage,
+  };
+}
+
+const mapDispatchToProps = {
+  listCompletedTasksAsync,
+  taskRowsPerPageChange,
+};
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+type ReduxProps = ConnectedProps<typeof connector>;
+
+interface Props {
+  queue: string; // name of the queue.
+  totalTaskCount: number; // totoal number of completed tasks.
+}
+
+function CompletedTasksTable(props: Props & ReduxProps) {
+  const { pollInterval, listCompletedTasksAsync, queue, pageSize } = props;
+  const classes = useStyles();
+  const [page, setPage] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState<string>("");
+
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    props.taskRowsPerPageChange(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      const newSelected = props.tasks.map((t) => t.id);
+      setSelectedIds(newSelected);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const fetchData = useCallback(() => {
+    const pageOpts = { page: page + 1, size: pageSize };
+    listCompletedTasksAsync(queue, pageOpts);
+  }, [page, pageSize, queue, listCompletedTasksAsync]);
+
+  usePolling(fetchData, pollInterval);
+
+  if (props.error.length > 0) {
+    return (
+      <Alert severity="error" className={classes.alert}>
+        <AlertTitle>Error</AlertTitle>
+        {props.error}
+      </Alert>
+    );
+  }
+  if (props.tasks.length === 0) {
+    return (
+      <Alert severity="info" className={classes.alert}>
+        <AlertTitle>Info</AlertTitle>
+        No completed tasks at this time.
+      </Alert>
+    );
+  }
+
+  const columns: TableColumn[] = [
+    { key: "id", label: "ID", align: "left" },
+    { key: "type", label: "Type", align: "left" },
+    { key: "payload", label: "Payload", align: "left" },
+    { key: "completed_at", label: "Completed Time", align: "left" },
+    { key: "result", label: "Result", align: "left" },
+    { key: "actions", label: "Actions", align: "center" },
+  ];
+
+  const rowCount = props.tasks.length;
+  const numSelected = selectedIds.length;
+  return (
+    <div>
+      <TableActions
+        showIconButtons={numSelected > 0}
+        iconButtonActions={[
+          {
+            tooltip: "Delete",
+            icon: <DeleteIcon />,
+            onClick: () => {
+              /* TODO */
+            },
+            disabled: props.batchActionPending,
+          },
+        ]}
+        menuItemActions={[
+          {
+            label: "Delete All",
+            onClick: () => {
+              /* TODO */
+            },
+            disabled: props.allActionPending,
+          },
+        ]}
+      />
+      <TableContainer component={Paper}>
+        <Table
+          stickyHeader={true}
+          className={classes.table}
+          aria-label="archived tasks table"
+          size="small"
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell
+                padding="checkbox"
+                classes={{ stickyHeader: classes.stickyHeaderCell }}
+              >
+                <IconButton>
+                  <Checkbox
+                    indeterminate={numSelected > 0 && numSelected < rowCount}
+                    checked={rowCount > 0 && numSelected === rowCount}
+                    onChange={handleSelectAllClick}
+                    inputProps={{
+                      "aria-label": "select all tasks shown in the table",
+                    }}
+                  />
+                </IconButton>
+              </TableCell>
+              {columns.map((col) => (
+                <TableCell
+                  key={col.key}
+                  align={col.align}
+                  classes={{ stickyHeader: classes.stickyHeaderCell }}
+                >
+                  {col.label}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {props.tasks.map((task) => (
+              <Row
+                key={task.id}
+                task={task}
+                isSelected={selectedIds.includes(task.id)}
+                onSelectChange={(checked: boolean) => {
+                  if (checked) {
+                    setSelectedIds(selectedIds.concat(task.id));
+                  } else {
+                    setSelectedIds(selectedIds.filter((id) => id !== task.id));
+                  }
+                }}
+                onDeleteClick={() => {
+                  // props.deleteCompletedTaskAsync(queue, task.id);
+                }}
+                allActionPending={props.allActionPending}
+                onActionCellEnter={() => setActiveTaskId(task.id)}
+                onActionCellLeave={() => setActiveTaskId("")}
+                showActions={activeTaskId === task.id}
+              />
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={rowsPerPageOptions}
+                colSpan={columns.length + 1}
+                count={props.totalTaskCount}
+                rowsPerPage={pageSize}
+                page={page}
+                SelectProps={{
+                  inputProps: { "aria-label": "rows per page" },
+                  native: true,
+                }}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+                ActionsComponent={TablePaginationActions}
+                className={classes.pagination}
+              />
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </TableContainer>
+    </div>
+  );
+}
+
+const useRowStyles = makeStyles((theme) => ({
+  root: {
+    cursor: "pointer",
+    "&:hover": {
+      boxShadow: theme.shadows[2],
+    },
+    "&:hover .MuiTableCell-root": {
+      borderBottomColor: theme.palette.background.paper,
+    },
+  },
+  actionCell: {
+    width: "96px",
+  },
+  actionButton: {
+    marginLeft: 3,
+    marginRight: 3,
+  },
+}));
+
+interface RowProps {
+  task: CompletedTaskExtended;
+  isSelected: boolean;
+  onSelectChange: (checked: boolean) => void;
+  onDeleteClick: () => void;
+  allActionPending: boolean;
+  showActions: boolean;
+  onActionCellEnter: () => void;
+  onActionCellLeave: () => void;
+}
+
+function Row(props: RowProps) {
+  const { task } = props;
+  const classes = useRowStyles();
+  const history = useHistory();
+  return (
+    <TableRow
+      key={task.id}
+      className={classes.root}
+      selected={props.isSelected}
+      onClick={() => history.push(taskDetailsPath(task.queue, task.id))}
+    >
+      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+        <IconButton>
+          <Checkbox
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              props.onSelectChange(event.target.checked)
+            }
+            checked={props.isSelected}
+          />
+        </IconButton>
+      </TableCell>
+      <TableCell component="th" scope="row">
+        {uuidPrefix(task.id)}
+      </TableCell>
+      <TableCell>{task.type}</TableCell>
+      <TableCell>
+        <SyntaxHighlighter
+          language="json"
+          customStyle={{ margin: 0, maxWidth: 400 }}
+        >
+          {task.payload}
+        </SyntaxHighlighter>
+      </TableCell>
+      <TableCell>{timeAgo(task.completed_at)}</TableCell>
+      <TableCell>{"TODO: Result data here"}</TableCell>
+      <TableCell
+        align="center"
+        className={classes.actionCell}
+        onMouseEnter={props.onActionCellEnter}
+        onMouseLeave={props.onActionCellLeave}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {props.showActions ? (
+          <React.Fragment>
+            <Tooltip title="Delete">
+              <IconButton
+                className={classes.actionButton}
+                onClick={props.onDeleteClick}
+                disabled={task.requestPending || props.allActionPending}
+                size="small"
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </React.Fragment>
+        ) : (
+          <IconButton size="small" onClick={props.onActionCellEnter}>
+            <MoreHorizIcon fontSize="small" />
+          </IconButton>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+}
+
+export default connector(CompletedTasksTable);

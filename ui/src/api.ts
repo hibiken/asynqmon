@@ -36,6 +36,11 @@ export interface ListArchivedTasksResponse {
   stats: Queue;
 }
 
+export interface ListCompletedTasksResponse {
+  tasks: CompletedTask[];
+  stats: Queue;
+}
+
 export interface ListServersResponse {
   servers: ServerInfo[];
 }
@@ -239,6 +244,7 @@ export interface Queue {
   scheduled: number;
   retry: number;
   archived: number;
+  completed: number,
   processed: number;
   failed: number;
   timestamp: string;
@@ -315,6 +321,14 @@ export interface ArchivedTask extends BaseTask {
   retried: number;
   last_failed_at: string;
   error_message: string;
+}
+
+export interface CompletedTask extends BaseTask {
+  id: string;
+  queue: string;
+  max_retry: number;
+  retried: number;
+  completed_at: string;
 }
 
 export interface ServerInfo {
@@ -509,6 +523,18 @@ export async function listArchivedTasks(
     url,
   });
   return resp.data;
+}
+
+export async function listCompletedTasks(qname: string, pageOpts?: PaginationOptions): Promise<ListCompletedTasksResponse> {
+  let url = `${BASE_URL}/queues/${qname}/completed_tasks`
+  if (pageOpts) {
+    url += `?${queryString.stringify(pageOpts)}`
+  }
+  const resp = await axios({
+    method: "get", 
+    url,
+  })
+  return resp.data
 }
 
 export async function archivePendingTask(

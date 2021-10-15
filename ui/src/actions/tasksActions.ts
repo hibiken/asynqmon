@@ -34,6 +34,8 @@ import {
   ListRetryTasksResponse,
   listScheduledTasks,
   ListScheduledTasksResponse,
+  listCompletedTasks,
+  ListCompletedTasksResponse,
   PaginationOptions,
   runAllArchivedTasks,
   runAllRetryTasks,
@@ -72,6 +74,9 @@ export const LIST_RETRY_TASKS_ERROR = "LIST_RETRY_TASKS_ERROR";
 export const LIST_ARCHIVED_TASKS_BEGIN = "LIST_ARCHIVED_TASKS_BEGIN";
 export const LIST_ARCHIVED_TASKS_SUCCESS = "LIST_ARCHIVED_TASKS_SUCCESS";
 export const LIST_ARCHIVED_TASKS_ERROR = "LIST_ARCHIVED_TASKS_ERROR";
+export const LIST_COMPLETED_TASKS_BEGIN = "LIST_COMPLETED_TASKS_BEGIN";
+export const LIST_COMPLETED_TASKS_SUCCESS = "LIST_COMPLETED_TASKS_SUCCESS";
+export const LIST_COMPLETED_TASKS_ERROR = "LIST_COMPLETED_TASKS_ERROR";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
@@ -309,6 +314,23 @@ interface ListArchivedTasksSuccessAction {
 
 interface ListArchivedTasksErrorAction {
   type: typeof LIST_ARCHIVED_TASKS_ERROR;
+  queue: string;
+  error: string; // error description
+}
+
+interface ListCompletedTasksBeginAction {
+  type: typeof LIST_COMPLETED_TASKS_BEGIN;
+  queue: string;
+}
+
+interface ListCompletedTasksSuccessAction {
+  type: typeof LIST_COMPLETED_TASKS_SUCCESS;
+  queue: string;
+  payload: ListCompletedTasksResponse;
+}
+
+interface ListCompletedTasksErrorAction {
+  type: typeof LIST_COMPLETED_TASKS_ERROR;
   queue: string;
   error: string; // error description
 }
@@ -931,6 +953,9 @@ export type TasksActionTypes =
   | ListArchivedTasksBeginAction
   | ListArchivedTasksSuccessAction
   | ListArchivedTasksErrorAction
+  | ListCompletedTasksBeginAction
+  | ListCompletedTasksSuccessAction
+  | ListCompletedTasksErrorAction
   | CancelActiveTaskBeginAction
   | CancelActiveTaskSuccessAction
   | CancelActiveTaskErrorAction
@@ -1183,6 +1208,30 @@ export function listArchivedTasksAsync(
       });
     }
   };
+}
+
+export function listCompletedTasksAsync(qname: string, pageOpts?: PaginationOptions) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    try {
+      dispatch({ type: LIST_COMPLETED_TASKS_BEGIN, queue: qname })
+      const response = await listCompletedTasks(qname, pageOpts);
+      dispatch({
+        type: LIST_COMPLETED_TASKS_SUCCESS,
+        queue: qname,
+        payload: response,
+      })
+    } catch (error) {
+      console.error(
+        "listCompletedTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: LIST_COMPLETED_TASKS_ERROR,
+        queue: qname,
+        error: toErrorString(error)
+      })
+    }
+  }
 }
 
 export function cancelActiveTaskAsync(queue: string, taskId: string) {
