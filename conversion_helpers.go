@@ -343,6 +343,35 @@ func toArchivedTasks(in []*asynq.TaskInfo, pf PayloadFormatter) []*archivedTask 
 	return out
 }
 
+type completedTask struct {
+	*baseTask
+	CompletedAt time.Time `json:"completed_at"`
+}
+
+func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter) *completedTask {
+	base := &baseTask{
+		ID:        ti.ID,
+		Type:      ti.Type,
+		Payload:   pf.FormatPayload(ti.Type, ti.Payload),
+		Queue:     ti.Queue,
+		MaxRetry:  ti.MaxRetry,
+		Retried:   ti.Retried,
+		LastError: ti.LastErr,
+	}
+	return &completedTask{
+		baseTask:    base,
+		CompletedAt: ti.CompletedAt,
+	}
+}
+
+func toCompletedTasks(in []*asynq.TaskInfo, pf PayloadFormatter) []*completedTask {
+	out := make([]*completedTask, len(in))
+	for i, ti := range in {
+		out[i] = toCompletedTask(ti, pf)
+	}
+	return out
+}
+
 type schedulerEntry struct {
 	ID            string   `json:"id"`
 	Spec          string   `json:"spec"`
