@@ -329,6 +329,8 @@ export interface CompletedTask extends BaseTask {
   max_retry: number;
   retried: number;
   completed_at: string;
+  result: string;
+  result_ttl_seconds: number
 }
 
 export interface ServerInfo {

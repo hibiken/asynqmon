@@ -348,6 +348,9 @@ func toArchivedTasks(in []*asynq.TaskInfo, pf PayloadFormatter) []*archivedTask 
 type completedTask struct {
 	*baseTask
 	CompletedAt time.Time `json:"completed_at"`
+	Result      string    `json:"result"`
+	// Number of seconds left for retention (i.e. (CompletedAt + ResultTTL) - Now)
+	ResultTTL int64 `json:"result_ttl_seconds"`
 }
 
 func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter) *completedTask {
@@ -360,9 +363,13 @@ func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter) *completedTask {
 		Retried:   ti.Retried,
 		LastError: ti.LastErr,
 	}
+	ttl := ti.CompletedAt.Add(ti.ResultTTL).Sub(time.Now())
 	return &completedTask{
 		baseTask:    base,
 		CompletedAt: ti.CompletedAt,
+		ResultTTL:   int64(ttl.Seconds()),
+		// TODO: Use resultFormatter instead
+		Result: defaultPayloadFormatter.FormatPayload("", ti.Result),
 	}
 }
 

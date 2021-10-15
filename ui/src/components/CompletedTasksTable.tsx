@@ -26,7 +26,12 @@ import TablePaginationActions, {
 } from "./TablePaginationActions";
 import { taskRowsPerPageChange } from "../actions/settingsActions";
 import TableActions from "./TableActions";
-import { timeAgo, uuidPrefix } from "../utils";
+import {
+  durationFromSeconds,
+  stringifyDuration,
+  timeAgo,
+  uuidPrefix,
+} from "../utils";
 import { usePolling } from "../hooks";
 import { CompletedTaskExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
@@ -132,8 +137,9 @@ function CompletedTasksTable(props: Props & ReduxProps) {
     { key: "id", label: "ID", align: "left" },
     { key: "type", label: "Type", align: "left" },
     { key: "payload", label: "Payload", align: "left" },
-    { key: "completed_at", label: "Completed Time", align: "left" },
+    { key: "completed_at", label: "Completed", align: "left" },
     { key: "result", label: "Result", align: "left" },
+    { key: "ttl", label: "TTL", align: "left" },
     { key: "actions", label: "Actions", align: "center" },
   ];
 
@@ -310,7 +316,21 @@ function Row(props: RowProps) {
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>{timeAgo(task.completed_at)}</TableCell>
-      <TableCell>{"TODO: Result data here"}</TableCell>
+      <TableCell>
+        <SyntaxHighlighter
+          language="json"
+          customStyle={{ margin: 0, maxWidth: 400 }}
+        >
+          {task.result}
+        </SyntaxHighlighter>
+      </TableCell>
+      <TableCell>
+        {task.result_ttl_seconds > 0
+          ? `${stringifyDuration(
+              durationFromSeconds(task.result_ttl_seconds)
+            )} left`
+          : `expired`}
+      </TableCell>
       <TableCell
         align="center"
         className={classes.actionCell}

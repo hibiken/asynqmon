@@ -25,17 +25,22 @@ interface Duration {
   totalSeconds: number;
 }
 
-// start and end are in milliseconds.
-function durationBetween(start: number, end: number): Duration {
-  const durationInMillisec = start - end;
-  const totalSeconds = Math.floor(durationInMillisec / 1000);
+// Returns a duration from the number of seconds provided.
+export function durationFromSeconds(totalSeconds: number): Duration {
   const hour = Math.floor(totalSeconds / 3600);
   const minute = Math.floor((totalSeconds - 3600 * hour) / 60);
   const second = totalSeconds - 3600 * hour - 60 * minute;
   return { hour, minute, second, totalSeconds };
 }
 
-function stringifyDuration(d: Duration): string {
+// start and end are in milliseconds.
+function durationBetween(start: number, end: number): Duration {
+  const durationInMillisec = start - end;
+  const totalSeconds = Math.floor(durationInMillisec / 1000);
+  return durationFromSeconds(totalSeconds);
+}
+
+export function stringifyDuration(d: Duration): string {
   if (d.hour > 24) {
     const n = Math.floor(d.hour / 24);
     return n + (n === 1 ? " day" : " days");
