@@ -325,10 +325,8 @@ function Row(props: RowProps) {
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>
-        {task.result_ttl_seconds > 0
-          ? `${stringifyDuration(
-              durationFromSeconds(task.result_ttl_seconds)
-            )} left`
+        {task.ttl_seconds > 0
+          ? `${stringifyDuration(durationFromSeconds(task.ttl_seconds))} left`
           : `expired`}
       </TableCell>
       <TableCell

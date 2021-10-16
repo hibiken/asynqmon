@@ -154,6 +154,22 @@ type taskInfo struct {
 	// NextProcessAt is the time the task is scheduled to be processed in RFC3339 format.
 	// If not applicable, empty string.
 	NextProcessAt string `json:"next_process_at"`
+	// CompletedAt is the time the task was successfully processed in RFC3339 format.
+	// If not applicable, empty string.
+	CompletedAt string `json:"completed_at"`
+	// Result is the result data associated with the task.
+	Result string `json:"result"`
+	// TTL is the number of seconds the task has left to be retained in the queue.
+	// This is calculated by (CompletedAt + ResultTTL) - Now.
+	TTL int64 `json:"ttl_seconds"`
+}
+
+// taskTTL calculates TTL for the given task.
+func taskTTL(task *asynq.TaskInfo) time.Duration {
+	if task.State != asynq.TaskStateCompleted {
+		return 0 // N/A
+	}
+	return task.CompletedAt.Add(task.ResultTTL).Sub(time.Now())
 }
 
 // formatTimeInRFC3339 formats t in RFC3339 if the value is non-zero.
@@ -179,6 +195,10 @@ func toTaskInfo(info *asynq.TaskInfo, pf PayloadFormatter) *taskInfo {
 		Timeout:       int(info.Timeout.Seconds()),
 		Deadline:      formatTimeInRFC3339(info.Deadline),
 		NextProcessAt: formatTimeInRFC3339(info.NextProcessAt),
+		CompletedAt:   formatTimeInRFC3339(info.CompletedAt),
+		// TODO: Replace this with resultFormatter
+		Result: defaultPayloadFormatter.FormatPayload("", info.Result),
+		TTL:    int64(taskTTL(info).Seconds()),
 	}
 }
 
@@ -350,7 +370,7 @@ type completedTask struct {
 	CompletedAt time.Time `json:"completed_at"`
 	Result      string    `json:"result"`
 	// Number of seconds left for retention (i.e. (CompletedAt + ResultTTL) - Now)
-	ResultTTL int64 `json:"result_ttl_seconds"`
+	TTL int64 `json:"ttl_seconds"`
 }
 
 func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter) *completedTask {
@@ -363,11 +383,10 @@ func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter) *completedTask {
 		Retried:   ti.Retried,
 		LastError: ti.LastErr,
 	}
-	ttl := ti.CompletedAt.Add(ti.ResultTTL).Sub(time.Now())
 	return &completedTask{
 		baseTask:    base,
 		CompletedAt: ti.CompletedAt,
-		ResultTTL:   int64(ttl.Seconds()),
+		TTL:         int64(taskTTL(ti).Seconds()),
 		// TODO: Use resultFormatter instead
 		Result: defaultPayloadFormatter.FormatPayload("", ti.Result),
 	}

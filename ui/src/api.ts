@@ -276,6 +276,9 @@ export interface TaskInfo {
   next_process_at: string;
   timeout_seconds: number;
   deadline: string;
+  completed_at: string;
+  result: string;
+  ttl_seconds: number;
 }
 
 export interface ActiveTask extends BaseTask {
@@ -330,7 +333,7 @@ export interface CompletedTask extends BaseTask {
   retried: number;
   completed_at: string;
   result: string;
-  result_ttl_seconds: number
+  ttl_seconds: number
 }
 
 export interface ServerInfo {
