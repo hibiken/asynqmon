@@ -106,7 +106,8 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: "2px",
   },
   searchbar: {
-    marginLeft: theme.spacing(4),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
   },
   search: {
     position: "relative",
