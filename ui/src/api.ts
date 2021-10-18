@@ -5,7 +5,9 @@ import queryString from "query-string";
 // the static file server.
 // In developement, we assume that the API server is listening on port 8080.
 const BASE_URL =
-  process.env.NODE_ENV === "production" ? `${window.ROOT_PATH}/api` : `http://localhost:8080${window.ROOT_PATH}/api`;
+  process.env.NODE_ENV === "production"
+    ? `${window.ROOT_PATH}/api`
+    : `http://localhost:8080${window.ROOT_PATH}/api`;
 
 export interface ListQueuesResponse {
   queues: Queue[];
@@ -244,7 +246,7 @@ export interface Queue {
   scheduled: number;
   retry: number;
   archived: number;
-  completed: number,
+  completed: number;
   processed: number;
   failed: number;
   timestamp: string;
@@ -333,7 +335,7 @@ export interface CompletedTask extends BaseTask {
   retried: number;
   completed_at: string;
   result: string;
-  ttl_seconds: number
+  ttl_seconds: number;
 }
 
 export interface ServerInfo {
@@ -415,7 +417,10 @@ export async function listQueueStats(): Promise<ListQueueStatsResponse> {
   return resp.data;
 }
 
-export async function getTaskInfo(qname: string, id: string): Promise<TaskInfo> {
+export async function getTaskInfo(
+  qname: string,
+  id: string
+): Promise<TaskInfo> {
   const url = `${BASE_URL}/queues/${qname}/tasks/${id}`;
   const resp = await axios({
     method: "get",
@@ -530,16 +535,19 @@ export async function listArchivedTasks(
   return resp.data;
 }
 
-export async function listCompletedTasks(qname: string, pageOpts?: PaginationOptions): Promise<ListCompletedTasksResponse> {
-  let url = `${BASE_URL}/queues/${qname}/completed_tasks`
+export async function listCompletedTasks(
+  qname: string,
+  pageOpts?: PaginationOptions
+): Promise<ListCompletedTasksResponse> {
+  let url = `${BASE_URL}/queues/${qname}/completed_tasks`;
   if (pageOpts) {
-    url += `?${queryString.stringify(pageOpts)}`
+    url += `?${queryString.stringify(pageOpts)}`;
   }
   const resp = await axios({
-    method: "get", 
+    method: "get",
     url,
-  })
-  return resp.data
+  });
+  return resp.data;
 }
 
 export async function archivePendingTask(
@@ -862,6 +870,40 @@ export async function runAllArchivedTasks(qname: string): Promise<void> {
     method: "post",
     url: `${BASE_URL}/queues/${qname}/archived_tasks:run_all`,
   });
+}
+
+export async function deleteCompletedTask(
+  qname: string,
+  taskId: string
+): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/completed_tasks/${taskId}`,
+  });
+}
+
+export async function batchDeleteCompletedTasks(
+  qname: string,
+  taskIds: string[]
+): Promise<BatchDeleteTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/completed_tasks:batch_delete`,
+    data: {
+      task_ids: taskIds,
+    },
+  });
+  return resp.data;
+}
+
+export async function deleteAllCompletedTasks(
+  qname: string
+): Promise<DeleteAllTasksResponse> {
+  const resp = await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/completed_tasks:delete_all`,
+  });
+  return resp.data;
 }
 
 export async function listServers(): Promise<ListServersResponse> {

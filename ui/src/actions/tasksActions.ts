@@ -4,6 +4,7 @@ import {
   batchDeleteArchivedTasks,
   batchDeleteRetryTasks,
   batchDeleteScheduledTasks,
+  batchDeleteCompletedTasks,
   BatchDeleteTasksResponse,
   batchArchiveRetryTasks,
   batchArchiveScheduledTasks,
@@ -17,9 +18,11 @@ import {
   deleteAllArchivedTasks,
   deleteAllRetryTasks,
   deleteAllScheduledTasks,
+  deleteAllCompletedTasks,
   deleteArchivedTask,
   deleteRetryTask,
   deleteScheduledTask,
+  deleteCompletedTask,
   archiveAllRetryTasks,
   archiveAllScheduledTasks,
   archiveRetryTask,
@@ -218,6 +221,21 @@ export const DELETE_ALL_ARCHIVED_TASKS_SUCCESS =
   "DELETE_ALL_ARCHIVED_TASKS_SUCCESS";
 export const DELETE_ALL_ARCHIVED_TASKS_ERROR =
   "DELETE_ALL_ARCHIVED_TASKS_ERROR";
+export const DELETE_COMPLETED_TASK_BEGIN = "DELETE_COMPLETED_TASK_BEGIN";
+export const DELETE_COMPLETED_TASK_SUCCESS = "DELETE_COMPLETED_TASK_SUCCESS";
+export const DELETE_COMPLETED_TASK_ERROR = "DELETE_COMPLETED_TASK_ERROR";
+export const DELETE_ALL_COMPLETED_TASKS_BEGIN =
+  "DELETE_ALL_COMPLETED_TASKS_BEGIN";
+export const DELETE_ALL_COMPLETED_TASKS_SUCCESS =
+  "DELETE_ALL_COMPLETED_TASKS_SUCCESS";
+export const DELETE_ALL_COMPLETED_TASKS_ERROR =
+  "DELETE_ALL_COMPLETED_TASKS_ERROR";
+export const BATCH_DELETE_COMPLETED_TASKS_BEGIN =
+  "BATCH_DELETE_COMPLETED_TASKS_BEGIN";
+export const BATCH_DELETE_COMPLETED_TASKS_SUCCESS =
+  "BATCH_DELETE_COMPLETED_TASKS_SUCCESS";
+export const BATCH_DELETE_COMPLETED_TASKS_ERROR =
+  "BATCH_DELETE_COMPLETED_TASKS_ERROR";
 
 interface GetTaskInfoBeginAction {
   type: typeof GET_TASK_INFO_BEGIN;
@@ -933,6 +951,61 @@ interface DeleteAllArchivedTasksErrorAction {
   error: string;
 }
 
+interface DeleteCompletedTaskBeginAction {
+  type: typeof DELETE_COMPLETED_TASK_BEGIN;
+  queue: string;
+  taskId: string;
+}
+
+interface DeleteCompletedTaskSuccessAction {
+  type: typeof DELETE_COMPLETED_TASK_SUCCESS;
+  queue: string;
+  taskId: string;
+}
+
+interface DeleteCompletedTaskErrorAction {
+  type: typeof DELETE_COMPLETED_TASK_ERROR;
+  queue: string;
+  taskId: string;
+  error: string;
+}
+
+interface BatchDeleteCompletedTasksBeginAction {
+  type: typeof BATCH_DELETE_COMPLETED_TASKS_BEGIN;
+  queue: string;
+  taskIds: string[];
+}
+
+interface BatchDeleteCompletedTasksSuccessAction {
+  type: typeof BATCH_DELETE_COMPLETED_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchDeleteTasksResponse;
+}
+
+interface BatchDeleteCompletedTasksErrorAction {
+  type: typeof BATCH_DELETE_COMPLETED_TASKS_ERROR;
+  queue: string;
+  taskIds: string[];
+  error: string;
+}
+
+interface DeleteAllCompletedTasksBeginAction {
+  type: typeof DELETE_ALL_COMPLETED_TASKS_BEGIN;
+  queue: string;
+}
+
+interface DeleteAllCompletedTasksSuccessAction {
+  type: typeof DELETE_ALL_COMPLETED_TASKS_SUCCESS;
+  queue: string;
+  deleted: number;
+}
+
+interface DeleteAllCompletedTasksErrorAction {
+  type: typeof DELETE_ALL_COMPLETED_TASKS_ERROR;
+  queue: string;
+  error: string;
+}
+
 // Union of all tasks related action types.
 export type TasksActionTypes =
   | GetTaskInfoBeginAction
@@ -1054,7 +1127,16 @@ export type TasksActionTypes =
   | RunAllArchivedTasksErrorAction
   | DeleteAllArchivedTasksBeginAction
   | DeleteAllArchivedTasksSuccessAction
-  | DeleteAllArchivedTasksErrorAction;
+  | DeleteAllArchivedTasksErrorAction
+  | DeleteCompletedTaskBeginAction
+  | DeleteCompletedTaskSuccessAction
+  | DeleteCompletedTaskErrorAction
+  | BatchDeleteCompletedTasksBeginAction
+  | BatchDeleteCompletedTasksSuccessAction
+  | BatchDeleteCompletedTasksErrorAction
+  | DeleteAllCompletedTasksBeginAction
+  | DeleteAllCompletedTasksSuccessAction
+  | DeleteAllCompletedTasksErrorAction;
 
 export function getTaskInfoAsync(qname: string, id: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
@@ -1064,15 +1146,15 @@ export function getTaskInfoAsync(qname: string, id: string) {
       dispatch({
         type: GET_TASK_INFO_SUCCESS,
         payload: response,
-      })
+      });
     } catch (error) {
       console.error("getTaskInfoAsync: ", toErrorStringWithHttpStatus(error));
       dispatch({
         type: GET_TASK_INFO_ERROR,
         error: toErrorString(error),
-      })
+      });
     }
-  }
+  };
 }
 
 export function listActiveTasksAsync(
@@ -1210,16 +1292,19 @@ export function listArchivedTasksAsync(
   };
 }
 
-export function listCompletedTasksAsync(qname: string, pageOpts?: PaginationOptions) {
+export function listCompletedTasksAsync(
+  qname: string,
+  pageOpts?: PaginationOptions
+) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     try {
-      dispatch({ type: LIST_COMPLETED_TASKS_BEGIN, queue: qname })
+      dispatch({ type: LIST_COMPLETED_TASKS_BEGIN, queue: qname });
       const response = await listCompletedTasks(qname, pageOpts);
       dispatch({
         type: LIST_COMPLETED_TASKS_SUCCESS,
         queue: qname,
         payload: response,
-      })
+      });
     } catch (error) {
       console.error(
         "listCompletedTasksAsync: ",
@@ -1228,10 +1313,10 @@ export function listCompletedTasksAsync(qname: string, pageOpts?: PaginationOpti
       dispatch({
         type: LIST_COMPLETED_TASKS_ERROR,
         queue: qname,
-        error: toErrorString(error)
-      })
+        error: toErrorString(error),
+      });
     }
-  }
+  };
 }
 
 export function cancelActiveTaskAsync(queue: string, taskId: string) {
@@ -1444,10 +1529,7 @@ export function deletePendingTaskAsync(queue: string, taskId: string) {
   };
 }
 
-export function batchDeletePendingTasksAsync(
-  queue: string,
-  taskIds: string[]
-) {
+export function batchDeletePendingTasksAsync(queue: string, taskIds: string[]) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: BATCH_DELETE_PENDING_TASKS_BEGIN, queue, taskIds });
     try {
@@ -1981,6 +2063,79 @@ export function runAllArchivedTasksAsync(queue: string) {
       );
       dispatch({
         type: RUN_ALL_ARCHIVED_TASKS_ERROR,
+        error: toErrorString(error),
+        queue,
+      });
+    }
+  };
+}
+
+export function deleteCompletedTaskAsync(queue: string, taskId: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_COMPLETED_TASK_BEGIN, queue, taskId });
+    try {
+      await deleteCompletedTask(queue, taskId);
+      dispatch({ type: DELETE_COMPLETED_TASK_SUCCESS, queue, taskId });
+    } catch (error) {
+      console.error(
+        "deleteCompletedTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: DELETE_COMPLETED_TASK_ERROR,
+        error: toErrorString(error),
+        queue,
+        taskId,
+      });
+    }
+  };
+}
+
+export function batchDeleteCompletedTasksAsync(
+  queue: string,
+  taskIds: string[]
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: BATCH_DELETE_COMPLETED_TASKS_BEGIN, queue, taskIds });
+    try {
+      const response = await batchDeleteCompletedTasks(queue, taskIds);
+      dispatch({
+        type: BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
+        queue: queue,
+        payload: response,
+      });
+    } catch (error) {
+      console.error(
+        "batchDeleteCompletedTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: BATCH_DELETE_COMPLETED_TASKS_ERROR,
+        error: toErrorString(error),
+        queue,
+        taskIds,
+      });
+    }
+  };
+}
+
+export function deleteAllCompletedTasksAsync(queue: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_ALL_COMPLETED_TASKS_BEGIN, queue });
+    try {
+      const response = await deleteAllCompletedTasks(queue);
+      dispatch({
+        type: DELETE_ALL_COMPLETED_TASKS_SUCCESS,
+        deleted: response.deleted,
+        queue,
+      });
+    } catch (error) {
+      console.error(
+        "deleteAllCompletedTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: DELETE_ALL_COMPLETED_TASKS_ERROR,
         error: toErrorString(error),
         queue,
       });

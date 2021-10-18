@@ -20,7 +20,12 @@ import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "./SyntaxHighlighter";
 import { AppState } from "../store";
-import { listCompletedTasksAsync } from "../actions/tasksActions";
+import {
+  listCompletedTasksAsync,
+  deleteAllCompletedTasksAsync,
+  deleteCompletedTaskAsync,
+  batchDeleteCompletedTasksAsync,
+} from "../actions/tasksActions";
 import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
@@ -67,6 +72,9 @@ function mapStateToProps(state: AppState) {
 
 const mapDispatchToProps = {
   listCompletedTasksAsync,
+  deleteCompletedTaskAsync,
+  deleteAllCompletedTasksAsync,
+  batchDeleteCompletedTasksAsync,
   taskRowsPerPageChange,
 };
 
@@ -107,6 +115,16 @@ function CompletedTasksTable(props: Props & ReduxProps) {
     } else {
       setSelectedIds([]);
     }
+  };
+
+  const handleDeleteAllClick = () => {
+    props.deleteAllCompletedTasksAsync(queue);
+  };
+
+  const handleBatchDeleteClick = () => {
+    props
+      .batchDeleteCompletedTasksAsync(queue, selectedIds)
+      .then(() => setSelectedIds([]));
   };
 
   const fetchData = useCallback(() => {
@@ -153,18 +171,14 @@ function CompletedTasksTable(props: Props & ReduxProps) {
           {
             tooltip: "Delete",
             icon: <DeleteIcon />,
-            onClick: () => {
-              /* TODO */
-            },
+            onClick: handleBatchDeleteClick,
             disabled: props.batchActionPending,
           },
         ]}
         menuItemActions={[
           {
             label: "Delete All",
-            onClick: () => {
-              /* TODO */
-            },
+            onClick: handleDeleteAllClick,
             disabled: props.allActionPending,
           },
         ]}
@@ -218,7 +232,7 @@ function CompletedTasksTable(props: Props & ReduxProps) {
                   }
                 }}
                 onDeleteClick={() => {
-                  // props.deleteCompletedTaskAsync(queue, task.id);
+                  props.deleteCompletedTaskAsync(queue, task.id);
                 }}
                 allActionPending={props.allActionPending}
                 onActionCellEnter={() => setActiveTaskId(task.id)}

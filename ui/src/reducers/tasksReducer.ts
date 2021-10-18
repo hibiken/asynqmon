@@ -120,6 +120,15 @@ import {
   GET_TASK_INFO_BEGIN,
   GET_TASK_INFO_ERROR,
   GET_TASK_INFO_SUCCESS,
+  DELETE_COMPLETED_TASK_BEGIN,
+  DELETE_COMPLETED_TASK_ERROR,
+  DELETE_COMPLETED_TASK_SUCCESS,
+  DELETE_ALL_COMPLETED_TASKS_BEGIN,
+  DELETE_ALL_COMPLETED_TASKS_ERROR,
+  DELETE_ALL_COMPLETED_TASKS_SUCCESS,
+  BATCH_DELETE_COMPLETED_TASKS_BEGIN,
+  BATCH_DELETE_COMPLETED_TASKS_ERROR,
+  BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
 } from "../actions/tasksActions";
 import {
   ActiveTask,
@@ -213,12 +222,12 @@ interface TasksState {
     allActionPending: boolean;
     error: string;
     data: CompletedTaskExtended[];
-  }
+  };
   taskInfo: {
     loading: boolean;
     error: string;
     data?: TaskInfo;
-  },
+  };
 }
 
 const initialState: TasksState = {
@@ -267,7 +276,7 @@ const initialState: TasksState = {
   taskInfo: {
     loading: false,
     error: "",
-  }
+  },
 };
 
 function tasksReducer(
@@ -282,16 +291,16 @@ function tasksReducer(
           ...state.taskInfo,
           loading: true,
         },
-      }
+      };
 
     case GET_TASK_INFO_ERROR:
-        return {
-          ...state,
-          taskInfo: {
-            loading: false,
-            error: action.error,
-          },
-        };
+      return {
+        ...state,
+        taskInfo: {
+          loading: false,
+          error: action.error,
+        },
+      };
 
     case GET_TASK_INFO_SUCCESS:
       return {
@@ -505,6 +514,123 @@ function tasksReducer(
           loading: false,
           error: action.error,
           data: [],
+        },
+      };
+
+    case DELETE_COMPLETED_TASK_BEGIN:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          data: state.completedTasks.data.map((task) => {
+            if (task.id !== action.taskId) {
+              return task;
+            }
+            return { ...task, requestPending: true };
+          }),
+        },
+      };
+
+    case DELETE_COMPLETED_TASK_SUCCESS:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          data: state.completedTasks.data.filter(
+            (task) => task.id !== action.taskId
+          ),
+        },
+      };
+
+    case DELETE_COMPLETED_TASK_ERROR:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          data: state.completedTasks.data.map((task) => {
+            if (task.id !== action.taskId) {
+              return task;
+            }
+            return { ...task, requestPending: false };
+          }),
+        },
+      };
+
+    case DELETE_ALL_COMPLETED_TASKS_BEGIN:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          allActionPending: true,
+        },
+      };
+
+    case DELETE_ALL_COMPLETED_TASKS_SUCCESS:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          allActionPending: false,
+          data: [],
+        },
+      };
+
+    case DELETE_ALL_COMPLETED_TASKS_ERROR:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          allActionPending: false,
+        },
+      };
+
+    case BATCH_DELETE_COMPLETED_TASKS_BEGIN:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          batchActionPending: true,
+          data: state.completedTasks.data.map((task) => {
+            if (!action.taskIds.includes(task.id)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: true,
+            };
+          }),
+        },
+      };
+
+    case BATCH_DELETE_COMPLETED_TASKS_SUCCESS: {
+      const newData = state.completedTasks.data.filter(
+        (task) => !action.payload.deleted_ids.includes(task.id)
+      );
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_DELETE_COMPLETED_TASKS_ERROR:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          batchActionPending: false,
+          data: state.completedTasks.data.map((task) => {
+            if (!action.taskIds.includes(task.id)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: false,
+            };
+          }),
         },
       };
 

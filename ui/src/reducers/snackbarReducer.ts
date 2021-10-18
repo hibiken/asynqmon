@@ -36,6 +36,9 @@ import {
   BATCH_DELETE_PENDING_TASKS_SUCCESS,
   ARCHIVE_ALL_PENDING_TASKS_SUCCESS,
   DELETE_ALL_PENDING_TASKS_SUCCESS,
+  DELETE_COMPLETED_TASK_SUCCESS,
+  DELETE_ALL_COMPLETED_TASKS_SUCCESS,
+  BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
 } from "../actions/tasksActions";
 
 interface SnackbarState {
@@ -283,6 +286,25 @@ function snackbarReducer(
       return {
         isOpen: true,
         message: "All archived tasks deleted",
+      };
+
+    case DELETE_COMPLETED_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        message: `Completed task deleted`,
+      };
+
+    case DELETE_ALL_COMPLETED_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: "All completed tasks deleted",
+      };
+
+    case BATCH_DELETE_COMPLETED_TASKS_SUCCESS:
+      const n = action.payload.deleted_ids.length;
+      return {
+        isOpen: true,
+        message: `${n} completed ${n === 1 ? "task" : "tasks"} deleted`,
       };
 
     default:
