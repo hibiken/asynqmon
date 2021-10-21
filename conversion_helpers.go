@@ -27,7 +27,10 @@ func (f PayloadFormatterFunc) FormatPayload(taskType string, payload []byte) str
 	return f(taskType, payload)
 }
 
-var defaultPayloadFormatter = PayloadFormatterFunc(func(_ string, payload []byte) string {
+// DefaultPayloadFormatter is the PayloadFormater used by default.
+// It prints the given payload bytes as is if the bytes are printable, otherwise it prints a message to indicate
+// that the bytes are not printable.
+var DefaultPayloadFormatter = PayloadFormatterFunc(func(_ string, payload []byte) string {
 	if !isPrintable(payload) {
 		return "non-printable bytes"
 	}

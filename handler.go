@@ -88,7 +88,7 @@ var staticContents embed.FS
 func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspector) *mux.Router {
 	router := mux.NewRouter().PathPrefix(opts.RootPath).Subrouter()
 
-	var pf PayloadFormatter = defaultPayloadFormatter
+	var pf PayloadFormatter = DefaultPayloadFormatter
 	if opts.PayloadFormatter != nil {
 		pf = opts.PayloadFormatter
 	}

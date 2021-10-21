@@ -26,6 +26,7 @@ var (
 	flagRedisURL          string
 	flagRedisInsecureTLS  bool
 	flagRedisClusterNodes string
+	flagMaxPayloadLength  int
 )
 
 func init() {
@@ -37,6 +38,7 @@ func init() {
 	flag.StringVar(&flagRedisURL, "redis-url", "", "URL to redis server")
 	flag.BoolVar(&flagRedisInsecureTLS, "redis-insecure-tls", false, "disable TLS certificate host checks")
 	flag.StringVar(&flagRedisClusterNodes, "redis-cluster-nodes", "", "comma separated list of host:port addresses of cluster nodes")
+	flag.IntVar(&flagMaxPayloadLength, "max-payload-length", 200, "maximum number of utf8 characters printed in the payload cell in the Web UI")
 }
 
 // TODO: Write test and refactor this code.
@@ -98,7 +100,8 @@ func main() {
 	}
 
 	h := asynqmon.New(asynqmon.Options{
-		RedisConnOpt: redisConnOpt,
+		RedisConnOpt:     redisConnOpt,
+		PayloadFormatter: asynqmon.PayloadFormatterFunc(formatPayload),
 	})
 	defer h.Close()
 
@@ -115,4 +118,21 @@ func main() {
 
 	fmt.Printf("Asynq Monitoring WebUI server is listening on port %d\n", flagPort)
 	log.Fatal(srv.ListenAndServe())
+}
+
+func formatPayload(taskType string, payload []byte) string {
+	payloadStr := asynqmon.DefaultPayloadFormatter.FormatPayload(taskType, payload)
+	return truncate(payloadStr, flagMaxPayloadLength)
+}
+
+// truncates string s to limit length (in utf8).
+func truncate(s string, limit int) string {
+	i := 0
+	for pos := range s {
+		if i == limit {
+			return s[:pos] + "…"
+		}
+		i++
+	}
+	return s
 }
