@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on ["Keep a Changelog"](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2021-10-21
+
+### Added
+
+- (cmd): Added --max-payload-length to allow specifying number of characters displayed for payload, defaults to 200 chars
+- (pkg): DefaultPayloadFormatter is now exported from the package
+
+## [0.3.0]
+
+### Changed
+
+- Asynqmon is now a go package that can be imported to other projects!
+
 ## [0.2.1]
 
 ### Addded
