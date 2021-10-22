@@ -18,7 +18,7 @@ import { TaskDetailsRouteParams } from "../paths";
 import { usePolling } from "../hooks";
 import { listQueuesAsync } from "../actions/queuesActions";
 import SyntaxHighlighter from "../components/SyntaxHighlighter";
-import { durationFromSeconds, stringifyDuration } from "../utils";
+import { durationFromSeconds, stringifyDuration, timeAgo } from "../utils";
 
 function mapStateToProps(state: AppState) {
   return {
@@ -176,7 +176,7 @@ function TaskDetailsView(props: Props) {
                         {taskInfo?.error_message} ({taskInfo?.last_failed_at})
                       </Typography>
                     ) : (
-                      <Typography>n/a</Typography>
+                      <Typography> - </Typography>
                     )}
                   </Typography>
                 </div>
@@ -190,7 +190,7 @@ function TaskDetailsView(props: Props) {
                   {taskInfo?.next_process_at ? (
                     <Typography>{taskInfo?.next_process_at}</Typography>
                   ) : (
-                    <Typography>n/a</Typography>
+                    <Typography> - </Typography>
                   )}
                 </div>
               </div>
@@ -202,7 +202,7 @@ function TaskDetailsView(props: Props) {
                   {taskInfo?.timeout_seconds ? (
                     <Typography>{taskInfo?.timeout_seconds} seconds</Typography>
                   ) : (
-                    <Typography>n/a</Typography>
+                    <Typography> - </Typography>
                   )}
                 </Typography>
               </div>
@@ -214,7 +214,7 @@ function TaskDetailsView(props: Props) {
                   {taskInfo?.deadline ? (
                     <Typography>{taskInfo?.deadline}</Typography>
                   ) : (
-                    <Typography>n/a</Typography>
+                    <Typography> - </Typography>
                   )}
                 </Typography>
               </div>
@@ -244,7 +244,10 @@ function TaskDetailsView(props: Props) {
                         Completed:{" "}
                       </Typography>
                       <div className={classes.infoValueCell}>
-                        <Typography>{taskInfo.completed_at}</Typography>
+                        <Typography>
+                          {timeAgo(taskInfo.completed_at)} (
+                          {taskInfo.completed_at})
+                        </Typography>
                       </div>
                     </div>
                     <div className={classes.infoRow}>
