@@ -197,7 +197,7 @@ func toTaskInfo(info *asynq.TaskInfo, pf PayloadFormatter) *taskInfo {
 		NextProcessAt: formatTimeInRFC3339(info.NextProcessAt),
 		CompletedAt:   formatTimeInRFC3339(info.CompletedAt),
 		// TODO: Replace this with resultFormatter
-		Result: defaultPayloadFormatter.FormatPayload("", info.Result),
+		Result: DefaultPayloadFormatter.FormatPayload("", info.Result),
 		TTL:    int64(taskTTL(info).Seconds()),
 	}
 }
@@ -388,7 +388,7 @@ func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter) *completedTask {
 		CompletedAt: ti.CompletedAt,
 		TTL:         int64(taskTTL(ti).Seconds()),
 		// TODO: Use resultFormatter instead
-		Result: defaultPayloadFormatter.FormatPayload("", ti.Result),
+		Result: DefaultPayloadFormatter.FormatPayload("", ti.Result),
 	}
 }
 
