@@ -13,33 +13,8 @@ export interface ListQueuesResponse {
   queues: Queue[];
 }
 
-export interface ListActiveTasksResponse {
-  tasks: ActiveTask[];
-  stats: Queue;
-}
-
-export interface ListPendingTasksResponse {
-  tasks: PendingTask[];
-  stats: Queue;
-}
-
-export interface ListScheduledTasksResponse {
-  tasks: ScheduledTask[];
-  stats: Queue;
-}
-
-export interface ListRetryTasksResponse {
-  tasks: RetryTask[];
-  stats: Queue;
-}
-
-export interface ListArchivedTasksResponse {
-  tasks: ArchivedTask[];
-  stats: Queue;
-}
-
-export interface ListCompletedTasksResponse {
-  tasks: CompletedTask[];
+export interface ListTasksResponse {
+  tasks: TaskInfo[];
   stats: Queue;
 }
 
@@ -259,18 +234,13 @@ export interface DailyStat {
   failed: number;
 }
 
-// BaseTask corresponds to asynq.Task type.
-interface BaseTask {
-  type: string;
-  payload: string;
-}
-
 export interface TaskInfo {
   id: string;
   queue: string;
   type: string;
   payload: string;
   state: string;
+  start_time: string; // Only applies to task.state == 'active'
   max_retry: number;
   retried: number;
   last_failed_at: string;
@@ -278,61 +248,6 @@ export interface TaskInfo {
   next_process_at: string;
   timeout_seconds: number;
   deadline: string;
-  completed_at: string;
-  result: string;
-  ttl_seconds: number;
-}
-
-export interface ActiveTask extends BaseTask {
-  id: string;
-  queue: string;
-  start_time: string;
-  deadline: string;
-  max_retry: number;
-  retried: number;
-  error_message: string;
-}
-
-export interface PendingTask extends BaseTask {
-  id: string;
-  queue: string;
-  max_retry: number;
-  retried: number;
-  error_message: string;
-}
-
-export interface ScheduledTask extends BaseTask {
-  id: string;
-  queue: string;
-  max_retry: number;
-  retried: number;
-  error_message: string;
-  next_process_at: string;
-}
-
-export interface RetryTask extends BaseTask {
-  id: string;
-  queue: string;
-  next_process_at: string;
-  max_retry: number;
-  retried: number;
-  error_message: string;
-}
-
-export interface ArchivedTask extends BaseTask {
-  id: string;
-  queue: string;
-  max_retry: number;
-  retried: number;
-  last_failed_at: string;
-  error_message: string;
-}
-
-export interface CompletedTask extends BaseTask {
-  id: string;
-  queue: string;
-  max_retry: number;
-  retried: number;
   completed_at: string;
   result: string;
   ttl_seconds: number;
@@ -432,7 +347,7 @@ export async function getTaskInfo(
 export async function listActiveTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListActiveTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/active_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -478,7 +393,7 @@ export async function batchCancelActiveTasks(
 export async function listPendingTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListPendingTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/pending_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -493,7 +408,7 @@ export async function listPendingTasks(
 export async function listScheduledTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListScheduledTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/scheduled_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -508,7 +423,7 @@ export async function listScheduledTasks(
 export async function listRetryTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListRetryTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/retry_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -523,7 +438,7 @@ export async function listRetryTasks(
 export async function listArchivedTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListArchivedTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/archived_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -538,7 +453,7 @@ export async function listArchivedTasks(
 export async function listCompletedTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListCompletedTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/completed_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;

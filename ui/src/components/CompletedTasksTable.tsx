@@ -38,7 +38,7 @@ import {
   uuidPrefix,
 } from "../utils";
 import { usePolling } from "../hooks";
-import { CompletedTaskExtended } from "../reducers/tasksReducer";
+import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
 
@@ -286,7 +286,7 @@ const useRowStyles = makeStyles((theme) => ({
 }));
 
 interface RowProps {
-  task: CompletedTaskExtended;
+  task: TaskInfoExtended;
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;

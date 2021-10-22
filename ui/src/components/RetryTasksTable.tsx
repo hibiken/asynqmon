@@ -41,7 +41,7 @@ import { taskRowsPerPageChange } from "../actions/settingsActions";
 import TableActions from "./TableActions";
 import { durationBefore, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
-import { RetryTaskExtended } from "../reducers/tasksReducer";
+import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
 
@@ -344,7 +344,7 @@ const useRowStyles = makeStyles((theme) => ({
 }));
 
 interface RowProps {
-  task: RetryTaskExtended;
+  task: TaskInfoExtended;
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;

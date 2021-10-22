@@ -28,17 +28,12 @@ import {
   archiveRetryTask,
   archiveScheduledTask,
   listActiveTasks,
-  ListActiveTasksResponse,
   listArchivedTasks,
-  ListArchivedTasksResponse,
   listPendingTasks,
-  ListPendingTasksResponse,
+  ListTasksResponse,
   listRetryTasks,
-  ListRetryTasksResponse,
   listScheduledTasks,
-  ListScheduledTasksResponse,
   listCompletedTasks,
-  ListCompletedTasksResponse,
   PaginationOptions,
   runAllArchivedTasks,
   runAllRetryTasks,
@@ -259,7 +254,7 @@ interface ListActiveTasksBeginAction {
 interface ListActiveTasksSuccessAction {
   type: typeof LIST_ACTIVE_TASKS_SUCCESS;
   queue: string;
-  payload: ListActiveTasksResponse;
+  payload: ListTasksResponse;
 }
 
 interface ListActiveTasksErrorAction {
@@ -276,7 +271,7 @@ interface ListPendingTasksBeginAction {
 interface ListPendingTasksSuccessAction {
   type: typeof LIST_PENDING_TASKS_SUCCESS;
   queue: string;
-  payload: ListPendingTasksResponse;
+  payload: ListTasksResponse;
 }
 
 interface ListPendingTasksErrorAction {
@@ -293,7 +288,7 @@ interface ListScheduledTasksBeginAction {
 interface ListScheduledTasksSuccessAction {
   type: typeof LIST_SCHEDULED_TASKS_SUCCESS;
   queue: string;
-  payload: ListScheduledTasksResponse;
+  payload: ListTasksResponse;
 }
 
 interface ListScheduledTasksErrorAction {
@@ -310,7 +305,7 @@ interface ListRetryTasksBeginAction {
 interface ListRetryTasksSuccessAction {
   type: typeof LIST_RETRY_TASKS_SUCCESS;
   queue: string;
-  payload: ListRetryTasksResponse;
+  payload: ListTasksResponse;
 }
 
 interface ListRetryTasksErrorAction {
@@ -327,7 +322,7 @@ interface ListArchivedTasksBeginAction {
 interface ListArchivedTasksSuccessAction {
   type: typeof LIST_ARCHIVED_TASKS_SUCCESS;
   queue: string;
-  payload: ListArchivedTasksResponse;
+  payload: ListTasksResponse;
 }
 
 interface ListArchivedTasksErrorAction {
@@ -344,7 +339,7 @@ interface ListCompletedTasksBeginAction {
 interface ListCompletedTasksSuccessAction {
   type: typeof LIST_COMPLETED_TASKS_SUCCESS;
   queue: string;
-  payload: ListCompletedTasksResponse;
+  payload: ListTasksResponse;
 }
 
 interface ListCompletedTasksErrorAction {

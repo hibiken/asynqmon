@@ -130,17 +130,9 @@ import {
   BATCH_DELETE_COMPLETED_TASKS_ERROR,
   BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
 } from "../actions/tasksActions";
-import {
-  ActiveTask,
-  ArchivedTask,
-  CompletedTask,
-  PendingTask,
-  RetryTask,
-  ScheduledTask,
-  TaskInfo,
-} from "../api";
+import { TaskInfo } from "../api";
 
-export interface ActiveTaskExtended extends ActiveTask {
+export interface ActiveTaskExtended extends TaskInfo {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;
@@ -150,31 +142,7 @@ export interface ActiveTaskExtended extends ActiveTask {
   canceling: boolean;
 }
 
-export interface PendingTaskExtended extends PendingTask {
-  // Indicates that a request has been sent for this
-  // task and awaiting for a response.
-  requestPending: boolean;
-}
-
-export interface ScheduledTaskExtended extends ScheduledTask {
-  // Indicates that a request has been sent for this
-  // task and awaiting for a response.
-  requestPending: boolean;
-}
-
-export interface RetryTaskExtended extends RetryTask {
-  // Indicates that a request has been sent for this
-  // task and awaiting for a response.
-  requestPending: boolean;
-}
-
-export interface ArchivedTaskExtended extends ArchivedTask {
-  // Indicates that a request has been sent for this
-  // task and awaiting for a response.
-  requestPending: boolean;
-}
-
-export interface CompletedTaskExtended extends CompletedTask {
+export interface TaskInfoExtended extends TaskInfo {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;
@@ -193,35 +161,35 @@ interface TasksState {
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: PendingTaskExtended[];
+    data: TaskInfoExtended[];
   };
   scheduledTasks: {
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: ScheduledTaskExtended[];
+    data: TaskInfoExtended[];
   };
   retryTasks: {
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: RetryTaskExtended[];
+    data: TaskInfoExtended[];
   };
   archivedTasks: {
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: ArchivedTaskExtended[];
+    data: TaskInfoExtended[];
   };
   completedTasks: {
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: CompletedTaskExtended[];
+    data: TaskInfoExtended[];
   };
   taskInfo: {
     loading: boolean;
