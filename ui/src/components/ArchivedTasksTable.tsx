@@ -96,14 +96,14 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
 
-  const handleChangePage = (
+  const handlePageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (
+  const handleRowsPerPageChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     props.taskRowsPerPageChange(parseInt(event.target.value, 10));
@@ -278,8 +278,8 @@ function ArchivedTasksTable(props: Props & ReduxProps) {
                   inputProps: { "aria-label": "rows per page" },
                   native: true,
                 }}
-                onChangePage={handleChangePage}
-                onChangeRowsPerPage={handleChangeRowsPerPage}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
                 ActionsComponent={TablePaginationActions}
                 className={classes.pagination}
               />
