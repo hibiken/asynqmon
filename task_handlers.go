@@ -280,7 +280,7 @@ func newListArchivedTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadForma
 	}
 }
 
-func newListCompletedTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http.HandlerFunc {
+func newListCompletedTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter, rf ResultFormatter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname := vars["qname"]
@@ -300,7 +300,7 @@ func newListCompletedTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadForm
 			// avoid nil for the tasks field in json output.
 			payload["tasks"] = make([]*completedTask, 0)
 		} else {
-			payload["tasks"] = toCompletedTasks(tasks, pf)
+			payload["tasks"] = toCompletedTasks(tasks, pf, rf)
 		}
 		payload["stats"] = toQueueStateSnapshot(qinfo)
 		if err := json.NewEncoder(w).Encode(payload); err != nil {
@@ -673,7 +673,7 @@ func getPageOptions(r *http.Request) (pageSize, pageNum int) {
 	return pageSize, pageNum
 }
 
-func newGetTaskHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http.HandlerFunc {
+func newGetTaskHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter, rf ResultFormatter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname, taskid := vars["qname"], vars["task_id"]
@@ -696,7 +696,7 @@ func newGetTaskHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(toTaskInfo(info, pf)); err != nil {
+		if err := json.NewEncoder(w).Encode(toTaskInfo(info, pf, rf)); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

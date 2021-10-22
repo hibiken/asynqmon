@@ -14,7 +14,7 @@ import (
 //   - conversion function from an external type to an internal type
 // ****************************************************************************
 
-// PayloadFormatter is used to convert payload bytes to string shown in the UI.
+// PayloadFormatter is used to convert payload bytes to a string shown in the UI.
 type PayloadFormatter interface {
 	// FormatPayload takes the task's typename and payload and returns a string representation of the payload.
 	FormatPayload(taskType string, payload []byte) string
@@ -22,9 +22,20 @@ type PayloadFormatter interface {
 
 type PayloadFormatterFunc func(string, []byte) string
 
-// FormatPayload returns a string representation of the payload of the given taskType.
 func (f PayloadFormatterFunc) FormatPayload(taskType string, payload []byte) string {
 	return f(taskType, payload)
+}
+
+// ResultFormatter is used to convert result bytes to a string shown in the UI.
+type ResultFormatter interface {
+	// FormatResult takes the task's typename and result and returns a string representation of the result.
+	FormatResult(taskType string, result []byte) string
+}
+
+type ResultFormatterFunc func(string, []byte) string
+
+func (f ResultFormatterFunc) FormatResult(taskType string, result []byte) string {
+	return f(taskType, result)
 }
 
 // DefaultPayloadFormatter is the PayloadFormater used by default.
@@ -35,6 +46,16 @@ var DefaultPayloadFormatter = PayloadFormatterFunc(func(_ string, payload []byte
 		return "non-printable bytes"
 	}
 	return string(payload)
+})
+
+// DefaultResultFormatter is the ResultFormatter used by default.
+// It prints the given result bytes as is if the bytes are printable, otherwise it prints a message to indicate
+// that the bytes are not printable.
+var DefaultResultFormatter = ResultFormatterFunc(func(_ string, result []byte) string {
+	if !isPrintable(result) {
+		return "non-printable bytes"
+	}
+	return string(result)
 })
 
 // isPrintable reports whether the given data is comprised of all printable runes.
@@ -181,7 +202,7 @@ func formatTimeInRFC3339(t time.Time) string {
 	return t.Format(time.RFC3339)
 }
 
-func toTaskInfo(info *asynq.TaskInfo, pf PayloadFormatter) *taskInfo {
+func toTaskInfo(info *asynq.TaskInfo, pf PayloadFormatter, rf ResultFormatter) *taskInfo {
 	return &taskInfo{
 		ID:            info.ID,
 		Queue:         info.Queue,
@@ -196,9 +217,8 @@ func toTaskInfo(info *asynq.TaskInfo, pf PayloadFormatter) *taskInfo {
 		Deadline:      formatTimeInRFC3339(info.Deadline),
 		NextProcessAt: formatTimeInRFC3339(info.NextProcessAt),
 		CompletedAt:   formatTimeInRFC3339(info.CompletedAt),
-		// TODO: Replace this with resultFormatter
-		Result: DefaultPayloadFormatter.FormatPayload("", info.Result),
-		TTL:    int64(taskTTL(info).Seconds()),
+		Result:        rf.FormatResult("", info.Result),
+		TTL:           int64(taskTTL(info).Seconds()),
 	}
 }
 
@@ -373,7 +393,7 @@ type completedTask struct {
 	TTL int64 `json:"ttl_seconds"`
 }
 
-func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter) *completedTask {
+func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter, rf ResultFormatter) *completedTask {
 	base := &baseTask{
 		ID:        ti.ID,
 		Type:      ti.Type,
@@ -387,15 +407,14 @@ func toCompletedTask(ti *asynq.TaskInfo, pf PayloadFormatter) *completedTask {
 		baseTask:    base,
 		CompletedAt: ti.CompletedAt,
 		TTL:         int64(taskTTL(ti).Seconds()),
-		// TODO: Use resultFormatter instead
-		Result: DefaultPayloadFormatter.FormatPayload("", ti.Result),
+		Result:      rf.FormatResult(ti.Type, ti.Result),
 	}
 }
 
-func toCompletedTasks(in []*asynq.TaskInfo, pf PayloadFormatter) []*completedTask {
+func toCompletedTasks(in []*asynq.TaskInfo, pf PayloadFormatter, rf ResultFormatter) []*completedTask {
 	out := make([]*completedTask, len(in))
 	for i, ti := range in {
-		out[i] = toCompletedTask(ti, pf)
+		out[i] = toCompletedTask(ti, pf, rf)
 	}
 	return out
 }
