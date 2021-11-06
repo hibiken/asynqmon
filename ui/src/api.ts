@@ -5,34 +5,16 @@ import queryString from "query-string";
 // the static file server.
 // In developement, we assume that the API server is listening on port 8080.
 const BASE_URL =
-  process.env.NODE_ENV === "production" ? `${window.ROOT_PATH}/api` : `http://localhost:8080${window.ROOT_PATH}/api`;
+  process.env.NODE_ENV === "production"
+    ? `${window.ROOT_PATH}/api`
+    : `http://localhost:8080${window.ROOT_PATH}/api`;
 
 export interface ListQueuesResponse {
   queues: Queue[];
 }
 
-export interface ListActiveTasksResponse {
-  tasks: ActiveTask[];
-  stats: Queue;
-}
-
-export interface ListPendingTasksResponse {
-  tasks: PendingTask[];
-  stats: Queue;
-}
-
-export interface ListScheduledTasksResponse {
-  tasks: ScheduledTask[];
-  stats: Queue;
-}
-
-export interface ListRetryTasksResponse {
-  tasks: RetryTask[];
-  stats: Queue;
-}
-
-export interface ListArchivedTasksResponse {
-  tasks: ArchivedTask[];
+export interface ListTasksResponse {
+  tasks: TaskInfo[];
   stats: Queue;
 }
 
@@ -239,6 +221,7 @@ export interface Queue {
   scheduled: number;
   retry: number;
   archived: number;
+  completed: number;
   processed: number;
   failed: number;
   timestamp: string;
@@ -251,18 +234,13 @@ export interface DailyStat {
   failed: number;
 }
 
-// BaseTask corresponds to asynq.Task type.
-interface BaseTask {
-  type: string;
-  payload: string;
-}
-
 export interface TaskInfo {
   id: string;
   queue: string;
   type: string;
   payload: string;
   state: string;
+  start_time: string; // Only applies to task.state == 'active'
   max_retry: number;
   retried: number;
   last_failed_at: string;
@@ -270,51 +248,9 @@ export interface TaskInfo {
   next_process_at: string;
   timeout_seconds: number;
   deadline: string;
-}
-
-export interface ActiveTask extends BaseTask {
-  id: string;
-  queue: string;
-  start_time: string;
-  deadline: string;
-  max_retry: number;
-  retried: number;
-  error_message: string;
-}
-
-export interface PendingTask extends BaseTask {
-  id: string;
-  queue: string;
-  max_retry: number;
-  retried: number;
-  error_message: string;
-}
-
-export interface ScheduledTask extends BaseTask {
-  id: string;
-  queue: string;
-  max_retry: number;
-  retried: number;
-  error_message: string;
-  next_process_at: string;
-}
-
-export interface RetryTask extends BaseTask {
-  id: string;
-  queue: string;
-  next_process_at: string;
-  max_retry: number;
-  retried: number;
-  error_message: string;
-}
-
-export interface ArchivedTask extends BaseTask {
-  id: string;
-  queue: string;
-  max_retry: number;
-  retried: number;
-  last_failed_at: string;
-  error_message: string;
+  completed_at: string;
+  result: string;
+  ttl_seconds: number;
 }
 
 export interface ServerInfo {
@@ -396,7 +332,10 @@ export async function listQueueStats(): Promise<ListQueueStatsResponse> {
   return resp.data;
 }
 
-export async function getTaskInfo(qname: string, id: string): Promise<TaskInfo> {
+export async function getTaskInfo(
+  qname: string,
+  id: string
+): Promise<TaskInfo> {
   const url = `${BASE_URL}/queues/${qname}/tasks/${id}`;
   const resp = await axios({
     method: "get",
@@ -408,7 +347,7 @@ export async function getTaskInfo(qname: string, id: string): Promise<TaskInfo> 
 export async function listActiveTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListActiveTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/active_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -454,7 +393,7 @@ export async function batchCancelActiveTasks(
 export async function listPendingTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListPendingTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/pending_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -469,7 +408,7 @@ export async function listPendingTasks(
 export async function listScheduledTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListScheduledTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/scheduled_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -484,7 +423,7 @@ export async function listScheduledTasks(
 export async function listRetryTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListRetryTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/retry_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
@@ -499,8 +438,23 @@ export async function listRetryTasks(
 export async function listArchivedTasks(
   qname: string,
   pageOpts?: PaginationOptions
-): Promise<ListArchivedTasksResponse> {
+): Promise<ListTasksResponse> {
   let url = `${BASE_URL}/queues/${qname}/archived_tasks`;
+  if (pageOpts) {
+    url += `?${queryString.stringify(pageOpts)}`;
+  }
+  const resp = await axios({
+    method: "get",
+    url,
+  });
+  return resp.data;
+}
+
+export async function listCompletedTasks(
+  qname: string,
+  pageOpts?: PaginationOptions
+): Promise<ListTasksResponse> {
+  let url = `${BASE_URL}/queues/${qname}/completed_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
   }
@@ -831,6 +785,40 @@ export async function runAllArchivedTasks(qname: string): Promise<void> {
     method: "post",
     url: `${BASE_URL}/queues/${qname}/archived_tasks:run_all`,
   });
+}
+
+export async function deleteCompletedTask(
+  qname: string,
+  taskId: string
+): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/completed_tasks/${taskId}`,
+  });
+}
+
+export async function batchDeleteCompletedTasks(
+  qname: string,
+  taskIds: string[]
+): Promise<BatchDeleteTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${BASE_URL}/queues/${qname}/completed_tasks:batch_delete`,
+    data: {
+      task_ids: taskIds,
+    },
+  });
+  return resp.data;
+}
+
+export async function deleteAllCompletedTasks(
+  qname: string
+): Promise<DeleteAllTasksResponse> {
+  const resp = await axios({
+    method: "delete",
+    url: `${BASE_URL}/queues/${qname}/completed_tasks:delete_all`,
+  });
+  return resp.data;
 }
 
 export async function listServers(): Promise<ListServersResponse> {

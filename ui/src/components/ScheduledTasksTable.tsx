@@ -41,7 +41,7 @@ import TablePaginationActions, {
 import TableActions from "./TableActions";
 import { durationBefore, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
-import { ScheduledTaskExtended } from "../reducers/tasksReducer";
+import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
 
@@ -341,7 +341,7 @@ const useRowStyles = makeStyles((theme) => ({
 }));
 
 interface RowProps {
-  task: ScheduledTaskExtended;
+  task: TaskInfoExtended;
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
   onRunClick: () => void;

@@ -18,6 +18,7 @@ import { TaskDetailsRouteParams } from "../paths";
 import { usePolling } from "../hooks";
 import { listQueuesAsync } from "../actions/queuesActions";
 import SyntaxHighlighter from "../components/SyntaxHighlighter";
+import { durationFromSeconds, stringifyDuration, timeAgo } from "../utils";
 
 function mapStateToProps(state: AppState) {
   return {
@@ -175,7 +176,7 @@ function TaskDetailsView(props: Props) {
                         {taskInfo?.error_message} ({taskInfo?.last_failed_at})
                       </Typography>
                     ) : (
-                      <Typography>n/a</Typography>
+                      <Typography> - </Typography>
                     )}
                   </Typography>
                 </div>
@@ -189,7 +190,7 @@ function TaskDetailsView(props: Props) {
                   {taskInfo?.next_process_at ? (
                     <Typography>{taskInfo?.next_process_at}</Typography>
                   ) : (
-                    <Typography>n/a</Typography>
+                    <Typography> - </Typography>
                   )}
                 </div>
               </div>
@@ -201,7 +202,7 @@ function TaskDetailsView(props: Props) {
                   {taskInfo?.timeout_seconds ? (
                     <Typography>{taskInfo?.timeout_seconds} seconds</Typography>
                   ) : (
-                    <Typography>n/a</Typography>
+                    <Typography> - </Typography>
                   )}
                 </Typography>
               </div>
@@ -213,7 +214,7 @@ function TaskDetailsView(props: Props) {
                   {taskInfo?.deadline ? (
                     <Typography>{taskInfo?.deadline}</Typography>
                   ) : (
-                    <Typography>n/a</Typography>
+                    <Typography> - </Typography>
                   )}
                 </Typography>
               </div>
@@ -232,6 +233,59 @@ function TaskDetailsView(props: Props) {
                   )}
                 </div>
               </div>
+              {
+                /* Completed Task Only */ taskInfo?.state === "completed" && (
+                  <>
+                    <div className={classes.infoRow}>
+                      <Typography
+                        variant="subtitle2"
+                        className={classes.infoKeyCell}
+                      >
+                        Completed:{" "}
+                      </Typography>
+                      <div className={classes.infoValueCell}>
+                        <Typography>
+                          {timeAgo(taskInfo.completed_at)} (
+                          {taskInfo.completed_at})
+                        </Typography>
+                      </div>
+                    </div>
+                    <div className={classes.infoRow}>
+                      <Typography
+                        variant="subtitle2"
+                        className={classes.infoKeyCell}
+                      >
+                        Result:{" "}
+                      </Typography>
+                      <div className={classes.infoValueCell}>
+                        <SyntaxHighlighter
+                          language="json"
+                          customStyle={{ margin: 0, maxWidth: 400 }}
+                        >
+                          {taskInfo.result}
+                        </SyntaxHighlighter>
+                      </div>
+                    </div>
+                    <div className={classes.infoRow}>
+                      <Typography
+                        variant="subtitle2"
+                        className={classes.infoKeyCell}
+                      >
+                        TTL:{" "}
+                      </Typography>
+                      <Typography className={classes.infoValueCell}>
+                        <Typography>
+                          {taskInfo.ttl_seconds > 0
+                            ? `${stringifyDuration(
+                                durationFromSeconds(taskInfo.ttl_seconds)
+                              )} left`
+                            : "expired"}
+                        </Typography>
+                      </Typography>
+                    </div>
+                  </>
+                )
+              }
             </Paper>
           )}
           <div className={classes.footer}>

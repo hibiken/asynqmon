@@ -50,6 +50,9 @@ import {
   BATCH_DELETE_PENDING_TASKS_SUCCESS,
   ARCHIVE_ALL_PENDING_TASKS_SUCCESS,
   DELETE_ALL_PENDING_TASKS_SUCCESS,
+  DELETE_COMPLETED_TASK_SUCCESS,
+  DELETE_ALL_COMPLETED_TASKS_SUCCESS,
+  BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
 } from "../actions/tasksActions";
 import { Queue } from "../api";
 
@@ -550,8 +553,7 @@ function queuesReducer(
               queueInfo.currentStats.pending +
               action.payload.archived_ids.length,
             retry:
-              queueInfo.currentStats.retry -
-              action.payload.archived_ids.length,
+              queueInfo.currentStats.retry - action.payload.archived_ids.length,
           },
         };
       });
@@ -647,6 +649,23 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
+    case DELETE_COMPLETED_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - 1,
+            completed: queueInfo.currentStats.completed - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
     case BATCH_RUN_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
@@ -688,6 +707,26 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
+    case BATCH_DELETE_COMPLETED_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            size:
+              queueInfo.currentStats.size - action.payload.deleted_ids.length,
+            completed:
+              queueInfo.currentStats.completed -
+              action.payload.deleted_ids.length,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
     case RUN_ALL_ARCHIVED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
@@ -717,6 +756,23 @@ function queuesReducer(
             ...queueInfo.currentStats,
             size: queueInfo.currentStats.size - action.deleted,
             archived: 0,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case DELETE_ALL_COMPLETED_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - action.deleted,
+            completed: 0,
           },
         };
       });

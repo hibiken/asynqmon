@@ -74,5 +74,11 @@ export default function queueStatsReducer(
 
 // Returns true if two timestamps are from the same date.
 function isSameDate(ts1: string, ts2: string): boolean {
-  return new Date(ts1).toDateString() === new Date(ts2).toDateString();
+  const date1 = new Date(ts1);
+  const date2 = new Date(ts2);
+  return (
+    date1.getUTCDate() === date2.getUTCDate() &&
+    date1.getUTCMonth() === date2.getUTCMonth() &&
+    date1.getUTCFullYear() === date2.getUTCFullYear()
+  );
 }

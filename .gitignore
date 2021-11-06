@@ -23,8 +23,9 @@ package-json.lock
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# main binary
+# binaries
 asynqmon
+api
 dist/
 
 # Editor configs

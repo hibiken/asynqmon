@@ -23,6 +23,7 @@ interface TaskBreakdown {
   scheduled: number; // number of scheduled tasks in the queue.
   retry: number; // number of retry tasks in the queue.
   archived: number; // number of archived tasks in the queue.
+  completed: number; // number of completed tasks in the queue.
 }
 
 function QueueSizeChart(props: Props) {
@@ -55,6 +56,7 @@ function QueueSizeChart(props: Props) {
         <Bar dataKey="scheduled" stackId="a" fill="#fdd663" />
         <Bar dataKey="retry" stackId="a" fill="#f666a9" />
         <Bar dataKey="archived" stackId="a" fill="#ac4776" />
+        <Bar dataKey="completed" stackId="a" fill="#4bb543" />
       </BarChart>
     </ResponsiveContainer>
   );

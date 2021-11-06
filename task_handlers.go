@@ -280,6 +280,36 @@ func newListArchivedTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadForma
 	}
 }
 
+func newListCompletedTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter, rf ResultFormatter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname := vars["qname"]
+		pageSize, pageNum := getPageOptions(r)
+		tasks, err := inspector.ListCompletedTasks(qname, asynq.PageSize(pageSize), asynq.Page(pageNum))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		qinfo, err := inspector.GetQueueInfo(qname)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		payload := make(map[string]interface{})
+		if len(tasks) == 0 {
+			// avoid nil for the tasks field in json output.
+			payload["tasks"] = make([]*completedTask, 0)
+		} else {
+			payload["tasks"] = toCompletedTasks(tasks, pf, rf)
+		}
+		payload["stats"] = toQueueStateSnapshot(qinfo)
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func newDeleteTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -388,6 +418,22 @@ func newDeleteAllArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.Handl
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		n, err := inspector.DeleteAllArchivedTasks(qname)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		resp := deleteAllTasksResponse{n}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func newDeleteAllCompletedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		qname := mux.Vars(r)["qname"]
+		n, err := inspector.DeleteAllCompletedTasks(qname)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -627,7 +673,7 @@ func getPageOptions(r *http.Request) (pageSize, pageNum int) {
 	return pageSize, pageNum
 }
 
-func newGetTaskHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http.HandlerFunc {
+func newGetTaskHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter, rf ResultFormatter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		qname, taskid := vars["qname"], vars["task_id"]
@@ -650,7 +696,7 @@ func newGetTaskHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(toTaskInfo(info, pf)); err != nil {
+		if err := json.NewEncoder(w).Encode(toTaskInfo(info, pf, rf)); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -38,7 +38,7 @@ import { AppState } from "../store";
 import { usePolling } from "../hooks";
 import { uuidPrefix } from "../utils";
 import { TableColumn } from "../types/table";
-import { PendingTaskExtended } from "../reducers/tasksReducer";
+import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { taskDetailsPath } from "../paths";
 
 const useStyles = makeStyles((theme) => ({
@@ -313,7 +313,7 @@ const useRowStyles = makeStyles((theme) => ({
 }));
 
 interface RowProps {
-  task: PendingTaskExtended;
+  task: TaskInfoExtended;
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;

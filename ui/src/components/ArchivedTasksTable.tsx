@@ -37,7 +37,7 @@ import { taskRowsPerPageChange } from "../actions/settingsActions";
 import TableActions from "./TableActions";
 import { timeAgo, uuidPrefix } from "../utils";
 import { usePolling } from "../hooks";
-import { ArchivedTaskExtended } from "../reducers/tasksReducer";
+import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
 
@@ -311,7 +311,7 @@ const useRowStyles = makeStyles((theme) => ({
 }));
 
 interface RowProps {
-  task: ArchivedTaskExtended;
+  task: TaskInfoExtended;
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
   onRunClick: () => void;

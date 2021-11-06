@@ -38,7 +38,14 @@ function useQuery(): URLSearchParams {
   return new URLSearchParams(useLocation().search);
 }
 
-const validStatus = ["active", "pending", "scheduled", "retry", "archived"];
+const validStatus = [
+  "active",
+  "pending",
+  "scheduled",
+  "retry",
+  "archived",
+  "completed",
+];
 const defaultStatus = "active";
 
 function TasksView(props: ConnectedProps<typeof connector>) {

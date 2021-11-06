@@ -15,6 +15,9 @@ import {
   LIST_ARCHIVED_TASKS_BEGIN,
   LIST_ARCHIVED_TASKS_SUCCESS,
   LIST_ARCHIVED_TASKS_ERROR,
+  LIST_COMPLETED_TASKS_BEGIN,
+  LIST_COMPLETED_TASKS_SUCCESS,
+  LIST_COMPLETED_TASKS_ERROR,
   CANCEL_ACTIVE_TASK_BEGIN,
   CANCEL_ACTIVE_TASK_SUCCESS,
   CANCEL_ACTIVE_TASK_ERROR,
@@ -117,17 +120,19 @@ import {
   GET_TASK_INFO_BEGIN,
   GET_TASK_INFO_ERROR,
   GET_TASK_INFO_SUCCESS,
+  DELETE_COMPLETED_TASK_BEGIN,
+  DELETE_COMPLETED_TASK_ERROR,
+  DELETE_COMPLETED_TASK_SUCCESS,
+  DELETE_ALL_COMPLETED_TASKS_BEGIN,
+  DELETE_ALL_COMPLETED_TASKS_ERROR,
+  DELETE_ALL_COMPLETED_TASKS_SUCCESS,
+  BATCH_DELETE_COMPLETED_TASKS_BEGIN,
+  BATCH_DELETE_COMPLETED_TASKS_ERROR,
+  BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
 } from "../actions/tasksActions";
-import {
-  ActiveTask,
-  ArchivedTask,
-  PendingTask,
-  RetryTask,
-  ScheduledTask,
-  TaskInfo,
-} from "../api";
+import { TaskInfo } from "../api";
 
-export interface ActiveTaskExtended extends ActiveTask {
+export interface ActiveTaskExtended extends TaskInfo {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;
@@ -137,25 +142,7 @@ export interface ActiveTaskExtended extends ActiveTask {
   canceling: boolean;
 }
 
-export interface PendingTaskExtended extends PendingTask {
-  // Indicates that a request has been sent for this
-  // task and awaiting for a response.
-  requestPending: boolean;
-}
-
-export interface ScheduledTaskExtended extends ScheduledTask {
-  // Indicates that a request has been sent for this
-  // task and awaiting for a response.
-  requestPending: boolean;
-}
-
-export interface RetryTaskExtended extends RetryTask {
-  // Indicates that a request has been sent for this
-  // task and awaiting for a response.
-  requestPending: boolean;
-}
-
-export interface ArchivedTaskExtended extends ArchivedTask {
+export interface TaskInfoExtended extends TaskInfo {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;
@@ -174,34 +161,41 @@ interface TasksState {
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: PendingTaskExtended[];
+    data: TaskInfoExtended[];
   };
   scheduledTasks: {
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: ScheduledTaskExtended[];
+    data: TaskInfoExtended[];
   };
   retryTasks: {
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: RetryTaskExtended[];
+    data: TaskInfoExtended[];
   };
   archivedTasks: {
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: ArchivedTaskExtended[];
+    data: TaskInfoExtended[];
+  };
+  completedTasks: {
+    loading: boolean;
+    batchActionPending: boolean;
+    allActionPending: boolean;
+    error: string;
+    data: TaskInfoExtended[];
   };
   taskInfo: {
     loading: boolean;
     error: string;
     data?: TaskInfo;
-  },
+  };
 }
 
 const initialState: TasksState = {
@@ -240,10 +234,17 @@ const initialState: TasksState = {
     error: "",
     data: [],
   },
+  completedTasks: {
+    loading: false,
+    batchActionPending: false,
+    allActionPending: false,
+    error: "",
+    data: [],
+  },
   taskInfo: {
     loading: false,
     error: "",
-  }
+  },
 };
 
 function tasksReducer(
@@ -258,16 +259,16 @@ function tasksReducer(
           ...state.taskInfo,
           loading: true,
         },
-      }
+      };
 
     case GET_TASK_INFO_ERROR:
-        return {
-          ...state,
-          taskInfo: {
-            loading: false,
-            error: action.error,
-          },
-        };
+      return {
+        ...state,
+        taskInfo: {
+          loading: false,
+          error: action.error,
+        },
+      };
 
     case GET_TASK_INFO_SUCCESS:
       return {
@@ -447,6 +448,157 @@ function tasksReducer(
           loading: false,
           error: action.error,
           data: [],
+        },
+      };
+
+    case LIST_COMPLETED_TASKS_BEGIN:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          loading: true,
+        },
+      };
+
+    case LIST_COMPLETED_TASKS_SUCCESS:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          loading: false,
+          error: "",
+          data: action.payload.tasks.map((task) => ({
+            ...task,
+            requestPending: false,
+          })),
+        },
+      };
+
+    case LIST_COMPLETED_TASKS_ERROR:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          loading: false,
+          error: action.error,
+          data: [],
+        },
+      };
+
+    case DELETE_COMPLETED_TASK_BEGIN:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          data: state.completedTasks.data.map((task) => {
+            if (task.id !== action.taskId) {
+              return task;
+            }
+            return { ...task, requestPending: true };
+          }),
+        },
+      };
+
+    case DELETE_COMPLETED_TASK_SUCCESS:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          data: state.completedTasks.data.filter(
+            (task) => task.id !== action.taskId
+          ),
+        },
+      };
+
+    case DELETE_COMPLETED_TASK_ERROR:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          data: state.completedTasks.data.map((task) => {
+            if (task.id !== action.taskId) {
+              return task;
+            }
+            return { ...task, requestPending: false };
+          }),
+        },
+      };
+
+    case DELETE_ALL_COMPLETED_TASKS_BEGIN:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          allActionPending: true,
+        },
+      };
+
+    case DELETE_ALL_COMPLETED_TASKS_SUCCESS:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          allActionPending: false,
+          data: [],
+        },
+      };
+
+    case DELETE_ALL_COMPLETED_TASKS_ERROR:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          allActionPending: false,
+        },
+      };
+
+    case BATCH_DELETE_COMPLETED_TASKS_BEGIN:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          batchActionPending: true,
+          data: state.completedTasks.data.map((task) => {
+            if (!action.taskIds.includes(task.id)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: true,
+            };
+          }),
+        },
+      };
+
+    case BATCH_DELETE_COMPLETED_TASKS_SUCCESS: {
+      const newData = state.completedTasks.data.filter(
+        (task) => !action.payload.deleted_ids.includes(task.id)
+      );
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_DELETE_COMPLETED_TASKS_ERROR:
+      return {
+        ...state,
+        completedTasks: {
+          ...state.completedTasks,
+          batchActionPending: false,
+          data: state.completedTasks.data.map((task) => {
+            if (!action.taskIds.includes(task.id)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: false,
+            };
+          }),
         },
       };
 

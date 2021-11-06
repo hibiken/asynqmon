@@ -11,6 +11,7 @@ import PendingTasksTable from "./PendingTasksTable";
 import ScheduledTasksTable from "./ScheduledTasksTable";
 import RetryTasksTable from "./RetryTasksTable";
 import ArchivedTasksTable from "./ArchivedTasksTable";
+import CompletedTasksTable from "./CompletedTasksTable";
 import { useHistory } from "react-router-dom";
 import { queueDetailsPath, taskDetailsPath } from "../paths";
 import { QueueInfo } from "../reducers/queuesReducer";
@@ -56,6 +57,7 @@ function mapStatetoProps(state: AppState, ownProps: Props) {
         scheduled: 0,
         retry: 0,
         archived: 0,
+        completed: 0,
         processed: 0,
         failed: 0,
         timestamp: "n/a",
@@ -104,7 +106,8 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: "2px",
   },
   searchbar: {
-    marginLeft: theme.spacing(4),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
   },
   search: {
     position: "relative",
@@ -147,6 +150,7 @@ function TasksTable(props: Props & ReduxProps) {
     { key: "scheduled", label: "Scheduled", count: currentStats.scheduled },
     { key: "retry", label: "Retry", count: currentStats.retry },
     { key: "archived", label: "Archived", count: currentStats.archived },
+    { key: "completed", label: "Completed", count: currentStats.completed },
   ];
 
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -227,6 +231,12 @@ function TasksTable(props: Props & ReduxProps) {
         <ArchivedTasksTable
           queue={props.queue}
           totalTaskCount={currentStats.archived}
+        />
+      </TabPanel>
+      <TabPanel value="completed" selected={props.selected}>
+        <CompletedTasksTable
+          queue={props.queue}
+          totalTaskCount={currentStats.completed}
         />
       </TabPanel>
     </Paper>
