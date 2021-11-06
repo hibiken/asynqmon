@@ -10,6 +10,7 @@ Asynqmon is both a library that you can include in your web application, as well
 
 | Asynq version  | WebUI (asynqmon) version |
 | -------------- | ------------------------ |
+| 0.19.x         | 0.4.x                    |
 | 0.18.x         | 0.2.x, 0.3.x             |
 | 0.16.x, 0.17.x | 0.1.x                    |
 
