@@ -34,6 +34,12 @@ type Options struct {
 	//
 	// This field is optional.
 	ResultFormatter ResultFormatter
+
+	// PrometheusAddress specifies the address of the Prometheus to connect to.
+	//
+	// This field is optional. If this field is set, asynqmon will query the Prometheus server
+	// to get the time series data about queue metrics and show them in the web UI.
+	PrometheusAddress string
 }
 
 // HTTPHandler is a http.Handler for asynqmon application.

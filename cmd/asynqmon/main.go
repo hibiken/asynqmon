@@ -33,6 +33,7 @@ var (
 	flagMaxPayloadLength      int
 	flagMaxResultLength       int
 	flagEnableMetricsExporter bool
+	flagPrometheusServerAddr  string
 )
 
 func init() {
@@ -47,6 +48,7 @@ func init() {
 	flag.IntVar(&flagMaxPayloadLength, "max-payload-length", getEnvOrDefaultInt("MAX_PAYLOAD_LENGTH", 200), "maximum number of utf8 characters printed in the payload cell in the Web UI")
 	flag.IntVar(&flagMaxResultLength, "max-result-length", getEnvOrDefaultInt("MAX_RESULT_LENGTH", 200), "maximum number of utf8 characters printed in the result cell in the Web UI")
 	flag.BoolVar(&flagEnableMetricsExporter, "enable-metrics-exporter", getEnvOrDefaultBool("ENABLE_METRICS_EXPORTER", false), "enable prometheus metrics exporter to expose queue metrics")
+	flag.StringVar(&flagPrometheusServerAddr, "prometheus-server-addr", getEnvDefaultString("PROMETHEUS_SERVER_ADDR", ""), "address of prometheus server to query time series")
 }
 
 // TODO: Write test and refactor this code.
@@ -108,9 +110,10 @@ func main() {
 	}
 
 	h := asynqmon.New(asynqmon.Options{
-		RedisConnOpt:     redisConnOpt,
-		PayloadFormatter: asynqmon.PayloadFormatterFunc(formatPayload),
-		ResultFormatter:  asynqmon.ResultFormatterFunc(formatResult),
+		RedisConnOpt:      redisConnOpt,
+		PayloadFormatter:  asynqmon.PayloadFormatterFunc(formatPayload),
+		ResultFormatter:   asynqmon.ResultFormatterFunc(formatResult),
+		PrometheusAddress: flagPrometheusServerAddr,
 	})
 	defer h.Close()
 
