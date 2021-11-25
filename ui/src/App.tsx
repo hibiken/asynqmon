@@ -22,6 +22,7 @@ import LayersIcon from "@material-ui/icons/Layers";
 import SettingsIcon from "@material-ui/icons/Settings";
 import ScheduleIcon from "@material-ui/icons/Schedule";
 import FeedbackIcon from "@material-ui/icons/Feedback";
+import TimelineIcon from "@material-ui/icons/Timeline";
 import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 import CloseIcon from "@material-ui/icons/Close";
 import { AppState } from "./store";
@@ -244,6 +245,13 @@ function App(props: ConnectedProps<typeof connector>) {
                       primary="Redis"
                       icon={<LayersIcon />}
                     />
+                    {window.PROMETHEUS_SERVER_ADDRESS && (
+                      <ListItemLink
+                        to="/TODO"
+                        primary="Metrics"
+                        icon={<TimelineIcon />}
+                      />
+                    )}
                   </div>
                 </List>
                 <List>

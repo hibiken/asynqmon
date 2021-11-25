@@ -189,10 +189,11 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 
 	// Everything else, route to uiAssetsHandler.
 	router.NotFoundHandler = &uiAssetsHandler{
-		rootPath:      opts.RootPath,
-		contents:      staticContents,
-		staticDirPath: "ui/build",
-		indexFileName: "index.html",
+		rootPath:       opts.RootPath,
+		contents:       staticContents,
+		staticDirPath:  "ui/build",
+		indexFileName:  "index.html",
+		prometheusAddr: opts.PrometheusAddress,
 	}
 	return router
 }

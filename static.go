@@ -15,10 +15,11 @@ import (
 // the path to the index file within that static directory are used to
 // serve the SPA.
 type uiAssetsHandler struct {
-	rootPath      string
-	contents      embed.FS
-	staticDirPath string
-	indexFileName string
+	rootPath       string
+	contents       embed.FS
+	staticDirPath  string
+	indexFileName  string
+	prometheusAddr string
 }
 
 // ServeHTTP inspects the URL path to locate a file within the static dir
@@ -59,9 +60,11 @@ func (h *uiAssetsHandler) renderIndexFile(w http.ResponseWriter) error {
 		return err
 	}
 	data := struct {
-		RootPath string
+		RootPath       string
+		PrometheusAddr string
 	}{
-		RootPath: h.rootPath,
+		RootPath:       h.rootPath,
+		PrometheusAddr: h.prometheusAddr,
 	}
 	return tmpl.Execute(w, data)
 }
