@@ -38,6 +38,7 @@ import TaskDetailsView from "./views/TaskDetailsView";
 import SettingsView from "./views/SettingsView";
 import ServersView from "./views/ServersView";
 import RedisInfoView from "./views/RedisInfoView";
+import MetricsView from "./views/MetricsView";
 import PageNotFoundView from "./views/PageNotFoundView";
 
 const drawerWidth = 220;
@@ -247,7 +248,7 @@ function App(props: ConnectedProps<typeof connector>) {
                     />
                     {window.PROMETHEUS_SERVER_ADDRESS && (
                       <ListItemLink
-                        to="/TODO"
+                        to={paths.METRICS}
                         primary="Metrics"
                         icon={<TimelineIcon />}
                       />
@@ -298,6 +299,9 @@ function App(props: ConnectedProps<typeof connector>) {
                   </Route>
                   <Route exact path={paths.HOME}>
                     <DashboardView />
+                  </Route>
+                  <Route exact path={paths.METRICS}>
+                    <MetricsView />
                   </Route>
                   <Route path="*">
                     <PageNotFoundView />

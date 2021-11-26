@@ -6,6 +6,7 @@ export const paths = {
   QUEUE_DETAILS: `${window.ROOT_PATH}/queues/:qname`,
   REDIS: `${window.ROOT_PATH}/redis`,
   TASK_DETAILS: `${window.ROOT_PATH}/queues/:qname/tasks/:taskId`,
+  METRICS: `${window.ROOT_PATH}/metrics`,
 };
 
 /**************************************************************
