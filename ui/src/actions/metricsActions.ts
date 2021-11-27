@@ -32,7 +32,6 @@ export function getMetricsAsync() {
     dispatch({ type: GET_METRICS_BEGIN });
     try {
       const response = await getMetrics();
-      console.log("DEBUG: got metrics: ", response);
       dispatch({ type: GET_METRICS_SUCCESS, payload: response });
     } catch (error) {
       console.error(`getMetricsAsync: ${toErrorStringWithHttpStatus(error)}`);

@@ -23,7 +23,7 @@ func newGetMetricsHandlerFunc(client *http.Client) http.HandlerFunc {
 		const (
 			baseAddr = "http://localhost:9090"
 			apiPath  = "/api/v1/query_range"
-			promQL   = "asynq_tasks_enqueued_total"
+			promQL   = "asynq_queue_size"
 		)
 		var b strings.Builder
 		v := url.Values{}

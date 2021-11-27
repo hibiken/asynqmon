@@ -86,7 +86,7 @@ export interface MetricsResult {
 
 export interface Metrics {
   metric: MetricsInfo;
-  values: [number, string]; // [unixtime, value]
+  values: [number, string][]; // [unixtime, value]
 }
 
 export interface MetricsInfo {
