@@ -76,6 +76,27 @@ export interface QueueLocation {
   nodes: string[]; // node addresses
 }
 
+export interface MetricsResponse {
+  data: MetricsResult;
+}
+
+export interface MetricsResult {
+  result: Metrics[];
+}
+
+export interface Metrics {
+  metric: MetricsInfo;
+  values: [number, string]; // [unixtime, value]
+}
+
+export interface MetricsInfo {
+  __name__: string;
+  instance: string;
+  job: string;
+  queue: string;
+  state: string;
+}
+
 // Return value from redis INFO command.
 // See https://redis.io/commands/info#return-value.
 export interface RedisInfo {
@@ -851,6 +872,14 @@ export async function getRedisInfo(): Promise<RedisInfoResponse> {
   const resp = await axios({
     method: "get",
     url: `${BASE_URL}/redis_info`,
+  });
+  return resp.data;
+}
+
+export async function getMetrics(): Promise<MetricsResponse> {
+  const resp = await axios({
+    method: "get",
+    url: `${BASE_URL}/metrics`,
   });
   return resp.data;
 }

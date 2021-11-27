@@ -187,6 +187,9 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 		api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(c)).Methods("GET")
 	}
 
+	// Time series metrics endpoints.
+	api.HandleFunc("/metrics", newGetMetricsHandlerFunc(http.DefaultClient)).Methods("GET")
+
 	// Everything else, route to uiAssetsHandler.
 	router.NotFoundHandler = &uiAssetsHandler{
 		rootPath:       opts.RootPath,
