@@ -188,7 +188,7 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 	}
 
 	// Time series metrics endpoints.
-	api.HandleFunc("/metrics", newGetMetricsHandlerFunc(http.DefaultClient)).Methods("GET")
+	api.HandleFunc("/metrics", newGetMetricsHandlerFunc(http.DefaultClient, opts.PrometheusAddress)).Methods("GET")
 
 	// Everything else, route to uiAssetsHandler.
 	router.NotFoundHandler = &uiAssetsHandler{
