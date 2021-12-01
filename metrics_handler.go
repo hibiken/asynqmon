@@ -27,7 +27,11 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 	// `duration_sec`: specifies the number of seconds to scan
 	// `end_time`:     specifies the end_time in Unix time seconds
 	return func(w http.ResponseWriter, r *http.Request) {
-		opts := extractMetricsFetchOptions(r)
+		opts, err := extractMetricsFetchOptions(r)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("invalid query parameter: %v", err), http.StatusBadRequest)
+			return
+		}
 		url := buildPrometheusURL(prometheusAddr, "asynq_queue_size", opts)
 		fmt.Printf("DEBUG: url: %s\n", url)
 		resp, err := client.Get(url)
@@ -45,12 +49,27 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 
 const prometheusAPIPath = "/api/v1/query_range"
 
-func extractMetricsFetchOptions(r *http.Request) *metricsFetchOptions {
-	// TODO: Extract these options from the request if any, and default to these values if none are specified
-	return &metricsFetchOptions{
+func extractMetricsFetchOptions(r *http.Request) (*metricsFetchOptions, error) {
+	opts := &metricsFetchOptions{
 		duration: 60 * time.Minute,
 		endTime:  time.Now(),
 	}
+	q := r.URL.Query()
+	if d := q.Get("duration"); d != "" {
+		val, err := strconv.Atoi(d)
+		if err != nil {
+			return nil, fmt.Errorf("invalid value provided for duration: %q", d)
+		}
+		opts.duration = time.Duration(val) * time.Second
+	}
+	if t := q.Get("end_time"); t != "" {
+		val, err := strconv.Atoi(t)
+		if err != nil {
+			return nil, fmt.Errorf("invalid value provided for end_time: %q", t)
+		}
+		opts.endTime = time.Unix(int64(val), 0)
+	}
+	return opts, nil
 }
 
 func buildPrometheusURL(baseAddr, promQL string, opts *metricsFetchOptions) string {
