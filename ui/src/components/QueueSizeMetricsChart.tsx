@@ -51,8 +51,6 @@ const lineColors = [
 ];
 
 function QueueSizeMetricsChart(props: Props) {
-  console.log("DEBUG: QueueSizeMetricsChart props:", props);
-  console.log("DEBUG: chartData", toChartData(props.data));
   const data = toChartData(props.data);
   const keys = props.data.map((x) => x.metric.queue);
   return (

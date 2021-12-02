@@ -124,7 +124,7 @@ export function currentUnixtime(): number {
   return Math.floor(Date.now() / 1000);
 }
 
-const durationRegex = /[1-9]([0-9]*)[s|m|h]/;
+const durationRegex = /([0-9]*(\.[0-9]*)?)[s|m|h]/;
 // Parses the given string and returns the number of seconds if the input is valid.
 // Otherwise, it throws an error
 // Supported time units are "s", "m", "h"
@@ -132,14 +132,14 @@ export function parseDuration(s: string): number {
   if (!durationRegex.test(s)) {
     throw new Error("invalid duration");
   }
-  const val = parseInt(s.slice(0, -1));
+  const val = parseFloat(s.slice(0, -1));
   switch (s.slice(-1)) {
     case "s":
       return val;
     case "m":
       return val * 60;
     case "h":
-      return val * 6 * 60;
+      return val * 60 * 60;
     default:
       throw new Error("invalid duration unit");
   }

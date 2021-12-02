@@ -31,6 +31,12 @@ export function getMetricsAsync(endTime: number, duration: number) {
   return async (dispatch: Dispatch<MetricsActionTypes>) => {
     dispatch({ type: GET_METRICS_BEGIN });
     try {
+      console.log(
+        "DEBUG: fetching with endtime=",
+        endTime,
+        " duration=",
+        duration
+      );
       const response = await getMetrics(endTime, duration);
       dispatch({ type: GET_METRICS_SUCCESS, payload: response });
     } catch (error) {
