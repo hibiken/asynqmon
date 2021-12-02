@@ -68,13 +68,25 @@ function MetricsView(props: Props) {
   );
 
   const [endTimeOption, setEndTimeOption] = React.useState("real_time");
+  const [endTimeSec, setEndTimeSec] = React.useState(currentUnixtime());
   const [durationOption, setDurationOption] = React.useState("1h");
   const [durationSec, setDurationSec] = React.useState(60 * 60); // 1h
 
   const handleEndTimeOptionChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setEndTimeOption((event.target as HTMLInputElement).value);
+    const selected = (event.target as HTMLInputElement).value;
+    setEndTimeOption(selected);
+    switch (selected) {
+      case "real_time":
+        setEndTimeSec(currentUnixtime());
+        break;
+      case "freeze_at_now":
+        setEndTimeSec(currentUnixtime());
+        break;
+      case "custom":
+      // TODO:
+    }
   };
 
   const handleDurationOptionChange = (
@@ -115,14 +127,15 @@ function MetricsView(props: Props) {
   const id = open ? "control-popover" : undefined;
 
   React.useEffect(() => {
-    console.log("DEBUG: GETTING metrics", currentUnixtime(), durationSec);
-    getMetricsAsync(currentUnixtime(), durationSec);
-    const id = setInterval(() => {
-      console.log("DEBUG: GETTING metrics", currentUnixtime(), durationSec);
-      getMetricsAsync(currentUnixtime(), durationSec);
-    }, pollInterval * 1000);
-    return () => clearInterval(id);
-  }, [pollInterval, getMetricsAsync, durationSec]);
+    getMetricsAsync(endTimeSec, durationSec);
+    // Only set up polling if end_time option is "real_time"
+    if (endTimeOption === "real_time") {
+      const id = setInterval(() => {
+        getMetricsAsync(currentUnixtime(), durationSec);
+      }, pollInterval * 1000);
+      return () => clearInterval(id);
+    }
+  }, [pollInterval, getMetricsAsync, durationSec, endTimeSec, endTimeOption]);
 
   return (
     <Container maxWidth="lg" className={classes.container}>
@@ -136,7 +149,8 @@ function MetricsView(props: Props) {
                 color="primary"
                 onClick={handleClick}
               >
-                Realtime: {durationOption}
+                {endTimeOption === "real_time" ? "Realtime" : "Historical"}:{" "}
+                {durationOption}
               </Button>
               <Popover
                 id={id}

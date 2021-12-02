@@ -80,10 +80,32 @@ func buildPrometheusURL(baseAddr, promQL string, opts *metricsFetchOptions) stri
 	v.Add("query", promQL)
 	v.Add("start", unixTimeString(opts.endTime.Add(-opts.duration)))
 	v.Add("end", unixTimeString(opts.endTime))
-	v.Add("step", (1 * time.Minute).String())
+	v.Add("step", strconv.Itoa(int(step(opts).Seconds())))
 	b.WriteString("?")
 	b.WriteString(v.Encode())
 	return b.String()
+}
+
+// Returns step to use given the fetch options.
+// In general, the longer the duration, longer the each step.
+func step(opts *metricsFetchOptions) time.Duration {
+	if opts.duration <= 6*time.Hour {
+		// maximum number of data points to return: 6h / 10s = 2160
+		return 10 * time.Second
+	}
+	if opts.duration <= 24*time.Hour {
+		// maximum number of data points to return: 24h / 1m = 1440
+		return 1 * time.Minute
+	}
+	if opts.duration <= 8*24*time.Hour {
+		// maximum number of data points to return: (8*24)h / 3m = 3840
+		return 3 * time.Minute
+	}
+	if opts.duration <= 30*24*time.Hour {
+		// maximum number of data points to return: (30*24)h / 10m = 4320
+		return 10 * time.Minute
+	}
+	return opts.duration / 3000
 }
 
 func unixTimeString(t time.Time) string {
