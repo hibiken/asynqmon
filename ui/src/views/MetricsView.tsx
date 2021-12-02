@@ -46,6 +46,9 @@ const useStyles = makeStyles((theme) => ({
   radioButtonLabel: {
     fontSize: 14,
   },
+  buttonLabel: {
+    textTransform: "none",
+  },
 }));
 
 function mapStateToProps(state: AppState) {
@@ -115,7 +118,7 @@ function MetricsView(props: Props) {
     }
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -145,9 +148,13 @@ function MetricsView(props: Props) {
             <div className={classes.controls}>
               <Button
                 aria-describedby={id}
-                variant="contained"
+                variant="outlined"
                 color="primary"
-                onClick={handleClick}
+                onClick={handleButtonClick}
+                size="small"
+                classes={{
+                  label: classes.buttonLabel,
+                }}
               >
                 {endTimeOption === "real_time" ? "Realtime" : "Historical"}:{" "}
                 {durationOption}
