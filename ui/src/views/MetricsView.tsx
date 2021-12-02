@@ -13,8 +13,8 @@ import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 import { getMetricsAsync } from "../actions/metricsActions";
 import { AppState } from "../store";
-import { usePolling } from "../hooks";
 import QueueSizeMetricsChart from "../components/QueueSizeMetricsChart";
+import { currentUnixtime } from "../utils";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -114,12 +114,15 @@ function MetricsView(props: Props) {
   const open = Boolean(anchorEl);
   const id = open ? "control-popover" : undefined;
 
-  //usePolling(getMetricsAsync, pollInterval);
   React.useEffect(() => {
-    const fetchMetrics = () => getMetricsAsync();
-    const id = setInterval(fetchMetrics, pollInterval * 1000);
+    console.log("DEBUG: GETTING metrics", currentUnixtime(), durationSec);
+    getMetricsAsync(currentUnixtime(), durationSec);
+    const id = setInterval(() => {
+      console.log("DEBUG: GETTING metrics", currentUnixtime(), durationSec);
+      getMetricsAsync(currentUnixtime(), durationSec);
+    }, pollInterval * 1000);
     return () => clearInterval(id);
-  }, [pollInterval, getMetricsAsync]);
+  }, [pollInterval, getMetricsAsync, durationSec]);
 
   return (
     <Container maxWidth="lg" className={classes.container}>

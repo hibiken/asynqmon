@@ -27,11 +27,11 @@ export type MetricsActionTypes =
   | GetMetricsSuccessAction
   | GetMetricsErrorAction;
 
-export function getMetricsAsync() {
+export function getMetricsAsync(endTime: number, duration: number) {
   return async (dispatch: Dispatch<MetricsActionTypes>) => {
     dispatch({ type: GET_METRICS_BEGIN });
     try {
-      const response = await getMetrics();
+      const response = await getMetrics(endTime, duration);
       dispatch({ type: GET_METRICS_SUCCESS, payload: response });
     } catch (error) {
       console.error(`getMetricsAsync: ${toErrorStringWithHttpStatus(error)}`);

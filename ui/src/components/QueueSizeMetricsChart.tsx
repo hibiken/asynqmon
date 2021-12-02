@@ -74,6 +74,7 @@ function QueueSizeMetricsChart(props: Props) {
             type="monotone"
             dataKey={key}
             stroke={lineColors[idx % lineColors.length]}
+            dot={false}
           />
         ))}
       </LineChart>

@@ -876,10 +876,13 @@ export async function getRedisInfo(): Promise<RedisInfoResponse> {
   return resp.data;
 }
 
-export async function getMetrics(): Promise<MetricsResponse> {
+export async function getMetrics(
+  endTime: number,
+  duration: number
+): Promise<MetricsResponse> {
   const resp = await axios({
     method: "get",
-    url: `${BASE_URL}/metrics`,
+    url: `${BASE_URL}/metrics?end_time=${endTime}&duration=${duration}`,
   });
   return resp.data;
 }

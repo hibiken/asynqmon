@@ -74,8 +74,8 @@ export function timeAgo(timestamp: string): string {
 }
 
 export function timeAgoUnix(unixtime: number): string {
-  if (unixtime === 0)  {
-    return ""
+  if (unixtime === 0) {
+    return "";
   }
   const duration = durationBetween(Date.now(), unixtime * 1000);
   return stringifyDuration(duration) + " ago";
@@ -103,14 +103,12 @@ export function percentage(numerator: number, denominator: number): string {
   return `${perc} %`;
 }
 
-
 export function isJsonPayload(p: string) {
   try {
     JSON.parse(p);
   } catch (error) {
     return false;
   }
-
   return true;
 }
 
@@ -118,6 +116,10 @@ export function prettifyPayload(p: string) {
   if (isJsonPayload(p)) {
     return JSON.stringify(JSON.parse(p), null, 2);
   }
-
   return p;
+}
+
+// Returns the number of seconds elapsed since January 1, 1970 00:00:00 UTC.
+export function currentUnixtime(): number {
+  return Math.floor(Date.now() / 1000);
 }
