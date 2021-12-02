@@ -140,6 +140,8 @@ function MetricsView(props: Props) {
     }
   }, [pollInterval, getMetricsAsync, durationSec, endTimeSec, endTimeOption]);
 
+  const now = currentUnixtime();
+
   return (
     <Container maxWidth="lg" className={classes.container}>
       <Grid container spacing={3}>
@@ -322,7 +324,15 @@ function MetricsView(props: Props) {
         </Grid>
         <Grid item xs={12}>
           <Typography>Queue Size</Typography>
-          <QueueSizeMetricsChart data={data?.data.result || []} />
+          <QueueSizeMetricsChart
+            data={data?.data.result || []}
+            endTime={endTimeOption === "real_time" ? now : endTimeSec}
+            startTime={
+              endTimeOption === "real_time"
+                ? now - durationSec
+                : endTimeSec - durationSec
+            }
+          />
         </Grid>
       </Grid>
       <Grid item xs={12}>

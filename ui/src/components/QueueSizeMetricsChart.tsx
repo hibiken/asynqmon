@@ -13,6 +13,10 @@ import { Metrics } from "../api";
 
 interface Props {
   data: Metrics[];
+
+  // both startTime and endTime are in unix time (seconds)
+  startTime: number;
+  endTime: number;
 }
 
 // interface that rechart understands.
@@ -58,9 +62,12 @@ function QueueSizeMetricsChart(props: Props) {
         <XAxis
           minTickGap={10}
           dataKey="timestamp"
+          domain={[props.startTime, props.endTime]}
           tickFormatter={(timestamp: number) =>
             new Date(timestamp * 1000).toLocaleTimeString()
           }
+          type="number"
+          scale="time"
         />
         <YAxis />
         <Tooltip
