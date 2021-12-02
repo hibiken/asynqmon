@@ -11,10 +11,11 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
+import TextField from "@material-ui/core/TextField";
 import { getMetricsAsync } from "../actions/metricsActions";
 import { AppState } from "../store";
 import QueueSizeMetricsChart from "../components/QueueSizeMetricsChart";
-import { currentUnixtime } from "../utils";
+import { currentUnixtime, parseDuration } from "../utils";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -28,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
   controls: {},
   controlSelectorBox: {
     display: "flex",
-    minWidth: 400,
+    minWidth: 490,
     padding: theme.spacing(2),
   },
   controlEndTimeSelector: {
@@ -36,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
   },
   controlDurationSelector: {
     width: "50%",
+    marginLeft: theme.spacing(2),
   },
   radioButtonRoot: {
     paddingTop: theme.spacing(0.5),
@@ -48,6 +50,9 @@ const useStyles = makeStyles((theme) => ({
   },
   buttonLabel: {
     textTransform: "none",
+  },
+  formControlRoot: {
+    width: "100%",
   },
 }));
 
@@ -74,6 +79,8 @@ function MetricsView(props: Props) {
   const [endTimeSec, setEndTimeSec] = React.useState(currentUnixtime());
   const [durationOption, setDurationOption] = React.useState("1h");
   const [durationSec, setDurationSec] = React.useState(60 * 60); // 1h
+  const [customDuration, setCustomDuration] = React.useState("");
+  const [customDurationError, setCustomDurationError] = React.useState("");
 
   const handleEndTimeOptionChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -100,21 +107,52 @@ function MetricsView(props: Props) {
     switch (selected) {
       case "1h":
         setDurationSec(60 * 60);
+        setCustomDuration("");
+        setCustomDurationError("");
         break;
       case "6h":
         setDurationSec(6 * 60 * 60);
+        setCustomDuration("");
+        setCustomDurationError("");
         break;
       case "1d":
         setDurationSec(24 * 60 * 60);
+        setCustomDuration("");
+        setCustomDurationError("");
         break;
       case "8d":
         setDurationSec(8 * 24 * 60 * 60);
+        setCustomDuration("");
+        setCustomDurationError("");
         break;
       case "30d":
         setDurationSec(30 * 24 * 60 * 60);
+        setCustomDuration("");
+        setCustomDurationError("");
         break;
       case "custom":
-      // TODO
+      // No-op
+    }
+  };
+
+  const handleCustomDurationChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setCustomDuration(event.target.value);
+  };
+
+  const handleCustomDurationKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key === "Enter") {
+      try {
+        const d = parseDuration(customDuration);
+        setDurationOption("custom");
+        setDurationSec(d);
+        setCustomDurationError("");
+      } catch (error) {
+        setCustomDurationError("Duration invalid");
+      }
     }
   };
 
@@ -159,7 +197,7 @@ function MetricsView(props: Props) {
                 }}
               >
                 {endTimeOption === "real_time" ? "Realtime" : "Historical"}:{" "}
-                {durationOption}
+                {durationOption === "custom" ? customDuration : durationOption}
               </Button>
               <Popover
                 id={id}
@@ -177,7 +215,11 @@ function MetricsView(props: Props) {
               >
                 <div className={classes.controlSelectorBox}>
                   <div className={classes.controlEndTimeSelector}>
-                    <FormControl component="fieldset" margin="dense">
+                    <FormControl
+                      component="fieldset"
+                      margin="dense"
+                      classes={{ root: classes.formControlRoot }}
+                    >
                       <FormLabel component="legend">End Time</FormLabel>
                       <RadioGroup
                         aria-label="end_time"
@@ -225,10 +267,22 @@ function MetricsView(props: Props) {
                           label="Custom End Time"
                         />
                       </RadioGroup>
+                      <div>
+                        <TextField
+                          id="custom-endtime"
+                          label="yyyy-mm-dd hh:mm:ssz"
+                          variant="outlined"
+                          size="small"
+                        />
+                      </div>
                     </FormControl>
                   </div>
                   <div className={classes.controlDurationSelector}>
-                    <FormControl component="fieldset" margin="dense">
+                    <FormControl
+                      component="fieldset"
+                      margin="dense"
+                      classes={{ root: classes.formControlRoot }}
+                    >
                       <FormLabel component="legend">Duration</FormLabel>
                       <RadioGroup
                         aria-label="duration"
@@ -315,6 +369,19 @@ function MetricsView(props: Props) {
                           label="Custom Duration"
                         />
                       </RadioGroup>
+                      <div>
+                        <TextField
+                          id="custom-duration"
+                          label="duration"
+                          variant="outlined"
+                          size="small"
+                          onChange={handleCustomDurationChange}
+                          value={customDuration}
+                          onKeyDown={handleCustomDurationKeyDown}
+                          error={customDurationError !== ""}
+                          helperText={customDurationError}
+                        />
+                      </div>
                     </FormControl>
                   </div>
                 </div>
