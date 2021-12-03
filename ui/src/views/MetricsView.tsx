@@ -79,8 +79,10 @@ function MetricsView(props: Props) {
   const [endTimeSec, setEndTimeSec] = React.useState(currentUnixtime());
   const [durationOption, setDurationOption] = React.useState("1h");
   const [durationSec, setDurationSec] = React.useState(60 * 60); // 1h
-  const [customDuration, setCustomDuration] = React.useState("");
+  const [customDuration, setCustomDuration] = React.useState(""); // text shown in the input field
   const [customDurationError, setCustomDurationError] = React.useState("");
+  const [customEndTime, setCustomEndTime] = React.useState(""); // text shown in the input field
+  const [customEndTimeError, setCustomEndTimeError] = React.useState("");
 
   const handleEndTimeOptionChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -90,12 +92,16 @@ function MetricsView(props: Props) {
     switch (selected) {
       case "real_time":
         setEndTimeSec(currentUnixtime());
+        setCustomEndTime("");
+        setCustomDurationError("");
         break;
       case "freeze_at_now":
         setEndTimeSec(currentUnixtime());
+        setCustomEndTime("");
+        setCustomDurationError("");
         break;
       case "custom":
-      // TODO:
+      // No-op
     }
   };
 
@@ -141,6 +147,12 @@ function MetricsView(props: Props) {
     setCustomDuration(event.target.value);
   };
 
+  const handleCustomEndTimeChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setCustomEndTime(event.target.value);
+  };
+
   const handleCustomDurationKeyDown = (
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
@@ -153,6 +165,21 @@ function MetricsView(props: Props) {
       } catch (error) {
         setCustomDurationError("Duration invalid");
       }
+    }
+  };
+
+  const handleCustomEndTimeKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key === "Enter") {
+      const timeUsecOrNaN = Date.parse(customEndTime);
+      if (isNaN(timeUsecOrNaN)) {
+        setCustomEndTimeError("End time invalid");
+        return;
+      }
+      setEndTimeOption("custom");
+      setEndTimeSec(Math.floor(timeUsecOrNaN / 1000));
+      setCustomEndTimeError("");
     }
   };
 
@@ -273,6 +300,11 @@ function MetricsView(props: Props) {
                           label="yyyy-mm-dd hh:mm:ssz"
                           variant="outlined"
                           size="small"
+                          onChange={handleCustomEndTimeChange}
+                          value={customEndTime}
+                          onKeyDown={handleCustomEndTimeKeyDown}
+                          error={customEndTimeError !== ""}
+                          helperText={customEndTimeError}
                         />
                       </div>
                     </FormControl>
