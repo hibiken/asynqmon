@@ -10,6 +10,8 @@ import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
+import ArrowLeftIcon from "@material-ui/icons/ArrowLeft";
+import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import dayjs from "dayjs";
 import { currentUnixtime, parseDuration } from "../utils";
 import { AppState } from "../store";
@@ -50,6 +52,25 @@ const useStyles = makeStyles((theme) => ({
   },
   endTimeCaption: {
     marginRight: theme.spacing(1),
+  },
+  endTimeShiftControls: {
+    padding: theme.spacing(1),
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomColor: theme.palette.divider,
+    borderBottomWidth: 1,
+    borderBottomStyle: "solid",
+  },
+  leftShiftButtons: {
+    display: "flex",
+    alignItems: "center",
+    marginRight: theme.spacing(2),
+  },
+  rightShiftButtons: {
+    display: "flex",
+    alignItems: "center",
+    marginLeft: theme.spacing(2),
   },
   controlsContainer: {
     display: "flex",
@@ -312,6 +333,20 @@ function MetricsFetchControls(props: Props) {
           horizontal: "center",
         }}
       >
+        <div className={classes.endTimeShiftControls}>
+          <div className={classes.leftShiftButtons}>
+            <ShiftButton direction="left" text="2h" onClick={() => {}} />
+            <ShiftButton direction="left" text="1h" onClick={() => {}} />
+            <ShiftButton direction="left" text="30m" onClick={() => {}} />
+            <ShiftButton direction="left" text="15m" onClick={() => {}} />
+          </div>
+          <div className={classes.rightShiftButtons}>
+            <ShiftButton direction="right" text="15m" onClick={() => {}} />
+            <ShiftButton direction="right" text="30m" onClick={() => {}} />
+            <ShiftButton direction="right" text="1h" onClick={() => {}} />
+            <ShiftButton direction="right" text="2h" onClick={() => {}} />
+          </div>
+        </div>
         <div className={classes.controlSelectorBox}>
           <div className={classes.controlEndTimeSelector}>
             <FormControl
@@ -499,6 +534,45 @@ function formatTime(unixtime: number): string {
     .toLocaleTimeString("en-us", { timeZoneName: "short" })
     .split(" ")[2];
   return dayjs.unix(unixtime).format("ddd, DD MMM YYYY HH:mm:ss ") + tz;
+}
+
+interface ShiftButtonProps {
+  text: string;
+  onClick: () => void;
+  direction: "left" | "right";
+}
+
+const useShiftButtonStyles = makeStyles((theme) => ({
+  root: { minWidth: 40, fontWeight: 400 },
+  label: { fontSize: 12, textTransform: "none" },
+  iconRoot: {
+    marginRight: (props: ShiftButtonProps) =>
+      props.direction === "left" ? -8 : 0,
+    marginLeft: (props: ShiftButtonProps) =>
+      props.direction === "right" ? -8 : 0,
+    color: theme.palette.grey[700],
+  },
+}));
+
+function ShiftButton(props: ShiftButtonProps) {
+  const classes = useShiftButtonStyles(props);
+  return (
+    <Button
+      classes={{
+        root: classes.root,
+        label: classes.label,
+      }}
+      size="small"
+    >
+      {props.direction === "left" && (
+        <ArrowLeftIcon classes={{ root: classes.iconRoot }} />
+      )}
+      {props.text}
+      {props.direction === "right" && (
+        <ArrowRightIcon classes={{ root: classes.iconRoot }} />
+      )}
+    </Button>
+  );
 }
 
 export default connect(mapStateToProps)(MetricsFetchControls);
