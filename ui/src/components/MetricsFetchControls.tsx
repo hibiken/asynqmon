@@ -9,6 +9,8 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 import TextField from "@material-ui/core/TextField";
+import Typography from "@material-ui/core/Typography";
+import dayjs from "dayjs";
 import { currentUnixtime, parseDuration } from "../utils";
 import { AppState } from "../store";
 
@@ -42,6 +44,13 @@ type EndTimeOption = "real_time" | "freeze_at_now" | "custom";
 type DurationOption = "1h" | "6h" | "1d" | "8d" | "30d" | "custom";
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    display: "flex",
+    alignItems: "center",
+  },
+  endTimeCaption: {
+    marginRight: theme.spacing(1),
+  },
   controlsContainer: {
     display: "flex",
     justifyContent: "flex-end",
@@ -270,7 +279,10 @@ function MetricsFetchControls(props: Props) {
   });
 
   return (
-    <div>
+    <div className={classes.root}>
+      <Typography variant="caption" className={classes.endTimeCaption}>
+        {formatTime(props.endTimeSec)}
+      </Typography>
       <Button
         aria-describedby={id}
         variant="outlined"
@@ -480,6 +492,13 @@ function MetricsFetchControls(props: Props) {
       </Popover>
     </div>
   );
+}
+
+function formatTime(unixtime: number): string {
+  const tz = new Date(unixtime * 1000)
+    .toLocaleTimeString("en-us", { timeZoneName: "short" })
+    .split(" ")[2];
+  return dayjs.unix(unixtime).format("ddd, DD MMM YYYY HH:mm:ss ") + tz;
 }
 
 export default connect(mapStateToProps)(MetricsFetchControls);
