@@ -105,6 +105,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// minute, hour, day in seconds
+const minute = 60;
+const hour = 60 * minute;
+const day = 24 * hour;
+
 function getInitialState(endTimeSec: number, durationSec: number): State {
   let endTimeOption: EndTimeOption = "real_time";
   let customEndTime = "";
@@ -122,19 +127,19 @@ function getInitialState(endTimeSec: number, durationSec: number): State {
   }
 
   switch (durationSec) {
-    case 60 * 60:
+    case 1 * hour:
       durationOption = "1h";
       break;
-    case 6 * 60 * 60:
+    case 6 * hour:
       durationOption = "6h";
       break;
-    case 24 * 60 * 60:
+    case 1 * day:
       durationOption = "1d";
       break;
-    case 8 * 24 * 60 * 60:
+    case 8 * day:
       durationOption = "8d";
       break;
-    case 30 * 24 * 60 * 60:
+    case 30 * day:
       durationOption = "30d";
       break;
     default:
@@ -198,19 +203,19 @@ function MetricsFetchControls(props: Props) {
     }));
     switch (selectedOpt) {
       case "1h":
-        props.onDurationChange(60 * 60);
+        props.onDurationChange(1 * hour);
         break;
       case "6h":
-        props.onDurationChange(6 * 60 * 60);
+        props.onDurationChange(6 * hour);
         break;
       case "1d":
-        props.onDurationChange(24 * 60 * 60);
+        props.onDurationChange(1 * day);
         break;
       case "8d":
-        props.onDurationChange(8 * 24 * 60 * 60);
+        props.onDurationChange(8 * day);
         break;
       case "30d":
-        props.onDurationChange(30 * 24 * 60 * 60);
+        props.onDurationChange(30 * day);
         break;
       case "custom":
       // No-op
@@ -299,6 +304,28 @@ function MetricsFetchControls(props: Props) {
     }
   });
 
+  const shiftBy = (deltaSec: number) => {
+    return () => {
+      const now = currentUnixtime();
+      const endTime = props.endTimeSec + deltaSec;
+      if (now <= endTime) {
+        setState((prevState) => ({
+          ...prevState,
+          customEndTime: "",
+          endTimeOption: "real_time",
+        }));
+        props.onEndTimeChange(now);
+        return;
+      }
+      setState((prevState) => ({
+        ...prevState,
+        endTimeOption: "custom",
+        customEndTime: new Date(endTime * 1000).toISOString(),
+      }));
+      props.onEndTimeChange(endTime);
+    };
+  };
+
   return (
     <div className={classes.root}>
       <Typography variant="caption" className={classes.endTimeCaption}>
@@ -335,16 +362,58 @@ function MetricsFetchControls(props: Props) {
       >
         <div className={classes.endTimeShiftControls}>
           <div className={classes.leftShiftButtons}>
-            <ShiftButton direction="left" text="2h" onClick={() => {}} />
-            <ShiftButton direction="left" text="1h" onClick={() => {}} />
-            <ShiftButton direction="left" text="30m" onClick={() => {}} />
-            <ShiftButton direction="left" text="15m" onClick={() => {}} />
+            <ShiftButton
+              direction="left"
+              text="2h"
+              onClick={shiftBy(-2 * hour)}
+            />
+            <ShiftButton
+              direction="left"
+              text="1h"
+              onClick={shiftBy(-1 * hour)}
+            />
+            <ShiftButton
+              direction="left"
+              text="30m"
+              onClick={shiftBy(-30 * minute)}
+            />
+            <ShiftButton
+              direction="left"
+              text="15m"
+              onClick={shiftBy(-15 * minute)}
+            />
+            <ShiftButton
+              direction="left"
+              text="5m"
+              onClick={shiftBy(-5 * minute)}
+            />
           </div>
           <div className={classes.rightShiftButtons}>
-            <ShiftButton direction="right" text="15m" onClick={() => {}} />
-            <ShiftButton direction="right" text="30m" onClick={() => {}} />
-            <ShiftButton direction="right" text="1h" onClick={() => {}} />
-            <ShiftButton direction="right" text="2h" onClick={() => {}} />
+            <ShiftButton
+              direction="right"
+              text="5m"
+              onClick={shiftBy(5 * minute)}
+            />
+            <ShiftButton
+              direction="right"
+              text="15m"
+              onClick={shiftBy(15 * minute)}
+            />
+            <ShiftButton
+              direction="right"
+              text="30m"
+              onClick={shiftBy(30 * minute)}
+            />
+            <ShiftButton
+              direction="right"
+              text="1h"
+              onClick={shiftBy(1 * hour)}
+            />
+            <ShiftButton
+              direction="right"
+              text="2h"
+              onClick={shiftBy(2 * hour)}
+            />
           </div>
         </div>
         <div className={classes.controlSelectorBox}>
@@ -563,6 +632,7 @@ function ShiftButton(props: ShiftButtonProps) {
         label: classes.label,
       }}
       size="small"
+      onClick={props.onClick}
     >
       {props.direction === "left" && (
         <ArrowLeftIcon classes={{ root: classes.iconRoot }} />
