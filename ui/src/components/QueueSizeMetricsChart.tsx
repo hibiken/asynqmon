@@ -76,6 +76,7 @@ function QueueSizeMetricsChart(props: Props) {
         <Legend />
         {keys.map((key, idx) => (
           <Line
+            key={key}
             type="monotone"
             dataKey={key}
             stroke={lineColors[idx % lineColors.length]}
