@@ -58,7 +58,9 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
   },
   buttonGroupRoot: {
-    height: 30,
+    height: 29,
+    position: "relative",
+    top: 1,
   },
   endTimeShiftControls: {
     padding: theme.spacing(1),
@@ -93,7 +95,6 @@ const useStyles = makeStyles((theme) => ({
   },
   controlDurationSelector: {
     width: "50%",
-    marginLeft: theme.spacing(2),
   },
   radioButtonRoot: {
     paddingTop: theme.spacing(0.5),
@@ -106,9 +107,19 @@ const useStyles = makeStyles((theme) => ({
   },
   buttonLabel: {
     textTransform: "none",
+    fontSize: 12,
   },
   formControlRoot: {
     width: "100%",
+    margin: 0,
+  },
+  formLabel: {
+    fontSize: 14,
+    fontWeight: 500,
+    marginBottom: theme.spacing(1),
+  },
+  customInputField: {
+    marginTop: theme.spacing(1),
   },
 }));
 
@@ -441,54 +452,20 @@ function MetricsFetchControls(props: Props) {
                 margin="dense"
                 classes={{ root: classes.formControlRoot }}
               >
-                <FormLabel component="legend">End Time</FormLabel>
+                <FormLabel className={classes.formLabel} component="legend">
+                  End Time
+                </FormLabel>
                 <RadioGroup
                   aria-label="end_time"
                   name="end_time"
                   value={state.endTimeOption}
                   onChange={handleEndTimeOptionChange}
                 >
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="real_time"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="Real Time"
-                  />
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="freeze_at_now"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="Freeze at now"
-                  />
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="custom"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="Custom End Time"
-                  />
+                  <RadioInput value="real_time" label="Real Time" />
+                  <RadioInput value="freeze_at_now" label="Freeze at now" />
+                  <RadioInput value="custom" label="Custom End Time" />
                 </RadioGroup>
-                <div>
+                <div className={classes.customInputField}>
                   <TextField
                     id="custom-endtime"
                     label="yyyy-mm-dd hh:mm:ssz"
@@ -509,93 +486,23 @@ function MetricsFetchControls(props: Props) {
                 margin="dense"
                 classes={{ root: classes.formControlRoot }}
               >
-                <FormLabel component="legend">Duration</FormLabel>
+                <FormLabel className={classes.formLabel} component="legend">
+                  Duration
+                </FormLabel>
                 <RadioGroup
                   aria-label="duration"
                   name="duration"
                   value={state.durationOption}
                   onChange={handleDurationOptionChange}
                 >
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="1h"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="1h"
-                  />
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="6h"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="6h"
-                  />
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="1d"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="1 day"
-                  />
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="8d"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="8 days"
-                  />
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="30d"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="30 days"
-                  />
-                  <FormControlLabel
-                    classes={{
-                      label: classes.radioButtonLabel,
-                    }}
-                    value="custom"
-                    control={
-                      <Radio
-                        size="small"
-                        classes={{ root: classes.radioButtonRoot }}
-                      />
-                    }
-                    label="Custom Duration"
-                  />
+                  <RadioInput value="1h" label="1h" />
+                  <RadioInput value="6h" label="6h" />
+                  <RadioInput value="1d" label="1 day" />
+                  <RadioInput value="8d" label="8 days" />
+                  <RadioInput value="30d" label="30 days" />
+                  <RadioInput value="custom" label="Custom Duration" />
                 </RadioGroup>
-                <div>
+                <div className={classes.customInputField}>
                   <TextField
                     id="custom-duration"
                     label="duration"
@@ -617,6 +524,7 @@ function MetricsFetchControls(props: Props) {
         <ButtonGroup
           classes={{ root: classes.buttonGroupRoot }}
           size="small"
+          color="primary"
           aria-label="shift buttons"
         >
           <ShiftButton
@@ -624,6 +532,7 @@ function MetricsFetchControls(props: Props) {
             text={
               state.durationOption === "custom" ? "1h" : state.durationOption
             }
+            color="primary"
             onClick={
               state.durationOption === "custom"
                 ? shiftBy(-1 * hour)
@@ -635,6 +544,7 @@ function MetricsFetchControls(props: Props) {
             text={
               state.durationOption === "custom" ? "1h" : state.durationOption
             }
+            color="primary"
             onClick={
               state.durationOption === "custom"
                 ? shiftBy(1 * hour)
@@ -647,11 +557,34 @@ function MetricsFetchControls(props: Props) {
   );
 }
 
+/****************** Helper functions/components *******************/
+
 function formatTime(unixtime: number): string {
   const tz = new Date(unixtime * 1000)
     .toLocaleTimeString("en-us", { timeZoneName: "short" })
     .split(" ")[2];
   return dayjs.unix(unixtime).format("ddd, DD MMM YYYY HH:mm:ss ") + tz;
+}
+
+interface RadioInputProps {
+  value: string;
+  label: string;
+}
+
+function RadioInput(props: RadioInputProps) {
+  const classes = useStyles();
+  return (
+    <FormControlLabel
+      classes={{
+        label: classes.radioButtonLabel,
+      }}
+      value={props.value}
+      control={
+        <Radio size="small" classes={{ root: classes.radioButtonRoot }} />
+      }
+      label={props.label}
+    />
+  );
 }
 
 interface ShiftButtonProps extends ButtonProps {
@@ -662,14 +595,18 @@ interface ShiftButtonProps extends ButtonProps {
 }
 
 const useShiftButtonStyles = makeStyles((theme) => ({
-  root: { minWidth: 40, fontWeight: 400 },
+  root: {
+    minWidth: 40,
+    fontWeight: (props: ShiftButtonProps) => (props.dense ? 400 : 500),
+  },
   label: { fontSize: 12, textTransform: "none" },
   iconRoot: {
     marginRight: (props: ShiftButtonProps) =>
-      props.direction === "left" && props.dense ? -8 : 0,
+      props.direction === "left" ? (props.dense ? -8 : -4) : 0,
     marginLeft: (props: ShiftButtonProps) =>
-      props.direction === "right" && props.dense ? -8 : 0,
-    color: theme.palette.grey[700],
+      props.direction === "right" ? (props.dense ? -8 : -4) : 0,
+    color: (props: ShiftButtonProps) =>
+      props.color ? props.color : theme.palette.grey[700],
   },
 }));
 
