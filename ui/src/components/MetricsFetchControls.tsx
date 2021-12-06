@@ -1,7 +1,8 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
+import Button, { ButtonProps } from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Popover from "@material-ui/core/Popover";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
@@ -52,6 +53,12 @@ const useStyles = makeStyles((theme) => ({
   },
   endTimeCaption: {
     marginRight: theme.spacing(1),
+  },
+  shiftButtons: {
+    marginLeft: theme.spacing(1),
+  },
+  buttonGroupRoot: {
+    height: 30,
   },
   endTimeShiftControls: {
     padding: theme.spacing(1),
@@ -331,269 +338,311 @@ function MetricsFetchControls(props: Props) {
       <Typography variant="caption" className={classes.endTimeCaption}>
         {formatTime(props.endTimeSec)}
       </Typography>
-      <Button
-        aria-describedby={id}
-        variant="outlined"
-        color="primary"
-        onClick={handleButtonClick}
-        size="small"
-        classes={{
-          label: classes.buttonLabel,
-        }}
-      >
-        {state.endTimeOption === "real_time" ? "Realtime" : "Historical"}:{" "}
-        {state.durationOption === "custom"
-          ? state.customDuration
-          : state.durationOption}
-      </Button>
-      <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-      >
-        <div className={classes.endTimeShiftControls}>
-          <div className={classes.leftShiftButtons}>
-            <ShiftButton
-              direction="left"
-              text="2h"
-              onClick={shiftBy(-2 * hour)}
-            />
-            <ShiftButton
-              direction="left"
-              text="1h"
-              onClick={shiftBy(-1 * hour)}
-            />
-            <ShiftButton
-              direction="left"
-              text="30m"
-              onClick={shiftBy(-30 * minute)}
-            />
-            <ShiftButton
-              direction="left"
-              text="15m"
-              onClick={shiftBy(-15 * minute)}
-            />
-            <ShiftButton
-              direction="left"
-              text="5m"
-              onClick={shiftBy(-5 * minute)}
-            />
+      <div>
+        <Button
+          aria-describedby={id}
+          variant="outlined"
+          color="primary"
+          onClick={handleButtonClick}
+          size="small"
+          classes={{
+            label: classes.buttonLabel,
+          }}
+        >
+          {state.endTimeOption === "real_time" ? "Realtime" : "Historical"}:{" "}
+          {state.durationOption === "custom"
+            ? state.customDuration
+            : state.durationOption}
+        </Button>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "center",
+          }}
+        >
+          <div className={classes.endTimeShiftControls}>
+            <div className={classes.leftShiftButtons}>
+              <ShiftButton
+                direction="left"
+                text="2h"
+                onClick={shiftBy(-2 * hour)}
+                dense={true}
+              />
+              <ShiftButton
+                direction="left"
+                text="1h"
+                onClick={shiftBy(-1 * hour)}
+                dense={true}
+              />
+              <ShiftButton
+                direction="left"
+                text="30m"
+                onClick={shiftBy(-30 * minute)}
+                dense={true}
+              />
+              <ShiftButton
+                direction="left"
+                text="15m"
+                onClick={shiftBy(-15 * minute)}
+                dense={true}
+              />
+              <ShiftButton
+                direction="left"
+                text="5m"
+                onClick={shiftBy(-5 * minute)}
+                dense={true}
+              />
+            </div>
+            <div className={classes.rightShiftButtons}>
+              <ShiftButton
+                direction="right"
+                text="5m"
+                onClick={shiftBy(5 * minute)}
+                dense={true}
+              />
+              <ShiftButton
+                direction="right"
+                text="15m"
+                onClick={shiftBy(15 * minute)}
+                dense={true}
+              />
+              <ShiftButton
+                direction="right"
+                text="30m"
+                onClick={shiftBy(30 * minute)}
+                dense={true}
+              />
+              <ShiftButton
+                direction="right"
+                text="1h"
+                onClick={shiftBy(1 * hour)}
+                dense={true}
+              />
+              <ShiftButton
+                direction="right"
+                text="2h"
+                onClick={shiftBy(2 * hour)}
+                dense={true}
+              />
+            </div>
           </div>
-          <div className={classes.rightShiftButtons}>
-            <ShiftButton
-              direction="right"
-              text="5m"
-              onClick={shiftBy(5 * minute)}
-            />
-            <ShiftButton
-              direction="right"
-              text="15m"
-              onClick={shiftBy(15 * minute)}
-            />
-            <ShiftButton
-              direction="right"
-              text="30m"
-              onClick={shiftBy(30 * minute)}
-            />
-            <ShiftButton
-              direction="right"
-              text="1h"
-              onClick={shiftBy(1 * hour)}
-            />
-            <ShiftButton
-              direction="right"
-              text="2h"
-              onClick={shiftBy(2 * hour)}
-            />
-          </div>
-        </div>
-        <div className={classes.controlSelectorBox}>
-          <div className={classes.controlEndTimeSelector}>
-            <FormControl
-              component="fieldset"
-              margin="dense"
-              classes={{ root: classes.formControlRoot }}
-            >
-              <FormLabel component="legend">End Time</FormLabel>
-              <RadioGroup
-                aria-label="end_time"
-                name="end_time"
-                value={state.endTimeOption}
-                onChange={handleEndTimeOptionChange}
+          <div className={classes.controlSelectorBox}>
+            <div className={classes.controlEndTimeSelector}>
+              <FormControl
+                component="fieldset"
+                margin="dense"
+                classes={{ root: classes.formControlRoot }}
               >
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="real_time"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="Real Time"
-                />
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="freeze_at_now"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="Freeze at now"
-                />
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="custom"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="Custom End Time"
-                />
-              </RadioGroup>
-              <div>
-                <TextField
-                  id="custom-endtime"
-                  label="yyyy-mm-dd hh:mm:ssz"
-                  variant="outlined"
-                  size="small"
-                  onChange={handleCustomEndTimeChange}
-                  value={state.customEndTime}
-                  onKeyDown={handleCustomEndTimeKeyDown}
-                  error={state.customEndTimeError !== ""}
-                  helperText={state.customEndTimeError}
-                />
-              </div>
-            </FormControl>
-          </div>
-          <div className={classes.controlDurationSelector}>
-            <FormControl
-              component="fieldset"
-              margin="dense"
-              classes={{ root: classes.formControlRoot }}
-            >
-              <FormLabel component="legend">Duration</FormLabel>
-              <RadioGroup
-                aria-label="duration"
-                name="duration"
-                value={state.durationOption}
-                onChange={handleDurationOptionChange}
+                <FormLabel component="legend">End Time</FormLabel>
+                <RadioGroup
+                  aria-label="end_time"
+                  name="end_time"
+                  value={state.endTimeOption}
+                  onChange={handleEndTimeOptionChange}
+                >
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="real_time"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="Real Time"
+                  />
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="freeze_at_now"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="Freeze at now"
+                  />
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="custom"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="Custom End Time"
+                  />
+                </RadioGroup>
+                <div>
+                  <TextField
+                    id="custom-endtime"
+                    label="yyyy-mm-dd hh:mm:ssz"
+                    variant="outlined"
+                    size="small"
+                    onChange={handleCustomEndTimeChange}
+                    value={state.customEndTime}
+                    onKeyDown={handleCustomEndTimeKeyDown}
+                    error={state.customEndTimeError !== ""}
+                    helperText={state.customEndTimeError}
+                  />
+                </div>
+              </FormControl>
+            </div>
+            <div className={classes.controlDurationSelector}>
+              <FormControl
+                component="fieldset"
+                margin="dense"
+                classes={{ root: classes.formControlRoot }}
               >
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="1h"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="1h"
-                />
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="6h"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="6h"
-                />
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="1d"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="1 day"
-                />
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="8d"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="8 days"
-                />
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="30d"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="30 days"
-                />
-                <FormControlLabel
-                  classes={{
-                    label: classes.radioButtonLabel,
-                  }}
-                  value="custom"
-                  control={
-                    <Radio
-                      size="small"
-                      classes={{ root: classes.radioButtonRoot }}
-                    />
-                  }
-                  label="Custom Duration"
-                />
-              </RadioGroup>
-              <div>
-                <TextField
-                  id="custom-duration"
-                  label="duration"
-                  variant="outlined"
-                  size="small"
-                  onChange={handleCustomDurationChange}
-                  value={state.customDuration}
-                  onKeyDown={handleCustomDurationKeyDown}
-                  error={state.customDurationError !== ""}
-                  helperText={state.customDurationError}
-                />
-              </div>
-            </FormControl>
+                <FormLabel component="legend">Duration</FormLabel>
+                <RadioGroup
+                  aria-label="duration"
+                  name="duration"
+                  value={state.durationOption}
+                  onChange={handleDurationOptionChange}
+                >
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="1h"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="1h"
+                  />
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="6h"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="6h"
+                  />
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="1d"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="1 day"
+                  />
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="8d"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="8 days"
+                  />
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="30d"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="30 days"
+                  />
+                  <FormControlLabel
+                    classes={{
+                      label: classes.radioButtonLabel,
+                    }}
+                    value="custom"
+                    control={
+                      <Radio
+                        size="small"
+                        classes={{ root: classes.radioButtonRoot }}
+                      />
+                    }
+                    label="Custom Duration"
+                  />
+                </RadioGroup>
+                <div>
+                  <TextField
+                    id="custom-duration"
+                    label="duration"
+                    variant="outlined"
+                    size="small"
+                    onChange={handleCustomDurationChange}
+                    value={state.customDuration}
+                    onKeyDown={handleCustomDurationKeyDown}
+                    error={state.customDurationError !== ""}
+                    helperText={state.customDurationError}
+                  />
+                </div>
+              </FormControl>
+            </div>
           </div>
-        </div>
-      </Popover>
+        </Popover>
+      </div>
+      <div className={classes.shiftButtons}>
+        <ButtonGroup
+          classes={{ root: classes.buttonGroupRoot }}
+          size="small"
+          aria-label="shift buttons"
+        >
+          <ShiftButton
+            direction="left"
+            text={
+              state.durationOption === "custom" ? "1h" : state.durationOption
+            }
+            onClick={
+              state.durationOption === "custom"
+                ? shiftBy(-1 * hour)
+                : shiftBy(-props.durationSec)
+            }
+          />
+          <ShiftButton
+            direction="right"
+            text={
+              state.durationOption === "custom" ? "1h" : state.durationOption
+            }
+            onClick={
+              state.durationOption === "custom"
+                ? shiftBy(1 * hour)
+                : shiftBy(props.durationSec)
+            }
+          />
+        </ButtonGroup>
+      </div>
     </div>
   );
 }
@@ -605,10 +654,11 @@ function formatTime(unixtime: number): string {
   return dayjs.unix(unixtime).format("ddd, DD MMM YYYY HH:mm:ss ") + tz;
 }
 
-interface ShiftButtonProps {
+interface ShiftButtonProps extends ButtonProps {
   text: string;
   onClick: () => void;
   direction: "left" | "right";
+  dense?: boolean;
 }
 
 const useShiftButtonStyles = makeStyles((theme) => ({
@@ -616,9 +666,9 @@ const useShiftButtonStyles = makeStyles((theme) => ({
   label: { fontSize: 12, textTransform: "none" },
   iconRoot: {
     marginRight: (props: ShiftButtonProps) =>
-      props.direction === "left" ? -8 : 0,
+      props.direction === "left" && props.dense ? -8 : 0,
     marginLeft: (props: ShiftButtonProps) =>
-      props.direction === "right" ? -8 : 0,
+      props.direction === "right" && props.dense ? -8 : 0,
     color: theme.palette.grey[700],
   },
 }));
@@ -627,12 +677,12 @@ function ShiftButton(props: ShiftButtonProps) {
   const classes = useShiftButtonStyles(props);
   return (
     <Button
+      {...props}
       classes={{
         root: classes.root,
         label: classes.label,
       }}
       size="small"
-      onClick={props.onClick}
     >
       {props.direction === "left" && (
         <ArrowLeftIcon classes={{ root: classes.iconRoot }} />
@@ -644,5 +694,9 @@ function ShiftButton(props: ShiftButtonProps) {
     </Button>
   );
 }
+
+ShiftButton.defaultProps = {
+  dense: false,
+};
 
 export default connect(mapStateToProps)(MetricsFetchControls);
