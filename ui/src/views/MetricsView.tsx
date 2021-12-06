@@ -1,5 +1,7 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
+import { useHistory } from "react-router-dom";
+import queryString from "query-string";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
@@ -9,6 +11,7 @@ import { AppState } from "../store";
 import QueueSizeMetricsChart from "../components/QueueSizeMetricsChart";
 import { currentUnixtime } from "../utils";
 import MetricsFetchControls from "../components/MetricsFetchControls";
+import { useQuery } from "../hooks";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -33,12 +36,48 @@ function mapStateToProps(state: AppState) {
 const connector = connect(mapStateToProps, { getMetricsAsync });
 type Props = ConnectedProps<typeof connector>;
 
+const ENDTIME_URL_PARAM_KEY = "end";
+const DURATION_URL_PARAM_KEY = "duration";
+
 function MetricsView(props: Props) {
   const classes = useStyles();
+  const history = useHistory();
+  const query = useQuery();
+
+  const endTimeStr = query.get(ENDTIME_URL_PARAM_KEY);
+  const endTime = endTimeStr ? parseFloat(endTimeStr) : currentUnixtime(); // default to now
+
+  const durationStr = query.get(DURATION_URL_PARAM_KEY);
+  const duration = durationStr ? parseFloat(durationStr) : 60 * 60; // default to 1h
+
   const { pollInterval, getMetricsAsync, data } = props;
 
-  const [endTimeSec, setEndTimeSec] = React.useState(currentUnixtime());
-  const [durationSec, setDurationSec] = React.useState(60 * 60); // 1h
+  const [endTimeSec, setEndTimeSec] = React.useState(endTime);
+  const [durationSec, setDurationSec] = React.useState(duration);
+
+  const handleEndTimeChange = (endTime: number) => {
+    const urlQuery = {
+      [ENDTIME_URL_PARAM_KEY]: endTime,
+      [DURATION_URL_PARAM_KEY]: durationSec,
+    };
+    history.push({
+      ...history.location,
+      search: queryString.stringify(urlQuery),
+    });
+    setEndTimeSec(endTime);
+  };
+
+  const handleDurationChange = (duration: number) => {
+    const urlQuery = {
+      [ENDTIME_URL_PARAM_KEY]: endTimeSec,
+      [DURATION_URL_PARAM_KEY]: duration,
+    };
+    history.push({
+      ...history.location,
+      search: queryString.stringify(urlQuery),
+    });
+    setDurationSec(duration);
+  };
 
   React.useEffect(() => {
     getMetricsAsync(endTimeSec, durationSec);
@@ -51,9 +90,9 @@ function MetricsView(props: Props) {
           <div className={classes.controlsContainer}>
             <MetricsFetchControls
               endTimeSec={endTimeSec}
-              onEndTimeChange={setEndTimeSec}
+              onEndTimeChange={handleEndTimeChange}
               durationSec={durationSec}
-              onDurationChange={setDurationSec}
+              onDurationChange={handleDurationChange}
             />
           </div>
         </Grid>
