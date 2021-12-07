@@ -35,7 +35,10 @@ function toChartData(metrics: Metrics[]): ChartData[] {
       if (!byTimestamp[ts]) {
         byTimestamp[ts] = { timestamp: ts };
       }
-      byTimestamp[ts][x.metric.queue] = parseFloat(val);
+      const qname = x.metric.queue;
+      if (qname) {
+        byTimestamp[ts][qname] = parseFloat(val);
+      }
     }
   }
   return Object.values(byTimestamp);

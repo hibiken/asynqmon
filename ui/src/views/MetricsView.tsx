@@ -98,8 +98,9 @@ function MetricsView(props: Props) {
         </Grid>
         <Grid item xs={12}>
           <Typography>Queue Size</Typography>
+          {/* TODO: show error message if data.queue_size.status === "error" */}
           <QueueSizeMetricsChart
-            data={data?.data.result || []}
+            data={data?.queue_size.data?.result || []}
             endTime={endTimeSec}
             startTime={endTimeSec - durationSec}
           />

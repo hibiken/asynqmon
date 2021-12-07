@@ -77,10 +77,18 @@ export interface QueueLocation {
 }
 
 export interface MetricsResponse {
-  data: MetricsResult;
+  queue_size: PrometheusMetricsResponse;
+}
+
+export interface PrometheusMetricsResponse {
+  status: "success" | "error";
+  data?: MetricsResult; // present if status === "success"
+  error?: string; // present if status === "error"
+  errorType?: string; // present if status === "error"
 }
 
 export interface MetricsResult {
+  resultType: string;
   result: Metrics[];
 }
 
@@ -93,8 +101,10 @@ export interface MetricsInfo {
   __name__: string;
   instance: string;
   job: string;
-  queue: string;
-  state: string;
+
+  // labels (may or may not be present depending on metrics)
+  queue?: string;
+  state?: string;
 }
 
 // Return value from redis INFO command.
