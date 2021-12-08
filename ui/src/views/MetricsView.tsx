@@ -8,7 +8,7 @@ import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import { getMetricsAsync } from "../actions/metricsActions";
 import { AppState } from "../store";
-import QueueSizeMetricsChart from "../components/QueueSizeMetricsChart";
+import QueueMetricsChart from "../components/QueueMetricsChart";
 import { currentUnixtime } from "../utils";
 import MetricsFetchControls from "../components/MetricsFetchControls";
 import { useQuery } from "../hooks";
@@ -99,7 +99,7 @@ function MetricsView(props: Props) {
         <Grid item xs={12}>
           <Typography>Queue Size</Typography>
           {/* TODO: show error message if data.queue_size.status === "error" */}
-          <QueueSizeMetricsChart
+          <QueueMetricsChart
             data={data?.queue_size.data?.result || []}
             endTime={endTimeSec}
             startTime={endTimeSec - durationSec}
@@ -109,6 +109,30 @@ function MetricsView(props: Props) {
       <Grid item xs={12}>
         <Typography>Queue Latency</Typography>
         <div>TODO: Queue latency chart here</div>
+      </Grid>
+      <Grid item xs={12}>
+        <Typography>Pending Tasks</Typography>
+        <QueueMetricsChart
+          data={data?.pending_tasks_by_queue.data?.result || []}
+          endTime={endTimeSec}
+          startTime={endTimeSec - durationSec}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography>Retry Tasks</Typography>
+        <QueueMetricsChart
+          data={data?.retry_tasks_by_queue.data?.result || []}
+          endTime={endTimeSec}
+          startTime={endTimeSec - durationSec}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography>Archived Tasks</Typography>
+        <QueueMetricsChart
+          data={data?.archived_tasks_by_queue.data?.result || []}
+          endTime={endTimeSec}
+          startTime={endTimeSec - durationSec}
+        />
       </Grid>
     </Container>
   );

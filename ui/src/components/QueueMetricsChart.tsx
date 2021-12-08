@@ -53,11 +53,11 @@ const lineColors = [
   "#323232",
 ];
 
-function QueueSizeMetricsChart(props: Props) {
+function QueueMetricsChart(props: Props) {
   const data = toChartData(props.data);
   const keys = props.data.map((x) => x.metric.queue);
   return (
-    <ResponsiveContainer maxHeight={260}>
+    <ResponsiveContainer height={260}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
@@ -91,4 +91,4 @@ function QueueSizeMetricsChart(props: Props) {
   );
 }
 
-export default QueueSizeMetricsChart;
+export default QueueMetricsChart;
