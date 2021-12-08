@@ -6,6 +6,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
+import WarningIcon from "@material-ui/icons/Warning";
 import { getMetricsAsync } from "../actions/metricsActions";
 import { AppState } from "../store";
 import QueueMetricsChart from "../components/QueueMetricsChart";
@@ -21,6 +22,19 @@ const useStyles = makeStyles((theme) => ({
   controlsContainer: {
     display: "flex",
     justifyContent: "flex-end",
+  },
+  chartInfo: {
+    display: "flex",
+    alignItems: "center",
+  },
+  errorMessage: {
+    marginLeft: "auto",
+    display: "flex",
+    alignItems: "center",
+  },
+  warningIcon: {
+    color: "#ff6700",
+    marginRight: 6,
   },
 }));
 
@@ -97,10 +111,23 @@ function MetricsView(props: Props) {
           </div>
         </Grid>
         <Grid item xs={12}>
-          <Typography>Queue Size</Typography>
-          {/* TODO: show error message if data.queue_size.status === "error" */}
+          <div className={classes.chartInfo}>
+            <Typography>Queue Size</Typography>
+            {data?.queue_size.status === "error" && (
+              <div className={classes.errorMessage}>
+                <WarningIcon fontSize="small" className={classes.warningIcon} />
+                <Typography color="textSecondary">
+                  Failed to get metrics data: {data?.queue_size.error || ""}
+                </Typography>
+              </div>
+            )}
+          </div>
           <QueueMetricsChart
-            data={data?.queue_size.data?.result || []}
+            data={
+              data?.queue_size.status === "error"
+                ? []
+                : data?.queue_size.data?.result || []
+            }
             endTime={endTimeSec}
             startTime={endTimeSec - durationSec}
           />
@@ -111,25 +138,70 @@ function MetricsView(props: Props) {
         <div>TODO: Queue latency chart here</div>
       </Grid>
       <Grid item xs={12}>
-        <Typography>Pending Tasks</Typography>
+        <div className={classes.chartInfo}>
+          <Typography>Pending Tasks</Typography>
+          {data?.pending_tasks_by_queue.status === "error" && (
+            <div className={classes.errorMessage}>
+              <WarningIcon fontSize="small" className={classes.warningIcon} />
+              <Typography color="textSecondary">
+                Failed to get metrics data:{" "}
+                {data?.pending_tasks_by_queue.error || ""}
+              </Typography>
+            </div>
+          )}
+        </div>
         <QueueMetricsChart
-          data={data?.pending_tasks_by_queue.data?.result || []}
+          data={
+            data?.pending_tasks_by_queue.status === "error"
+              ? []
+              : data?.pending_tasks_by_queue.data?.result || []
+          }
           endTime={endTimeSec}
           startTime={endTimeSec - durationSec}
         />
       </Grid>
       <Grid item xs={12}>
-        <Typography>Retry Tasks</Typography>
+        <div className={classes.chartInfo}>
+          <Typography>Retry Tasks</Typography>
+          {data?.retry_tasks_by_queue.status === "error" && (
+            <div className={classes.errorMessage}>
+              <WarningIcon fontSize="small" className={classes.warningIcon} />
+              <Typography color="textSecondary">
+                Failed to get metrics data:{" "}
+                {data?.retry_tasks_by_queue.error || ""}
+              </Typography>
+            </div>
+          )}
+        </div>
         <QueueMetricsChart
-          data={data?.retry_tasks_by_queue.data?.result || []}
+          data={
+            data?.retry_tasks_by_queue.status === "error"
+              ? []
+              : data?.retry_tasks_by_queue.data?.result || []
+          }
           endTime={endTimeSec}
           startTime={endTimeSec - durationSec}
         />
       </Grid>
       <Grid item xs={12}>
-        <Typography>Archived Tasks</Typography>
+        <div className={classes.chartInfo}>
+          <Typography>Archived Tasks</Typography>
+          {data?.archived_tasks_by_queue.status === "error" && (
+            <div className={classes.errorMessage}>
+              <WarningIcon fontSize="small" className={classes.warningIcon} />
+              <Typography color="textSecondary">
+                Failed to get metrics data:{" "}
+                {data?.archived_tasks_by_queue.error || ""}
+              </Typography>
+            </div>
+          )}
+        </div>
         <QueueMetricsChart
-          data={data?.archived_tasks_by_queue.data?.result || []}
+          data={
+            data?.archived_tasks_by_queue.status === "error"
+              ? []
+              : data?.archived_tasks_by_queue.data?.result || []
+          }
           endTime={endTimeSec}
           startTime={endTimeSec - durationSec}
         />
