@@ -13,6 +13,7 @@ import QueueMetricsChart from "../components/QueueMetricsChart";
 import { currentUnixtime } from "../utils";
 import MetricsFetchControls from "../components/MetricsFetchControls";
 import { useQuery } from "../hooks";
+import { PrometheusMetricsResponse } from "../api";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -110,104 +111,90 @@ function MetricsView(props: Props) {
             />
           </div>
         </Grid>
-        <Grid item xs={12}>
-          <div className={classes.chartInfo}>
-            <Typography>Queue Size</Typography>
-            {data?.queue_size.status === "error" && (
-              <div className={classes.errorMessage}>
-                <WarningIcon fontSize="small" className={classes.warningIcon} />
-                <Typography color="textSecondary">
-                  Failed to get metrics data: {data?.queue_size.error || ""}
-                </Typography>
-              </div>
-            )}
-          </div>
-          <QueueMetricsChart
-            data={
-              data?.queue_size.status === "error"
-                ? []
-                : data?.queue_size.data?.result || []
-            }
-            endTime={endTimeSec}
-            startTime={endTimeSec - durationSec}
-          />
-        </Grid>
+        {data?.queue_size && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Queue Size"
+              metrics={data.queue_size}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+            />
+          </Grid>
+        )}
       </Grid>
       <Grid item xs={12}>
         <Typography>Queue Latency</Typography>
         <div>TODO: Queue latency chart here</div>
       </Grid>
-      <Grid item xs={12}>
-        <div className={classes.chartInfo}>
-          <Typography>Pending Tasks</Typography>
-          {data?.pending_tasks_by_queue.status === "error" && (
-            <div className={classes.errorMessage}>
-              <WarningIcon fontSize="small" className={classes.warningIcon} />
-              <Typography color="textSecondary">
-                Failed to get metrics data:{" "}
-                {data?.pending_tasks_by_queue.error || ""}
-              </Typography>
-            </div>
-          )}
-        </div>
-        <QueueMetricsChart
-          data={
-            data?.pending_tasks_by_queue.status === "error"
-              ? []
-              : data?.pending_tasks_by_queue.data?.result || []
-          }
-          endTime={endTimeSec}
-          startTime={endTimeSec - durationSec}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <div className={classes.chartInfo}>
-          <Typography>Retry Tasks</Typography>
-          {data?.retry_tasks_by_queue.status === "error" && (
-            <div className={classes.errorMessage}>
-              <WarningIcon fontSize="small" className={classes.warningIcon} />
-              <Typography color="textSecondary">
-                Failed to get metrics data:{" "}
-                {data?.retry_tasks_by_queue.error || ""}
-              </Typography>
-            </div>
-          )}
-        </div>
-        <QueueMetricsChart
-          data={
-            data?.retry_tasks_by_queue.status === "error"
-              ? []
-              : data?.retry_tasks_by_queue.data?.result || []
-          }
-          endTime={endTimeSec}
-          startTime={endTimeSec - durationSec}
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <div className={classes.chartInfo}>
-          <Typography>Archived Tasks</Typography>
-          {data?.archived_tasks_by_queue.status === "error" && (
-            <div className={classes.errorMessage}>
-              <WarningIcon fontSize="small" className={classes.warningIcon} />
-              <Typography color="textSecondary">
-                Failed to get metrics data:{" "}
-                {data?.archived_tasks_by_queue.error || ""}
-              </Typography>
-            </div>
-          )}
-        </div>
-        <QueueMetricsChart
-          data={
-            data?.archived_tasks_by_queue.status === "error"
-              ? []
-              : data?.archived_tasks_by_queue.data?.result || []
-          }
-          endTime={endTimeSec}
-          startTime={endTimeSec - durationSec}
-        />
-      </Grid>
+      {data?.pending_tasks_by_queue && (
+        <Grid item xs={12}>
+          <ChartRow
+            title="Pending Tasks"
+            metrics={data.pending_tasks_by_queue}
+            endTime={endTimeSec}
+            startTime={endTimeSec - durationSec}
+          />
+        </Grid>
+      )}
+      {data?.retry_tasks_by_queue && (
+        <Grid item xs={12}>
+          <ChartRow
+            title="Retry Tasks"
+            metrics={data.retry_tasks_by_queue}
+            endTime={endTimeSec}
+            startTime={endTimeSec - durationSec}
+          />
+        </Grid>
+      )}
+      {data?.archived_tasks_by_queue && (
+        <Grid item xs={12}>
+          <ChartRow
+            title="Archived Tasks"
+            metrics={data.archived_tasks_by_queue}
+            endTime={endTimeSec}
+            startTime={endTimeSec - durationSec}
+          />
+        </Grid>
+      )}
     </Container>
   );
 }
 
 export default connector(MetricsView);
+
+/******** Helper components ********/
+
+interface ChartRowProps {
+  title: string;
+  metrics: PrometheusMetricsResponse;
+  endTime: number;
+  startTime: number;
+}
+
+function ChartRow(props: ChartRowProps) {
+  const classes = useStyles();
+  return (
+    <>
+      <div className={classes.chartInfo}>
+        <Typography>{props.title}</Typography>
+        {props.metrics.status === "error" && (
+          <div className={classes.errorMessage}>
+            <WarningIcon fontSize="small" className={classes.warningIcon} />
+            <Typography color="textSecondary">
+              Failed to get metrics data: {props.metrics.error}
+            </Typography>
+          </div>
+        )}
+      </div>
+      <QueueMetricsChart
+        data={
+          props.metrics.status === "error"
+            ? []
+            : props.metrics.data?.result || []
+        }
+        endTime={props.endTime}
+        startTime={props.startTime}
+      />
+    </>
+  );
+}
