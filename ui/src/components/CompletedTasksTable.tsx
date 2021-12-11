@@ -36,6 +36,7 @@ import {
   stringifyDuration,
   timeAgo,
   uuidPrefix,
+  prettifyPayload
 } from "../utils";
 import { usePolling } from "../hooks";
 import { TaskInfoExtended } from "../reducers/tasksReducer";
@@ -326,7 +327,7 @@ function Row(props: RowProps) {
           language="json"
           customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {task.payload}
+          {prettifyPayload(task.payload)}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>{timeAgo(task.completed_at)}</TableCell>
@@ -335,7 +336,7 @@ function Row(props: RowProps) {
           language="json"
           customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {task.result}
+          {prettifyPayload(task.result)}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>

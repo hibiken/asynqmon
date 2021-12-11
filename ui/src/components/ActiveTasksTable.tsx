@@ -33,7 +33,7 @@ import TablePaginationActions, {
 import TableActions from "./TableActions";
 import { usePolling } from "../hooks";
 import { ActiveTaskExtended } from "../reducers/tasksReducer";
-import { durationBefore, timeAgo, uuidPrefix } from "../utils";
+import { durationBefore, timeAgo, uuidPrefix, prettifyPayload } from "../utils";
 import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
 
@@ -313,7 +313,7 @@ function Row(props: RowProps) {
           language="json"
           customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {task.payload}
+          {prettifyPayload(task.payload)}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>{task.canceling ? "Canceling" : "Running"}</TableCell>

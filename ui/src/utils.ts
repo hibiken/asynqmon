@@ -102,3 +102,22 @@ export function percentage(numerator: number, denominator: number): string {
   const perc = ((numerator / denominator) * 100).toFixed(2);
   return `${perc} %`;
 }
+
+
+export function isJsonPayload(p: string) {
+  try {
+    JSON.parse(p);
+  } catch (error) {
+    return false;
+  }
+
+  return true;
+}
+
+export function prettifyPayload(p: string) {
+  if (isJsonPayload(p)) {
+    return JSON.stringify(JSON.parse(p), null, 2);
+  }
+
+  return p;
+}

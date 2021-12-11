@@ -35,7 +35,7 @@ import TablePaginationActions, {
 } from "./TablePaginationActions";
 import { taskRowsPerPageChange } from "../actions/settingsActions";
 import TableActions from "./TableActions";
-import { timeAgo, uuidPrefix } from "../utils";
+import { timeAgo, uuidPrefix, prettifyPayload } from "../utils";
 import { usePolling } from "../hooks";
 import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
@@ -352,7 +352,7 @@ function Row(props: RowProps) {
           language="json"
           customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {task.payload}
+          {prettifyPayload(task.payload)}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>{timeAgo(task.last_failed_at)}</TableCell>

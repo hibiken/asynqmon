@@ -39,7 +39,7 @@ import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import TableActions from "./TableActions";
-import { durationBefore, uuidPrefix } from "../utils";
+import { durationBefore, uuidPrefix, prettifyPayload } from "../utils";
 import { usePolling } from "../hooks";
 import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
@@ -383,7 +383,7 @@ function Row(props: RowProps) {
           language="json"
           customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {task.payload}
+          {prettifyPayload(task.payload)}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell>{durationBefore(task.next_process_at)}</TableCell>
