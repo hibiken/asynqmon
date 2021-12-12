@@ -17,6 +17,9 @@ interface Props {
   // both startTime and endTime are in unix time (seconds)
   startTime: number;
   endTime: number;
+
+  // (optional): Tick formatter function for YAxis
+  yAxisTickFormatter?: (val: number) => string;
 }
 
 // interface that rechart understands.
@@ -70,7 +73,7 @@ function QueueMetricsChart(props: Props) {
           type="number"
           scale="time"
         />
-        <YAxis />
+        <YAxis tickFormatter={props.yAxisTickFormatter} />
         <Tooltip
           labelFormatter={(timestamp: number) => {
             return new Date(timestamp * 1000).toLocaleTimeString();
@@ -90,5 +93,9 @@ function QueueMetricsChart(props: Props) {
     </ResponsiveContainer>
   );
 }
+
+QueueMetricsChart.defaultProps = {
+  yAxisTickFormatter: (val: number) => val.toString(),
+};
 
 export default QueueMetricsChart;

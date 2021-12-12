@@ -121,41 +121,48 @@ function MetricsView(props: Props) {
             />
           </Grid>
         )}
+        {data?.queue_latency_seconds && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Queue Latency"
+              metrics={data.queue_latency_seconds}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+              yAxisTickFormatter={(val: number) => val + "s"}
+            />
+          </Grid>
+        )}
+        {data?.pending_tasks_by_queue && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Pending Tasks"
+              metrics={data.pending_tasks_by_queue}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+            />
+          </Grid>
+        )}
+        {data?.retry_tasks_by_queue && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Retry Tasks"
+              metrics={data.retry_tasks_by_queue}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+            />
+          </Grid>
+        )}
+        {data?.archived_tasks_by_queue && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Archived Tasks"
+              metrics={data.archived_tasks_by_queue}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+            />
+          </Grid>
+        )}
       </Grid>
-      <Grid item xs={12}>
-        <Typography>Queue Latency</Typography>
-        <div>TODO: Queue latency chart here</div>
-      </Grid>
-      {data?.pending_tasks_by_queue && (
-        <Grid item xs={12}>
-          <ChartRow
-            title="Pending Tasks"
-            metrics={data.pending_tasks_by_queue}
-            endTime={endTimeSec}
-            startTime={endTimeSec - durationSec}
-          />
-        </Grid>
-      )}
-      {data?.retry_tasks_by_queue && (
-        <Grid item xs={12}>
-          <ChartRow
-            title="Retry Tasks"
-            metrics={data.retry_tasks_by_queue}
-            endTime={endTimeSec}
-            startTime={endTimeSec - durationSec}
-          />
-        </Grid>
-      )}
-      {data?.archived_tasks_by_queue && (
-        <Grid item xs={12}>
-          <ChartRow
-            title="Archived Tasks"
-            metrics={data.archived_tasks_by_queue}
-            endTime={endTimeSec}
-            startTime={endTimeSec - durationSec}
-          />
-        </Grid>
-      )}
     </Container>
   );
 }
@@ -169,6 +176,7 @@ interface ChartRowProps {
   metrics: PrometheusMetricsResponse;
   endTime: number;
   startTime: number;
+  yAxisTickFormatter?: (val: number) => string;
 }
 
 function ChartRow(props: ChartRowProps) {
@@ -194,6 +202,7 @@ function ChartRow(props: ChartRowProps) {
         }
         endTime={props.endTime}
         startTime={props.startTime}
+        yAxisTickFormatter={props.yAxisTickFormatter}
       />
     </>
   );

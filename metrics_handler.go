@@ -13,6 +13,7 @@ import (
 
 type getMetricsResponse struct {
 	QueueSize            *json.RawMessage `json:"queue_size"`
+	QueueLatency         *json.RawMessage `json:"queue_latency_seconds"`
 	PendingTasksByQueue  *json.RawMessage `json:"pending_tasks_by_queue"`
 	RetryTasksByQueue    *json.RawMessage `json:"retry_tasks_by_queue"`
 	ArchivedTasksByQueue *json.RawMessage `json:"archived_tasks_by_queue"`
@@ -46,6 +47,7 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 		// List of queries (i.e. promQL) to send to prometheus server.
 		queries := []string{
 			"asynq_queue_size",
+			"asynq_queue_latency_seconds",
 			"asynq_tasks_enqueued_total{state=\"pending\"}",
 			"asynq_tasks_enqueued_total{state=\"retry\"}",
 			"asynq_tasks_enqueued_total{state=\"archived\"}",
@@ -71,6 +73,8 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 			switch r.query {
 			case "asynq_queue_size":
 				resp.QueueSize = r.msg
+			case "asynq_queue_latency_seconds":
+				resp.QueueLatency = r.msg
 			case "asynq_tasks_enqueued_total{state=\"pending\"}":
 				resp.PendingTasksByQueue = r.msg
 			case "asynq_tasks_enqueued_total{state=\"retry\"}":

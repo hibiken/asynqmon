@@ -78,6 +78,7 @@ export interface QueueLocation {
 
 export interface MetricsResponse {
   queue_size: PrometheusMetricsResponse;
+  queue_latency_seconds: PrometheusMetricsResponse;
   pending_tasks_by_queue: PrometheusMetricsResponse;
   retry_tasks_by_queue: PrometheusMetricsResponse;
   archived_tasks_by_queue: PrometheusMetricsResponse;
