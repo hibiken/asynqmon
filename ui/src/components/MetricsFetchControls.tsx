@@ -27,11 +27,11 @@ type ReduxProps = ConnectedProps<typeof connector>;
 interface Props extends ReduxProps {
   // Specifies the endtime in Unix time seconds.
   endTimeSec: number;
-  onEndTimeChange: (t: number) => void;
+  onEndTimeChange: (t: number, isEndTimeFixed: boolean) => void;
 
   // Specifies the duration in seconds.
   durationSec: number;
-  onDurationChange: (d: number) => void;
+  onDurationChange: (d: number, isEndTimeFixed: boolean) => void;
 }
 
 interface State {
@@ -198,10 +198,10 @@ function MetricsFetchControls(props: Props) {
     }));
     switch (selectedOpt) {
       case "real_time":
-        props.onEndTimeChange(currentUnixtime());
+        props.onEndTimeChange(currentUnixtime(), /*isEndTimeFixed=*/ false);
         break;
       case "freeze_at_now":
-        props.onEndTimeChange(currentUnixtime());
+        props.onEndTimeChange(currentUnixtime(), /*isEndTimeFixed=*/ true);
         break;
       case "custom":
       // No-op
@@ -219,21 +219,22 @@ function MetricsFetchControls(props: Props) {
       customDuration: "",
       customDurationError: "",
     }));
+    const isEndTimeFixed = state.endTimeOption !== "real_time";
     switch (selectedOpt) {
       case "1h":
-        props.onDurationChange(1 * hour);
+        props.onDurationChange(1 * hour, isEndTimeFixed);
         break;
       case "6h":
-        props.onDurationChange(6 * hour);
+        props.onDurationChange(6 * hour, isEndTimeFixed);
         break;
       case "1d":
-        props.onDurationChange(1 * day);
+        props.onDurationChange(1 * day, isEndTimeFixed);
         break;
       case "8d":
-        props.onDurationChange(8 * day);
+        props.onDurationChange(8 * day, isEndTimeFixed);
         break;
       case "30d":
-        props.onDurationChange(30 * day);
+        props.onDurationChange(30 * day, isEndTimeFixed);
         break;
       case "custom":
       // No-op
@@ -271,7 +272,7 @@ function MetricsFetchControls(props: Props) {
           durationOption: "custom",
           customDurationError: "",
         }));
-        props.onDurationChange(d);
+        props.onDurationChange(d, state.endTimeOption !== "real_time");
       } catch (error) {
         setState((prevState) => ({
           ...prevState,
@@ -298,7 +299,10 @@ function MetricsFetchControls(props: Props) {
         endTimeOption: "custom",
         customEndTimeError: "",
       }));
-      props.onEndTimeChange(Math.floor(timeUsecOrNaN / 1000));
+      props.onEndTimeChange(
+        Math.floor(timeUsecOrNaN / 1000),
+        /* isEndTimeFixed= */ true
+      );
     }
   };
 
@@ -316,7 +320,7 @@ function MetricsFetchControls(props: Props) {
   React.useEffect(() => {
     if (state.endTimeOption === "real_time") {
       const id = setInterval(() => {
-        props.onEndTimeChange(currentUnixtime());
+        props.onEndTimeChange(currentUnixtime(), /*isEndTimeFixed=*/ false);
       }, props.pollInterval * 1000);
       return () => clearInterval(id);
     }
@@ -332,7 +336,7 @@ function MetricsFetchControls(props: Props) {
           customEndTime: "",
           endTimeOption: "real_time",
         }));
-        props.onEndTimeChange(now);
+        props.onEndTimeChange(now, /*isEndTimeFixed=*/ false);
         return;
       }
       setState((prevState) => ({
@@ -340,7 +344,7 @@ function MetricsFetchControls(props: Props) {
         endTimeOption: "custom",
         customEndTime: new Date(endTime * 1000).toISOString(),
       }));
-      props.onEndTimeChange(endTime);
+      props.onEndTimeChange(endTime, /*isEndTimeFixed=*/ true);
     };
   };
 

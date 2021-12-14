@@ -70,11 +70,15 @@ function MetricsView(props: Props) {
   const [endTimeSec, setEndTimeSec] = React.useState(endTime);
   const [durationSec, setDurationSec] = React.useState(duration);
 
-  const handleEndTimeChange = (endTime: number) => {
-    const urlQuery = {
-      [ENDTIME_URL_PARAM_KEY]: endTime,
-      [DURATION_URL_PARAM_KEY]: durationSec,
-    };
+  const handleEndTimeChange = (endTime: number, isEndTimeFixed: boolean) => {
+    const urlQuery = isEndTimeFixed
+      ? {
+          [ENDTIME_URL_PARAM_KEY]: endTime,
+          [DURATION_URL_PARAM_KEY]: durationSec,
+        }
+      : {
+          [DURATION_URL_PARAM_KEY]: durationSec,
+        };
     history.push({
       ...history.location,
       search: queryString.stringify(urlQuery),
@@ -82,11 +86,15 @@ function MetricsView(props: Props) {
     setEndTimeSec(endTime);
   };
 
-  const handleDurationChange = (duration: number) => {
-    const urlQuery = {
-      [ENDTIME_URL_PARAM_KEY]: endTimeSec,
-      [DURATION_URL_PARAM_KEY]: duration,
-    };
+  const handleDurationChange = (duration: number, isEndTimeFixed: boolean) => {
+    const urlQuery = isEndTimeFixed
+      ? {
+          [ENDTIME_URL_PARAM_KEY]: endTimeSec,
+          [DURATION_URL_PARAM_KEY]: duration,
+        }
+      : {
+          [DURATION_URL_PARAM_KEY]: duration,
+        };
     history.push({
       ...history.location,
       search: queryString.stringify(urlQuery),
