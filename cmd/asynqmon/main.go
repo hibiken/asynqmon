@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,16 +33,16 @@ var (
 )
 
 func init() {
-	flag.IntVar(&flagPort, "port", 8080, "port number to use for web ui server")
-	flag.StringVar(&flagRedisAddr, "redis-addr", "127.0.0.1:6379", "address of redis server to connect to")
-	flag.IntVar(&flagRedisDB, "redis-db", 0, "redis database number")
-	flag.StringVar(&flagRedisPassword, "redis-password", "", "password to use when connecting to redis server")
-	flag.StringVar(&flagRedisTLS, "redis-tls", "", "server name for TLS validation used when connecting to redis server")
-	flag.StringVar(&flagRedisURL, "redis-url", "", "URL to redis server")
-	flag.BoolVar(&flagRedisInsecureTLS, "redis-insecure-tls", false, "disable TLS certificate host checks")
-	flag.StringVar(&flagRedisClusterNodes, "redis-cluster-nodes", "", "comma separated list of host:port addresses of cluster nodes")
-	flag.IntVar(&flagMaxPayloadLength, "max-payload-length", 200, "maximum number of utf8 characters printed in the payload cell in the Web UI")
-	flag.IntVar(&flagMaxResultLength, "max-result-length", 200, "maximum number of utf8 characters printed in the result cell in the Web UI")
+	flag.IntVar(&flagPort, "port", getEnvOrDefaultInt("PORT", 8080), "port number to use for web ui server")
+	flag.StringVar(&flagRedisAddr, "redis-addr", getEnvDefaultString("REDIS_ADDR", "127.0.0.1:6379"), "address of redis server to connect to")
+	flag.IntVar(&flagRedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
+	flag.StringVar(&flagRedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
+	flag.StringVar(&flagRedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS",""), "server name for TLS validation used when connecting to redis server")
+	flag.StringVar(&flagRedisURL, "redis-url", getEnvDefaultString("REDIS_URL", ""), "URL to redis server")
+	flag.BoolVar(&flagRedisInsecureTLS, "redis-insecure-tls", getEnvOrDefaultBool("REDIS_INSECURE_TLS", false), "disable TLS certificate host checks")
+	flag.StringVar(&flagRedisClusterNodes, "redis-cluster-nodes", getEnvDefaultString("REDIS_CLUSTER_NODES", ""), "comma separated list of host:port addresses of cluster nodes")
+	flag.IntVar(&flagMaxPayloadLength, "max-payload-length", getEnvOrDefaultInt("MAX_PAYLOAD_LENGTH", 200), "maximum number of utf8 characters printed in the payload cell in the Web UI")
+	flag.IntVar(&flagMaxResultLength, "max-result-length", getEnvOrDefaultInt("MAX_RESULT_LENGTH", 200), "maximum number of utf8 characters printed in the result cell in the Web UI")
 }
 
 // TODO: Write test and refactor this code.
@@ -143,4 +145,29 @@ func truncate(s string, limit int) string {
 		i++
 	}
 	return s
+}
+
+func getEnvDefaultString(key, def string) string {
+	v := os.Getenv(key)
+	if (v == "") {
+		return def
+	}
+
+	return v
+}
+
+func getEnvOrDefaultInt(key string, def int) int {
+	v, err := strconv.Atoi(os.Getenv(key))
+	if (err != nil) {
+		return def
+	}
+	return v
+}
+
+func getEnvOrDefaultBool(key string, def bool) bool {
+	v, err := strconv.ParseBool(os.Getenv(key))
+	if (err != nil) {
+		return def
+	}
+	return v
 }

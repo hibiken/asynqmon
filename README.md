@@ -83,16 +83,16 @@ Here's the available flags:
 
 _Note_: Use `--redis-url` to specify address, db-number, and password with one flag value; Alternatively, use `--redis-addr`, `--redis-db`, and `--redis-password` to specify each value.
 
-| Flag                            | Description                                                         | Default          |
-| ------------------------------- | ------------------------------------------------------------------- | ---------------- |
-| `--port`(int)                   | port number to use for web ui server                                | 8080             |
-| `---redis-url`(string)          | URL to redis server                                                 | ""               |
-| `--redis-addr`(string)          | address of redis server to connect to                               | "127.0.0.1:6379" |
-| `--redis-db`(int)               | redis database number                                               | 0                |
-| `--redis-password`(string)      | password to use when connecting to redis server                     | ""               |
-| `--redis-cluster-nodes`(string) | comma separated list of host:port addresses of cluster nodes        | ""               |
-| `--redis-tls`(string)           | server name for TLS validation used when connecting to redis server | ""               |
-| `--redis-insecure-tls`(bool)    | disable TLS certificate host checks                                 | false            |
+| Flag                            | Env                   | Description                                                         | Default          |
+| ------------------------------- | --------------------- | ------------------------------------------------------------------- | ---------------- |
+| `--port`(int)                   | `PORT`                | port number to use for web ui server                                | 8080             |
+| `---redis-url`(string)          | `REDIS_URL`           | URL to redis server                                                 | ""               |
+| `--redis-addr`(string)          | `REDIS_ADDR`          | address of redis server to connect to                               | "127.0.0.1:6379" |
+| `--redis-db`(int)               | `REDIS_DB`            | redis database number                                               | 0                |
+| `--redis-password`(string)      | `REDIS_PASSWORD`      | password to use when connecting to redis server                     | ""               |
+| `--redis-cluster-nodes`(string) | `REDIS_CLUSTER_NODES` | comma separated list of host:port addresses of cluster nodes        | ""               |
+| `--redis-tls`(string)           | `REDIS_TLS`           | server name for TLS validation used when connecting to redis server | ""               |
+| `--redis-insecure-tls`(bool)    | `REDIS_INSECURE_TLS`  | disable TLS certificate host checks                                 | false            |
 
 ### Examples
 
