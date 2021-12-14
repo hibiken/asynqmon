@@ -18,7 +18,7 @@ import { TaskDetailsRouteParams } from "../paths";
 import { usePolling } from "../hooks";
 import { listQueuesAsync } from "../actions/queuesActions";
 import SyntaxHighlighter from "../components/SyntaxHighlighter";
-import { durationFromSeconds, stringifyDuration, timeAgo } from "../utils";
+import { durationFromSeconds, stringifyDuration, timeAgo, prettifyPayload } from "../utils";
 
 function mapStateToProps(state: AppState) {
   return {
@@ -228,7 +228,7 @@ function TaskDetailsView(props: Props) {
                       language="json"
                       customStyle={{ margin: 0, maxWidth: 400 }}
                     >
-                      {taskInfo.payload}
+                      {prettifyPayload(taskInfo.payload)}
                     </SyntaxHighlighter>
                   )}
                 </div>
@@ -262,7 +262,7 @@ function TaskDetailsView(props: Props) {
                           language="json"
                           customStyle={{ margin: 0, maxWidth: 400 }}
                         >
-                          {taskInfo.result}
+                          {prettifyPayload(taskInfo.result)}
                         </SyntaxHighlighter>
                       </div>
                     </div>

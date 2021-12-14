@@ -36,7 +36,7 @@ import {
 import { taskRowsPerPageChange } from "../actions/settingsActions";
 import { AppState } from "../store";
 import { usePolling } from "../hooks";
-import { uuidPrefix } from "../utils";
+import { uuidPrefix, prettifyPayload } from "../utils";
 import { TableColumn } from "../types/table";
 import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { taskDetailsPath } from "../paths";
@@ -354,7 +354,7 @@ function Row(props: RowProps) {
           language="json"
           customStyle={{ margin: 0, maxWidth: 400 }}
         >
-          {task.payload}
+          {prettifyPayload(task.payload)}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell align="right">{task.retried}</TableCell>

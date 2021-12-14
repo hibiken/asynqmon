@@ -21,7 +21,7 @@ import AlertTitle from "@material-ui/lab/AlertTitle";
 import SyntaxHighlighter from "./SyntaxHighlighter";
 import { ServerInfo } from "../api";
 import { SortDirection, SortableTableColumn } from "../types/table";
-import { timeAgo, uuidPrefix } from "../utils";
+import { timeAgo, uuidPrefix, prettifyPayload } from "../utils";
 import { queueDetailsPath } from "../paths";
 import Typography from "@material-ui/core/Typography";
 
@@ -282,7 +282,7 @@ function Row(props: RowProps) {
                             language="json"
                             customStyle={{ margin: 0 }}
                           >
-                            {worker.task_payload}
+                            {prettifyPayload(worker.task_payload)}
                           </SyntaxHighlighter>
                         </TableCell>
                         <TableCell>{worker.queue}</TableCell>

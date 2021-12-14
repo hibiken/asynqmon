@@ -18,7 +18,7 @@ import { SortDirection, SortableTableColumn } from "../types/table";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import SyntaxHighlighter from "./SyntaxHighlighter";
 import { SchedulerEntry } from "../api";
-import { timeAgo, durationBefore } from "../utils";
+import { timeAgo, durationBefore, prettifyPayload } from "../utils";
 import SchedulerEnqueueEventsTable from "./SchedulerEnqueueEventsTable";
 
 const useStyles = makeStyles((theme) => ({
@@ -288,7 +288,7 @@ function Row(props: RowProps) {
       </TableCell>
       <TableCell className={clsx(isLastRow && classes.noBorder)}>
         <SyntaxHighlighter language="json">
-          {entry.task_payload}
+          {prettifyPayload(entry.task_payload)}
         </SyntaxHighlighter>
       </TableCell>
       <TableCell className={clsx(isLastRow && classes.noBorder)}>
