@@ -14,6 +14,7 @@ import (
 type getMetricsResponse struct {
 	QueueSize            *json.RawMessage `json:"queue_size"`
 	QueueLatency         *json.RawMessage `json:"queue_latency_seconds"`
+	QueueMemUsgApprox    *json.RawMessage `json:"queue_memory_usage_approx_bytes"`
 	PendingTasksByQueue  *json.RawMessage `json:"pending_tasks_by_queue"`
 	RetryTasksByQueue    *json.RawMessage `json:"retry_tasks_by_queue"`
 	ArchivedTasksByQueue *json.RawMessage `json:"archived_tasks_by_queue"`
@@ -48,6 +49,7 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 		queries := []string{
 			"asynq_queue_size",
 			"asynq_queue_latency_seconds",
+			"asynq_queue_memory_usage_approx_bytes",
 			"asynq_tasks_enqueued_total{state=\"pending\"}",
 			"asynq_tasks_enqueued_total{state=\"retry\"}",
 			"asynq_tasks_enqueued_total{state=\"archived\"}",
@@ -59,7 +61,6 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 		for _, q := range queries {
 			go func(q string) {
 				url := buildPrometheusURL(prometheusAddr, q, opts)
-				fmt.Printf("DEBUG: url: %s\n", url) // TODO: Delete this once debugging is done
 				msg, err := fetchPrometheusMetrics(client, url)
 				ch <- res{q, msg, err}
 			}(q)
@@ -75,6 +76,8 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 				resp.QueueSize = r.msg
 			case "asynq_queue_latency_seconds":
 				resp.QueueLatency = r.msg
+			case "asynq_queue_memory_usage_approx_bytes":
+				resp.QueueMemUsgApprox = r.msg
 			case "asynq_tasks_enqueued_total{state=\"pending\"}":
 				resp.PendingTasksByQueue = r.msg
 			case "asynq_tasks_enqueued_total{state=\"retry\"}":

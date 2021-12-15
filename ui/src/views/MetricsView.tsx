@@ -7,6 +7,7 @@ import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import WarningIcon from "@material-ui/icons/Warning";
+import prettyBytes from "pretty-bytes";
 import { getMetricsAsync } from "../actions/metricsActions";
 import { AppState } from "../store";
 import QueueMetricsChart from "../components/QueueMetricsChart";
@@ -137,6 +138,17 @@ function MetricsView(props: Props) {
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
               yAxisTickFormatter={(val: number) => val + "s"}
+            />
+          </Grid>
+        )}
+        {data?.queue_size && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Queue Memory Usage (approx)"
+              metrics={data.queue_memory_usage_approx_bytes}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+              yAxisTickFormatter={(val: number) => prettyBytes(val)}
             />
           </Grid>
         )}
