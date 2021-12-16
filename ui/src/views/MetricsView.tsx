@@ -18,12 +18,20 @@ import { PrometheusMetricsResponse } from "../api";
 
 const useStyles = makeStyles((theme) => ({
   container: {
+    marginTop: 30,
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4),
   },
   controlsContainer: {
     display: "flex",
     justifyContent: "flex-end",
+    position: "fixed",
+    background: theme.palette.background.paper,
+    zIndex: theme.zIndex.appBar,
+    right: 0,
+    top: 64, // app-bar height
+    width: "100%",
+    padding: theme.spacing(2),
   },
   chartInfo: {
     display: "flex",
@@ -109,17 +117,15 @@ function MetricsView(props: Props) {
 
   return (
     <Container maxWidth="lg" className={classes.container}>
+      <div className={classes.controlsContainer}>
+        <MetricsFetchControls
+          endTimeSec={endTimeSec}
+          onEndTimeChange={handleEndTimeChange}
+          durationSec={durationSec}
+          onDurationChange={handleDurationChange}
+        />
+      </div>
       <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <div className={classes.controlsContainer}>
-            <MetricsFetchControls
-              endTimeSec={endTimeSec}
-              onEndTimeChange={handleEndTimeChange}
-              durationSec={durationSec}
-              onDurationChange={handleDurationChange}
-            />
-          </div>
-        </Grid>
         {data?.queue_size && (
           <Grid item xs={12}>
             <ChartRow
@@ -148,7 +154,13 @@ function MetricsView(props: Props) {
               metrics={data.queue_memory_usage_approx_bytes}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
-              yAxisTickFormatter={(val: number) => prettyBytes(val)}
+              yAxisTickFormatter={(val: number) => {
+                try {
+                  return prettyBytes(val);
+                } catch (error) {
+                  return val + "B";
+                }
+              }}
             />
           </Grid>
         )}
