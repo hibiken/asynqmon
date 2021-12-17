@@ -126,6 +126,36 @@ function MetricsView(props: Props) {
         />
       </div>
       <Grid container spacing={3}>
+        {data?.tasks_processed_per_second && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Tasks Processed"
+              metrics={data.tasks_processed_per_second}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+            />
+          </Grid>
+        )}
+        {data?.tasks_failed_per_second && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Tasks Failed"
+              metrics={data.tasks_failed_per_second}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+            />
+          </Grid>
+        )}
+        {data?.error_rate && (
+          <Grid item xs={12}>
+            <ChartRow
+              title="Error Rate"
+              metrics={data.error_rate}
+              endTime={endTimeSec}
+              startTime={endTimeSec - durationSec}
+            />
+          </Grid>
+        )}
         {data?.queue_size && (
           <Grid item xs={12}>
             <ChartRow

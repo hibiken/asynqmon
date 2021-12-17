@@ -80,6 +80,9 @@ export interface MetricsResponse {
   queue_size: PrometheusMetricsResponse;
   queue_latency_seconds: PrometheusMetricsResponse;
   queue_memory_usage_approx_bytes: PrometheusMetricsResponse;
+  tasks_processed_per_second: PrometheusMetricsResponse;
+  tasks_failed_per_second: PrometheusMetricsResponse;
+  error_rate: PrometheusMetricsResponse;
   pending_tasks_by_queue: PrometheusMetricsResponse;
   retry_tasks_by_queue: PrometheusMetricsResponse;
   archived_tasks_by_queue: PrometheusMetricsResponse;

@@ -15,6 +15,9 @@ type getMetricsResponse struct {
 	QueueSize            *json.RawMessage `json:"queue_size"`
 	QueueLatency         *json.RawMessage `json:"queue_latency_seconds"`
 	QueueMemUsgApprox    *json.RawMessage `json:"queue_memory_usage_approx_bytes"`
+	ProcessedPerSecond   *json.RawMessage `json:"tasks_processed_per_second"`
+	FailedPerSecond      *json.RawMessage `json:"tasks_failed_per_second"`
+	ErrorRate            *json.RawMessage `json:"error_rate"`
 	PendingTasksByQueue  *json.RawMessage `json:"pending_tasks_by_queue"`
 	RetryTasksByQueue    *json.RawMessage `json:"retry_tasks_by_queue"`
 	ArchivedTasksByQueue *json.RawMessage `json:"archived_tasks_by_queue"`
@@ -36,6 +39,19 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 		err   error
 	}
 
+	// List of PromQLs.
+	const (
+		promQLQueueSize      = "asynq_queue_size"
+		promQLQueueLatency   = "asynq_queue_latency_seconds"
+		promQLMemUsage       = "asynq_queue_memory_usage_approx_bytes"
+		promQLProcessedTasks = "rate(asynq_tasks_processed_total[5m])"
+		promQLFailedTasks    = "rate(asynq_tasks_failed_total[5m])"
+		promQLErrorRate      = "rate(asynq_tasks_failed_total[5m]) / rate(asynq_tasks_processed_total[5m])"
+		promQLPendingTasks   = "asynq_tasks_enqueued_total{state=\"pending\"}"
+		promQLRetryTasks     = "asynq_tasks_enqueued_total{state=\"retry\"}"
+		promQLArchivedTasks  = "asynq_tasks_enqueued_total{state=\"archived\"}"
+	)
+
 	// Optional query params:
 	// `duration_sec`: specifies the number of seconds to scan
 	// `end_time`:     specifies the end_time in Unix time seconds
@@ -47,12 +63,15 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 		}
 		// List of queries (i.e. promQL) to send to prometheus server.
 		queries := []string{
-			"asynq_queue_size",
-			"asynq_queue_latency_seconds",
-			"asynq_queue_memory_usage_approx_bytes",
-			"asynq_tasks_enqueued_total{state=\"pending\"}",
-			"asynq_tasks_enqueued_total{state=\"retry\"}",
-			"asynq_tasks_enqueued_total{state=\"archived\"}",
+			promQLQueueSize,
+			promQLQueueLatency,
+			promQLMemUsage,
+			promQLProcessedTasks,
+			promQLFailedTasks,
+			promQLErrorRate,
+			promQLPendingTasks,
+			promQLRetryTasks,
+			promQLArchivedTasks,
 		}
 		resp := getMetricsResponse{}
 		// Make multiple API calls concurrently
@@ -72,17 +91,23 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 				return
 			}
 			switch r.query {
-			case "asynq_queue_size":
+			case promQLQueueSize:
 				resp.QueueSize = r.msg
-			case "asynq_queue_latency_seconds":
+			case promQLQueueLatency:
 				resp.QueueLatency = r.msg
-			case "asynq_queue_memory_usage_approx_bytes":
+			case promQLMemUsage:
 				resp.QueueMemUsgApprox = r.msg
-			case "asynq_tasks_enqueued_total{state=\"pending\"}":
+			case promQLProcessedTasks:
+				resp.ProcessedPerSecond = r.msg
+			case promQLFailedTasks:
+				resp.FailedPerSecond = r.msg
+			case promQLErrorRate:
+				resp.ErrorRate = r.msg
+			case promQLPendingTasks:
 				resp.PendingTasksByQueue = r.msg
-			case "asynq_tasks_enqueued_total{state=\"retry\"}":
+			case promQLRetryTasks:
 				resp.RetryTasksByQueue = r.msg
-			case "asynq_tasks_enqueued_total{state=\"archived\"}":
+			case promQLArchivedTasks:
 				resp.ArchivedTasksByQueue = r.msg
 			}
 			if n == 0 {
