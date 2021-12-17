@@ -12,5 +12,6 @@ require (
 )
 
 replace (
+	github.com/hibiken/asynq => ./../../../database/Redis/go/asynq
 	github.com/hibiken/asynq/x => ./../../../database/Redis/go/asynq/x
 )

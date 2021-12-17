@@ -7,10 +7,12 @@ import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import WarningIcon from "@material-ui/icons/Warning";
+import InfoIcon from "@material-ui/icons/Info";
 import prettyBytes from "pretty-bytes";
 import { getMetricsAsync } from "../actions/metricsActions";
 import { AppState } from "../store";
 import QueueMetricsChart from "../components/QueueMetricsChart";
+import Tooltip from "../components/Tooltip";
 import { currentUnixtime } from "../utils";
 import MetricsFetchControls from "../components/MetricsFetchControls";
 import { useQuery } from "../hooks";
@@ -36,6 +38,12 @@ const useStyles = makeStyles((theme) => ({
   chartInfo: {
     display: "flex",
     alignItems: "center",
+    marginBottom: theme.spacing(1),
+  },
+  infoIcon: {
+    marginLeft: theme.spacing(1),
+    color: theme.palette.grey[500],
+    cursor: "pointer",
   },
   errorMessage: {
     marginLeft: "auto",
@@ -130,6 +138,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Tasks Processed"
+              description="Number of tasks processed (both succeeded and failed) per second."
               metrics={data.tasks_processed_per_second}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -140,6 +149,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Tasks Failed"
+              description="Number of tasks failed per second."
               metrics={data.tasks_failed_per_second}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -150,6 +160,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Error Rate"
+              description="Rate of task failures"
               metrics={data.error_rate}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -160,6 +171,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Queue Size"
+              description="Total number of tasks in a given queue."
               metrics={data.queue_size}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -170,6 +182,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Queue Latency"
+              description="Latency of queue, measured by the oldest pending task in the queue."
               metrics={data.queue_latency_seconds}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -181,6 +194,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Queue Memory Usage (approx)"
+              description="Memory usage by queue. Approximate value by sampling a few tasks in a queue."
               metrics={data.queue_memory_usage_approx_bytes}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -198,6 +212,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Pending Tasks"
+              description="Number of pending tasks in a given queue."
               metrics={data.pending_tasks_by_queue}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -208,6 +223,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Retry Tasks"
+              description="Number of retry tasks in a given queue."
               metrics={data.retry_tasks_by_queue}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -218,6 +234,7 @@ function MetricsView(props: Props) {
           <Grid item xs={12}>
             <ChartRow
               title="Archived Tasks"
+              description="Number of archived tasks in a given queue."
               metrics={data.archived_tasks_by_queue}
               endTime={endTimeSec}
               startTime={endTimeSec - durationSec}
@@ -235,6 +252,7 @@ export default connector(MetricsView);
 
 interface ChartRowProps {
   title: string;
+  description: string;
   metrics: PrometheusMetricsResponse;
   endTime: number;
   startTime: number;
@@ -247,6 +265,9 @@ function ChartRow(props: ChartRowProps) {
     <>
       <div className={classes.chartInfo}>
         <Typography color="textPrimary">{props.title}</Typography>
+        <Tooltip title={<div>{props.description}</div>}>
+          <InfoIcon fontSize="small" className={classes.infoIcon} />
+        </Tooltip>
         {props.metrics.status === "error" && (
           <div className={classes.errorMessage}>
             <WarningIcon fontSize="small" className={classes.warningIcon} />
