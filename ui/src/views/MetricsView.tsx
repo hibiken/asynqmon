@@ -246,7 +246,7 @@ function ChartRow(props: ChartRowProps) {
   return (
     <>
       <div className={classes.chartInfo}>
-        <Typography>{props.title}</Typography>
+        <Typography color="textPrimary">{props.title}</Typography>
         {props.metrics.status === "error" && (
           <div className={classes.errorMessage}>
             <WarningIcon fontSize="small" className={classes.warningIcon} />

@@ -350,7 +350,11 @@ function MetricsFetchControls(props: Props) {
 
   return (
     <div className={classes.root}>
-      <Typography variant="caption" className={classes.endTimeCaption}>
+      <Typography
+        variant="caption"
+        color="textPrimary"
+        className={classes.endTimeCaption}
+      >
         {formatTime(props.endTimeSec)}
       </Typography>
       <div>

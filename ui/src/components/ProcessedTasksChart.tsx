@@ -27,8 +27,8 @@ function ProcessedTasksChart(props: Props) {
     <ResponsiveContainer>
       <BarChart data={props.data} maxBarSize={120}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="queue" />
-        <YAxis />
+        <XAxis dataKey="queue" stroke={theme.palette.text.secondary} />
+        <YAxis stroke={theme.palette.text.secondary} />
         <Tooltip />
         <Legend />
         <Bar

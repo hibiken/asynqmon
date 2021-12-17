@@ -1,3 +1,4 @@
+import { useTheme } from "@material-ui/core/styles";
 import React from "react";
 import {
   LineChart,
@@ -57,6 +58,8 @@ const lineColors = [
 ];
 
 function QueueMetricsChart(props: Props) {
+  const theme = useTheme();
+
   const data = toChartData(props.data);
   const keys = props.data.map((x) => x.metric.queue);
   return (
@@ -72,8 +75,12 @@ function QueueMetricsChart(props: Props) {
           }
           type="number"
           scale="time"
+          stroke={theme.palette.text.secondary}
         />
-        <YAxis tickFormatter={props.yAxisTickFormatter} />
+        <YAxis
+          tickFormatter={props.yAxisTickFormatter}
+          stroke={theme.palette.text.secondary}
+        />
         <Tooltip
           labelFormatter={(timestamp: number) => {
             return new Date(timestamp * 1000).toLocaleTimeString();

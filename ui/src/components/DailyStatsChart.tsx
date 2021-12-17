@@ -30,8 +30,12 @@ export default function DailyStatsChart(props: Props) {
     <ResponsiveContainer>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="date" minTickGap={10} />
-        <YAxis />
+        <XAxis
+          dataKey="date"
+          minTickGap={10}
+          stroke={theme.palette.text.secondary}
+        />
+        <YAxis stroke={theme.palette.text.secondary} />
         <Tooltip />
         <Legend />
         <Line
