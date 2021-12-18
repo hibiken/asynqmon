@@ -27,17 +27,15 @@ export type MetricsActionTypes =
   | GetMetricsSuccessAction
   | GetMetricsErrorAction;
 
-export function getMetricsAsync(endTime: number, duration: number) {
+export function getMetricsAsync(
+  endTime: number,
+  duration: number,
+  queues: string[]
+) {
   return async (dispatch: Dispatch<MetricsActionTypes>) => {
     dispatch({ type: GET_METRICS_BEGIN });
     try {
-      console.log(
-        "DEBUG: fetching with endtime=",
-        endTime,
-        " duration=",
-        duration
-      );
-      const response = await getMetrics(endTime, duration);
+      const response = await getMetrics(endTime, duration, queues);
       dispatch({ type: GET_METRICS_SUCCESS, payload: response });
     } catch (error) {
       console.error(`getMetricsAsync: ${toErrorStringWithHttpStatus(error)}`);

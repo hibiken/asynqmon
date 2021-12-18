@@ -146,7 +146,7 @@ func extractMetricsFetchOptions(r *http.Request) (*metricsFetchOptions, error) {
 		}
 		opts.duration = time.Duration(val) * time.Second
 	}
-	if t := q.Get("end_time"); t != "" {
+	if t := q.Get("endtime"); t != "" {
 		val, err := strconv.Atoi(t)
 		if err != nil {
 			return nil, fmt.Errorf("invalid value provided for end_time: %q", t)

@@ -10,6 +10,7 @@ import WarningIcon from "@material-ui/icons/Warning";
 import InfoIcon from "@material-ui/icons/Info";
 import prettyBytes from "pretty-bytes";
 import { getMetricsAsync } from "../actions/metricsActions";
+import { listQueuesAsync } from "../actions/queuesActions";
 import { AppState } from "../store";
 import QueueMetricsChart from "../components/QueueMetricsChart";
 import Tooltip from "../components/Tooltip";
@@ -62,10 +63,14 @@ function mapStateToProps(state: AppState) {
     error: state.metrics.error,
     data: state.metrics.data,
     pollInterval: state.settings.pollInterval,
+    queues: state.queues.data.map((q) => q.name),
   };
 }
 
-const connector = connect(mapStateToProps, { getMetricsAsync });
+const connector = connect(mapStateToProps, {
+  getMetricsAsync,
+  listQueuesAsync,
+});
 type Props = ConnectedProps<typeof connector>;
 
 const ENDTIME_URL_PARAM_KEY = "end";
@@ -82,10 +87,11 @@ function MetricsView(props: Props) {
   const durationStr = query.get(DURATION_URL_PARAM_KEY);
   const duration = durationStr ? parseFloat(durationStr) : 60 * 60; // default to 1h
 
-  const { pollInterval, getMetricsAsync, data } = props;
+  const { pollInterval, getMetricsAsync, listQueuesAsync, data } = props;
 
   const [endTimeSec, setEndTimeSec] = React.useState(endTime);
   const [durationSec, setDurationSec] = React.useState(duration);
+  const [selectedQueues, setSelectedQueues] = React.useState<string[]>([]); // TODO: initialize from URL param if any.
 
   const handleEndTimeChange = (endTime: number, isEndTimeFixed: boolean) => {
     const urlQuery = isEndTimeFixed
@@ -119,9 +125,35 @@ function MetricsView(props: Props) {
     setDurationSec(duration);
   };
 
+  const handleAddQueue = (qname: string) => {
+    if (selectedQueues.includes(qname)) {
+      return;
+    }
+    setSelectedQueues(selectedQueues.concat(qname));
+  };
+
+  const handleRemoveQueue = (qname: string) => {
+    if (selectedQueues.length === 1) {
+      return; // ensure that selected queues doesn't go down to zero once user selected
+    }
+    if (selectedQueues.length === 0) {
+      // when user first select filter (remove once of the queues),
+      // we need to lazily initialize the selectedQueues with the rest (all queues but the selected one).
+      setSelectedQueues(props.queues.filter((q) => q !== qname));
+      return;
+    }
+    setSelectedQueues(selectedQueues.filter((q) => q !== qname));
+  };
+
   React.useEffect(() => {
-    getMetricsAsync(endTimeSec, durationSec);
-  }, [pollInterval, getMetricsAsync, durationSec, endTimeSec]);
+    listQueuesAsync();
+  }, [listQueuesAsync]);
+
+  React.useEffect(() => {
+    getMetricsAsync(endTimeSec, durationSec, selectedQueues);
+  }, [pollInterval, getMetricsAsync, durationSec, endTimeSec, selectedQueues]);
+
+  console.log("DEBUG: selectedQueues", selectedQueues);
 
   return (
     <Container maxWidth="lg" className={classes.container}>
@@ -131,6 +163,13 @@ function MetricsView(props: Props) {
           onEndTimeChange={handleEndTimeChange}
           durationSec={durationSec}
           onDurationChange={handleDurationChange}
+          queues={props.queues}
+          selectedQueues={
+            // If none are selected (e.g. initial state), no filters should apply.
+            selectedQueues.length === 0 ? props.queues : selectedQueues
+          }
+          addQueue={handleAddQueue}
+          removeQueue={handleRemoveQueue}
         />
       </div>
       <Grid container spacing={3}>

@@ -3,16 +3,20 @@ import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Button, { ButtonProps } from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
+import IconButton from "@material-ui/core/IconButton";
 import Popover from "@material-ui/core/Popover";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
+import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
+import FormGroup from "@material-ui/core/FormGroup";
 import FormLabel from "@material-ui/core/FormLabel";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import ArrowLeftIcon from "@material-ui/icons/ArrowLeft";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
+import FilterListIcon from "@material-ui/icons/FilterList";
 import dayjs from "dayjs";
 import { currentUnixtime, parseDuration } from "../utils";
 import { AppState } from "../store";
@@ -32,6 +36,13 @@ interface Props extends ReduxProps {
   // Specifies the duration in seconds.
   durationSec: number;
   onDurationChange: (d: number, isEndTimeFixed: boolean) => void;
+
+  // All available queues.
+  queues: string[];
+  // Selected queues.
+  selectedQueues: string[];
+  addQueue: (qname: string) => void;
+  removeQueue: (qname: string) => void;
 }
 
 interface State {
@@ -121,6 +132,12 @@ const useStyles = makeStyles((theme) => ({
   customInputField: {
     marginTop: theme.spacing(1),
   },
+  filterButton: {
+    marginLeft: theme.spacing(1),
+  },
+  queueFilters: {
+    padding: theme.spacing(2),
+  },
 }));
 
 // minute, hour, day in seconds
@@ -181,9 +198,11 @@ function MetricsFetchControls(props: Props) {
   const [state, setState] = React.useState<State>(
     getInitialState(props.endTimeSec, props.durationSec)
   );
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
-  );
+  const [timePopoverAnchorElem, setTimePopoverAnchorElem] =
+    React.useState<HTMLButtonElement | null>(null);
+
+  const [queuePopoverAnchorElem, setQueuePopoverAnchorElem] =
+    React.useState<HTMLButtonElement | null>(null);
 
   const handleEndTimeOptionChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -306,16 +325,28 @@ function MetricsFetchControls(props: Props) {
     }
   };
 
-  const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleOpenTimePopover = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    setTimePopoverAnchorElem(event.currentTarget);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleCloseTimePopover = () => {
+    setTimePopoverAnchorElem(null);
   };
 
-  const open = Boolean(anchorEl);
-  const id = open ? "control-popover" : undefined;
+  const handleOpenQueuePopover = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    setQueuePopoverAnchorElem(event.currentTarget);
+  };
+
+  const handleCloseQueuePopover = () => {
+    setQueuePopoverAnchorElem(null);
+  };
+
+  const isTimePopoverOpen = Boolean(timePopoverAnchorElem);
+  const isQueuePopoverOpen = Boolean(queuePopoverAnchorElem);
 
   React.useEffect(() => {
     if (state.endTimeOption === "real_time") {
@@ -359,10 +390,10 @@ function MetricsFetchControls(props: Props) {
       </Typography>
       <div>
         <Button
-          aria-describedby={id}
+          aria-describedby={isTimePopoverOpen ? "time-popover" : undefined}
           variant="outlined"
           color="primary"
-          onClick={handleButtonClick}
+          onClick={handleOpenTimePopover}
           size="small"
           classes={{
             label: classes.buttonLabel,
@@ -374,10 +405,10 @@ function MetricsFetchControls(props: Props) {
             : state.durationOption}
         </Button>
         <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
+          id={isTimePopoverOpen ? "time-popover" : undefined}
+          open={isTimePopoverOpen}
+          anchorEl={timePopoverAnchorElem}
+          onClose={handleCloseTimePopover}
           anchorOrigin={{
             vertical: "bottom",
             horizontal: "center",
@@ -560,6 +591,54 @@ function MetricsFetchControls(props: Props) {
             }
           />
         </ButtonGroup>
+      </div>
+      <div className={classes.filterButton}>
+        <IconButton
+          aria-label="filter"
+          size="small"
+          onClick={handleOpenQueuePopover}
+        >
+          <FilterListIcon />
+        </IconButton>
+        <Popover
+          id={isQueuePopoverOpen ? "queue-popover" : undefined}
+          open={isQueuePopoverOpen}
+          anchorEl={queuePopoverAnchorElem}
+          onClose={handleCloseQueuePopover}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "center",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "center",
+          }}
+        >
+          <FormControl className={classes.queueFilters}>
+            <FormLabel>Select Queues</FormLabel>
+            <FormGroup>
+              {props.queues.map((qname) => (
+                <FormControlLabel
+                  key={qname}
+                  control={
+                    <Checkbox
+                      checked={props.selectedQueues.includes(qname)}
+                      onChange={() => {
+                        if (props.selectedQueues.includes(qname)) {
+                          props.removeQueue(qname);
+                        } else {
+                          props.addQueue(qname);
+                        }
+                      }}
+                      name={qname}
+                    />
+                  }
+                  label={qname}
+                />
+              ))}
+            </FormGroup>
+          </FormControl>
+        </Popover>
       </div>
     </div>
   );

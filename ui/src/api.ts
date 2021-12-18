@@ -894,13 +894,27 @@ export async function getRedisInfo(): Promise<RedisInfoResponse> {
   return resp.data;
 }
 
+interface MetricsEndpointParams {
+  endtime: number;
+  duration: number;
+  queues?: string; // comma-separated list of queues
+}
+
 export async function getMetrics(
   endTime: number,
-  duration: number
+  duration: number,
+  queues: string[]
 ): Promise<MetricsResponse> {
+  let params: MetricsEndpointParams = {
+    endtime: endTime,
+    duration: duration,
+  };
+  if (queues && queues.length > 0) {
+    params.queues = queues.join(",");
+  }
   const resp = await axios({
     method: "get",
-    url: `${BASE_URL}/metrics?end_time=${endTime}&duration=${duration}`,
+    url: `${BASE_URL}/metrics?${queryString.stringify(params)}`,
   });
   return resp.data;
 }
