@@ -92,7 +92,7 @@ func newGetMetricsHandlerFunc(client *http.Client, prometheusAddr string) http.H
 		for r := range ch {
 			n--
 			if r.err != nil {
-				http.Error(w, fmt.Sprintf("failed to fetch %q: %v", r.query, err), http.StatusInternalServerError)
+				http.Error(w, fmt.Sprintf("failed to fetch %q: %v", r.query, r.err), http.StatusInternalServerError)
 				return
 			}
 			switch r.query {

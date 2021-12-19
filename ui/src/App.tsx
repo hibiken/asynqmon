@@ -248,7 +248,7 @@ function App(props: ConnectedProps<typeof connector>) {
                     />
                     {window.PROMETHEUS_SERVER_ADDRESS && (
                       <ListItemLink
-                        to={paths.METRICS}
+                        to={paths.QUEUE_METRICS}
                         primary="Metrics"
                         icon={<TimelineIcon />}
                       />
@@ -300,7 +300,7 @@ function App(props: ConnectedProps<typeof connector>) {
                   <Route exact path={paths.HOME}>
                     <DashboardView />
                   </Route>
-                  <Route exact path={paths.METRICS}>
+                  <Route exact path={paths.QUEUE_METRICS}>
                     <MetricsView />
                   </Route>
                   <Route path="*">
