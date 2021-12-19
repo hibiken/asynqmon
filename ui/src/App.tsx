@@ -22,6 +22,7 @@ import LayersIcon from "@material-ui/icons/Layers";
 import SettingsIcon from "@material-ui/icons/Settings";
 import ScheduleIcon from "@material-ui/icons/Schedule";
 import FeedbackIcon from "@material-ui/icons/Feedback";
+import TimelineIcon from "@material-ui/icons/Timeline";
 import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 import CloseIcon from "@material-ui/icons/Close";
 import { AppState } from "./store";
@@ -37,6 +38,7 @@ import TaskDetailsView from "./views/TaskDetailsView";
 import SettingsView from "./views/SettingsView";
 import ServersView from "./views/ServersView";
 import RedisInfoView from "./views/RedisInfoView";
+import MetricsView from "./views/MetricsView";
 import PageNotFoundView from "./views/PageNotFoundView";
 
 const drawerWidth = 220;
@@ -244,6 +246,13 @@ function App(props: ConnectedProps<typeof connector>) {
                       primary="Redis"
                       icon={<LayersIcon />}
                     />
+                    {window.PROMETHEUS_SERVER_ADDRESS && (
+                      <ListItemLink
+                        to={paths.METRICS}
+                        primary="Metrics"
+                        icon={<TimelineIcon />}
+                      />
+                    )}
                   </div>
                 </List>
                 <List>
@@ -290,6 +299,9 @@ function App(props: ConnectedProps<typeof connector>) {
                   </Route>
                   <Route exact path={paths.HOME}>
                     <DashboardView />
+                  </Route>
+                  <Route exact path={paths.METRICS}>
+                    <MetricsView />
                   </Route>
                   <Route path="*">
                     <PageNotFoundView />

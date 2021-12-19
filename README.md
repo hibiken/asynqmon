@@ -1,8 +1,11 @@
 <img src="https://user-images.githubusercontent.com/11155743/114745460-57760500-9d57-11eb-9a2c-43fa88171807.png" alt="Asynqmon logo" width="360px" />
 
-# A modern web based tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues, tasks and message broker
+# A modern web based tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues and tasks
 
 ## Overview
+
+Asynqmon is a web UI tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues and tasks.
+It optionally integrates with Prometheus to display time-series data.
 
 Asynqmon is both a library that you can include in your web application, as well as a binary that you can simply install and run.
 
@@ -83,22 +86,37 @@ Here's the available flags:
 
 _Note_: Use `--redis-url` to specify address, db-number, and password with one flag value; Alternatively, use `--redis-addr`, `--redis-db`, and `--redis-password` to specify each value.
 
-| Flag                            | Env                   | Description                                                         | Default          |
-| ------------------------------- | --------------------- | ------------------------------------------------------------------- | ---------------- |
-| `--port`(int)                   | `PORT`                | port number to use for web ui server                                | 8080             |
-| `---redis-url`(string)          | `REDIS_URL`           | URL to redis server                                                 | ""               |
-| `--redis-addr`(string)          | `REDIS_ADDR`          | address of redis server to connect to                               | "127.0.0.1:6379" |
-| `--redis-db`(int)               | `REDIS_DB`            | redis database number                                               | 0                |
-| `--redis-password`(string)      | `REDIS_PASSWORD`      | password to use when connecting to redis server                     | ""               |
-| `--redis-cluster-nodes`(string) | `REDIS_CLUSTER_NODES` | comma separated list of host:port addresses of cluster nodes        | ""               |
-| `--redis-tls`(string)           | `REDIS_TLS`           | server name for TLS validation used when connecting to redis server | ""               |
-| `--redis-insecure-tls`(bool)    | `REDIS_INSECURE_TLS`  | disable TLS certificate host checks                                 | false            |
+| Flag                              | Env                       | Description                                                         | Default          |
+| --------------------------------- | ------------------------- | ------------------------------------------------------------------- | ---------------- |
+| `--port`(int)                     | `PORT`                    | port number to use for web ui server                                | 8080             |
+| `---redis-url`(string)            | `REDIS_URL`               | URL to redis server                                                 | ""               |
+| `--redis-addr`(string)            | `REDIS_ADDR`              | address of redis server to connect to                               | "127.0.0.1:6379" |
+| `--redis-db`(int)                 | `REDIS_DB`                | redis database number                                               | 0                |
+| `--redis-password`(string)        | `REDIS_PASSWORD`          | password to use when connecting to redis server                     | ""               |
+| `--redis-cluster-nodes`(string)   | `REDIS_CLUSTER_NODES`     | comma separated list of host:port addresses of cluster nodes        | ""               |
+| `--redis-tls`(string)             | `REDIS_TLS`               | server name for TLS validation used when connecting to redis server | ""               |
+| `--redis-insecure-tls`(bool)      | `REDIS_INSECURE_TLS`      | disable TLS certificate host checks                                 | false            |
+| `--enable-metrics-exporter`(bool) | `ENABLE_METRICS_EXPORTER` | enable prometheus metrics exporter to expose queue metrics          | false            |
+| `--prometheus-addr`(string)       | `PROMETHEUS_ADDR`         | address of prometheus server to query time series                   | ""               |
+
+### Integration with Prometheus
+
+The binary supports two flags to enable integration with [Prometheus](https://prometheus.io/).
+
+First, enable metrics exporter to expose queue metrics to Prometheus server by passing `--enable-metrics-exporter` flag.
+The metrics data is now available under `/metrics` for Prometheus to scape.
+
+Once the metrics data is collected by a Prometheus server, you can pass the address of the Prometheus server to asynqmon to query the time-series data.
+The address can be specified via `--prometheus-addr`. This enables the metrics view on the Web UI.
 
 ### Examples
 
 ```bash
 # with a local binary; custom port and connect to redis server at localhost:6380
 ./asynqmon --port=3000 --redis-addr=localhost:6380
+
+# with prometheus integration enabled
+./asynqmon --enable-metrics-exporter --prometheus-addr=localhost:9090
 
 # with Docker (connect to a Redis server running on the host machine)
 docker run --rm \

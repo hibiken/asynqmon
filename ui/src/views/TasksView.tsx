@@ -6,10 +6,11 @@ import Grid from "@material-ui/core/Grid";
 import TasksTable from "../components/TasksTable";
 import QueueInfoBanner from "../components/QueueInfoBanner";
 import QueueBreadCrumb from "../components/QueueBreadcrumb";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { listQueuesAsync } from "../actions/queuesActions";
 import { AppState } from "../store";
 import { QueueDetailsRouteParams } from "../paths";
+import { useQuery } from "../hooks";
 
 function mapStateToProps(state: AppState) {
   return {
@@ -33,10 +34,6 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(4),
   },
 }));
-
-function useQuery(): URLSearchParams {
-  return new URLSearchParams(useLocation().search);
-}
 
 const validStatus = [
   "active",

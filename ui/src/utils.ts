@@ -74,8 +74,8 @@ export function timeAgo(timestamp: string): string {
 }
 
 export function timeAgoUnix(unixtime: number): string {
-  if (unixtime === 0)  {
-    return ""
+  if (unixtime === 0) {
+    return "";
   }
   const duration = durationBetween(Date.now(), unixtime * 1000);
   return stringifyDuration(duration) + " ago";
@@ -103,14 +103,12 @@ export function percentage(numerator: number, denominator: number): string {
   return `${perc} %`;
 }
 
-
 export function isJsonPayload(p: string) {
   try {
     JSON.parse(p);
   } catch (error) {
     return false;
   }
-
   return true;
 }
 
@@ -118,6 +116,31 @@ export function prettifyPayload(p: string) {
   if (isJsonPayload(p)) {
     return JSON.stringify(JSON.parse(p), null, 2);
   }
-
   return p;
+}
+
+// Returns the number of seconds elapsed since January 1, 1970 00:00:00 UTC.
+export function currentUnixtime(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+const durationRegex = /([0-9]*(\.[0-9]*)?)[s|m|h]/;
+// Parses the given string and returns the number of seconds if the input is valid.
+// Otherwise, it throws an error
+// Supported time units are "s", "m", "h"
+export function parseDuration(s: string): number {
+  if (!durationRegex.test(s)) {
+    throw new Error("invalid duration");
+  }
+  const val = parseFloat(s.slice(0, -1));
+  switch (s.slice(-1)) {
+    case "s":
+      return val;
+    case "m":
+      return val * 60;
+    case "h":
+      return val * 60 * 60;
+    default:
+      throw new Error("invalid duration unit");
+  }
 }

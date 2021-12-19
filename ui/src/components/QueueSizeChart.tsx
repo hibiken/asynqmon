@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useHistory } from "react-router-dom";
+import { useTheme } from "@material-ui/core/styles";
 import { queueDetailsPath } from "../paths";
 
 interface Props {
@@ -27,6 +28,7 @@ interface TaskBreakdown {
 }
 
 function QueueSizeChart(props: Props) {
+  const theme = useTheme();
   const handleClick = (params: { activeLabel?: string } | null) => {
     const allQueues = props.data.map((b) => b.queue);
     if (
@@ -47,8 +49,8 @@ function QueueSizeChart(props: Props) {
         style={{ cursor: "pointer" }}
       >
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="queue" />
-        <YAxis />
+        <XAxis dataKey="queue" stroke={theme.palette.text.secondary} />
+        <YAxis stroke={theme.palette.text.secondary} />
         <Tooltip />
         <Legend />
         <Bar dataKey="active" stackId="a" fill="#1967d2" />

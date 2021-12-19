@@ -12,24 +12,28 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/rs/cors"
-
 	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynq/x/metrics"
 	"github.com/hibiken/asynqmon"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/cors"
 )
 
 // Command-line flags
 var (
-	flagPort              int
-	flagRedisAddr         string
-	flagRedisDB           int
-	flagRedisPassword     string
-	flagRedisTLS          string
-	flagRedisURL          string
-	flagRedisInsecureTLS  bool
-	flagRedisClusterNodes string
-	flagMaxPayloadLength  int
-	flagMaxResultLength   int
+	flagPort                  int
+	flagRedisAddr             string
+	flagRedisDB               int
+	flagRedisPassword         string
+	flagRedisTLS              string
+	flagRedisURL              string
+	flagRedisInsecureTLS      bool
+	flagRedisClusterNodes     string
+	flagMaxPayloadLength      int
+	flagMaxResultLength       int
+	flagEnableMetricsExporter bool
+	flagPrometheusServerAddr  string
 )
 
 func init() {
@@ -37,12 +41,14 @@ func init() {
 	flag.StringVar(&flagRedisAddr, "redis-addr", getEnvDefaultString("REDIS_ADDR", "127.0.0.1:6379"), "address of redis server to connect to")
 	flag.IntVar(&flagRedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
 	flag.StringVar(&flagRedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
-	flag.StringVar(&flagRedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS",""), "server name for TLS validation used when connecting to redis server")
+	flag.StringVar(&flagRedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS", ""), "server name for TLS validation used when connecting to redis server")
 	flag.StringVar(&flagRedisURL, "redis-url", getEnvDefaultString("REDIS_URL", ""), "URL to redis server")
 	flag.BoolVar(&flagRedisInsecureTLS, "redis-insecure-tls", getEnvOrDefaultBool("REDIS_INSECURE_TLS", false), "disable TLS certificate host checks")
 	flag.StringVar(&flagRedisClusterNodes, "redis-cluster-nodes", getEnvDefaultString("REDIS_CLUSTER_NODES", ""), "comma separated list of host:port addresses of cluster nodes")
 	flag.IntVar(&flagMaxPayloadLength, "max-payload-length", getEnvOrDefaultInt("MAX_PAYLOAD_LENGTH", 200), "maximum number of utf8 characters printed in the payload cell in the Web UI")
 	flag.IntVar(&flagMaxResultLength, "max-result-length", getEnvOrDefaultInt("MAX_RESULT_LENGTH", 200), "maximum number of utf8 characters printed in the result cell in the Web UI")
+	flag.BoolVar(&flagEnableMetricsExporter, "enable-metrics-exporter", getEnvOrDefaultBool("ENABLE_METRICS_EXPORTER", false), "enable prometheus metrics exporter to expose queue metrics")
+	flag.StringVar(&flagPrometheusServerAddr, "prometheus-addr", getEnvDefaultString("PROMETHEUS_ADDR", ""), "address of prometheus server to query time series")
 }
 
 // TODO: Write test and refactor this code.
@@ -104,18 +110,35 @@ func main() {
 	}
 
 	h := asynqmon.New(asynqmon.Options{
-		RedisConnOpt:     redisConnOpt,
-		PayloadFormatter: asynqmon.PayloadFormatterFunc(formatPayload),
-		ResultFormatter:  asynqmon.ResultFormatterFunc(formatResult),
+		RedisConnOpt:      redisConnOpt,
+		PayloadFormatter:  asynqmon.PayloadFormatterFunc(formatPayload),
+		ResultFormatter:   asynqmon.ResultFormatterFunc(formatResult),
+		PrometheusAddress: flagPrometheusServerAddr,
 	})
 	defer h.Close()
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
 	})
+	mux := http.NewServeMux()
+	mux.Handle("/", c.Handler(h))
+	if flagEnableMetricsExporter {
+		// Using NewPedanticRegistry here to test the implementation of Collectors and Metrics.
+		reg := prometheus.NewPedanticRegistry()
+
+		inspector := asynq.NewInspector(redisConnOpt)
+
+		reg.MustRegister(
+			metrics.NewQueueMetricsCollector(inspector),
+			// Add the standard process and go metrics to the registry
+			prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
+			prometheus.NewGoCollector(),
+		)
+		mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+	}
 
 	srv := &http.Server{
-		Handler:      c.Handler(h),
+		Handler:      mux,
 		Addr:         fmt.Sprintf(":%d", flagPort),
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
@@ -149,7 +172,7 @@ func truncate(s string, limit int) string {
 
 func getEnvDefaultString(key, def string) string {
 	v := os.Getenv(key)
-	if (v == "") {
+	if v == "" {
 		return def
 	}
 
@@ -158,7 +181,7 @@ func getEnvDefaultString(key, def string) string {
 
 func getEnvOrDefaultInt(key string, def int) int {
 	v, err := strconv.Atoi(os.Getenv(key))
-	if (err != nil) {
+	if err != nil {
 		return def
 	}
 	return v
@@ -166,7 +189,7 @@ func getEnvOrDefaultInt(key string, def int) int {
 
 func getEnvOrDefaultBool(key string, def bool) bool {
 	v, err := strconv.ParseBool(os.Getenv(key))
-	if (err != nil) {
+	if err != nil {
 		return def
 	}
 	return v

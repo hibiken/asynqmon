@@ -1,4 +1,4 @@
-import { createMuiTheme, Theme } from "@material-ui/core/styles";
+import { createTheme, Theme } from "@material-ui/core/styles";
 import { ThemePreference } from "./reducers/settingsReducer";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 
@@ -9,7 +9,7 @@ export function useTheme(themePreference: ThemePreference): Theme {
   } else if (themePreference === ThemePreference.Never) {
     prefersDarkMode = false;
   }
-  return createMuiTheme({
+  return createTheme({
     // Got color palette from https://htmlcolors.com/palette/31/stripe
     palette: {
       primary: {

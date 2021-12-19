@@ -34,6 +34,12 @@ type Options struct {
 	//
 	// This field is optional.
 	ResultFormatter ResultFormatter
+
+	// PrometheusAddress specifies the address of the Prometheus to connect to.
+	//
+	// This field is optional. If this field is set, asynqmon will query the Prometheus server
+	// to get the time series data about queue metrics and show them in the web UI.
+	PrometheusAddress string
 }
 
 // HTTPHandler is a http.Handler for asynqmon application.
@@ -181,12 +187,16 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 		api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(c)).Methods("GET")
 	}
 
+	// Time series metrics endpoints.
+	api.HandleFunc("/metrics", newGetMetricsHandlerFunc(http.DefaultClient, opts.PrometheusAddress)).Methods("GET")
+
 	// Everything else, route to uiAssetsHandler.
 	router.NotFoundHandler = &uiAssetsHandler{
-		rootPath:      opts.RootPath,
-		contents:      staticContents,
-		staticDirPath: "ui/build",
-		indexFileName: "index.html",
+		rootPath:       opts.RootPath,
+		contents:       staticContents,
+		staticDirPath:  "ui/build",
+		indexFileName:  "index.html",
+		prometheusAddr: opts.PrometheusAddress,
 	}
 	return router
 }

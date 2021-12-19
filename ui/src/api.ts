@@ -76,6 +76,45 @@ export interface QueueLocation {
   nodes: string[]; // node addresses
 }
 
+export interface MetricsResponse {
+  queue_size: PrometheusMetricsResponse;
+  queue_latency_seconds: PrometheusMetricsResponse;
+  queue_memory_usage_approx_bytes: PrometheusMetricsResponse;
+  tasks_processed_per_second: PrometheusMetricsResponse;
+  tasks_failed_per_second: PrometheusMetricsResponse;
+  error_rate: PrometheusMetricsResponse;
+  pending_tasks_by_queue: PrometheusMetricsResponse;
+  retry_tasks_by_queue: PrometheusMetricsResponse;
+  archived_tasks_by_queue: PrometheusMetricsResponse;
+}
+
+export interface PrometheusMetricsResponse {
+  status: "success" | "error";
+  data?: MetricsResult; // present if status === "success"
+  error?: string; // present if status === "error"
+  errorType?: string; // present if status === "error"
+}
+
+export interface MetricsResult {
+  resultType: string;
+  result: Metrics[];
+}
+
+export interface Metrics {
+  metric: MetricsInfo;
+  values: [number, string][]; // [unixtime, value]
+}
+
+export interface MetricsInfo {
+  __name__: string;
+  instance: string;
+  job: string;
+
+  // labels (may or may not be present depending on metrics)
+  queue?: string;
+  state?: string;
+}
+
 // Return value from redis INFO command.
 // See https://redis.io/commands/info#return-value.
 export interface RedisInfo {
@@ -851,6 +890,31 @@ export async function getRedisInfo(): Promise<RedisInfoResponse> {
   const resp = await axios({
     method: "get",
     url: `${BASE_URL}/redis_info`,
+  });
+  return resp.data;
+}
+
+interface MetricsEndpointParams {
+  endtime: number;
+  duration: number;
+  queues?: string; // comma-separated list of queues
+}
+
+export async function getMetrics(
+  endTime: number,
+  duration: number,
+  queues: string[]
+): Promise<MetricsResponse> {
+  let params: MetricsEndpointParams = {
+    endtime: endTime,
+    duration: duration,
+  };
+  if (queues && queues.length > 0) {
+    params.queues = queues.join(",");
+  }
+  const resp = await axios({
+    method: "get",
+    url: `${BASE_URL}/metrics?${queryString.stringify(params)}`,
   });
   return resp.data;
 }
