@@ -1,6 +1,5 @@
 {
   "files": {
-<<<<<<< HEAD
     "main.js": "/[[.RootPath]]/static/js/main.2bdef890.chunk.js",
     "main.js.map": "/[[.RootPath]]/static/js/main.2bdef890.chunk.js.map",
     "runtime-main.js": "/[[.RootPath]]/static/js/runtime-main.9fea6c1a.js",
@@ -14,20 +13,5 @@
     "static/js/runtime-main.9fea6c1a.js",
     "static/js/2.d6956563.chunk.js",
     "static/js/main.2bdef890.chunk.js"
-=======
-    "main.js": "/[[.RootPath]]/static/js/main.aac2a828.chunk.js",
-    "main.js.map": "/[[.RootPath]]/static/js/main.aac2a828.chunk.js.map",
-    "runtime-main.js": "/[[.RootPath]]/static/js/runtime-main.9fea6c1a.js",
-    "runtime-main.js.map": "/[[.RootPath]]/static/js/runtime-main.9fea6c1a.js.map",
-    "static/js/2.8854b145.chunk.js": "/[[.RootPath]]/static/js/2.8854b145.chunk.js",
-    "static/js/2.8854b145.chunk.js.map": "/[[.RootPath]]/static/js/2.8854b145.chunk.js.map",
-    "index.html": "/[[.RootPath]]/index.html",
-    "static/js/2.8854b145.chunk.js.LICENSE.txt": "/[[.RootPath]]/static/js/2.8854b145.chunk.js.LICENSE.txt"
-  },
-  "entrypoints": [
-    "static/js/runtime-main.9fea6c1a.js",
-    "static/js/2.8854b145.chunk.js",
-    "static/js/main.aac2a828.chunk.js"
->>>>>>> f697574... Add redux actions/reducer for metrics
   ]
 }
