@@ -116,7 +116,7 @@ The address can be specified via `--prometheus-addr`. This enables the metrics v
 ./asynqmon --port=3000 --redis-addr=localhost:6380
 
 # with prometheus integration enabled
-./asynqmon --enable-metrics-exporter --prometheus-addr=localhost:9090
+./asynqmon --enable-metrics-exporter --prometheus-addr=http://localhost:9090
 
 # with Docker (connect to a Redis server running on the host machine)
 docker run --rm \
