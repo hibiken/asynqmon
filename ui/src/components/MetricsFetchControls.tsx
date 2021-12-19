@@ -1,6 +1,6 @@
 import React from "react";
 import { connect, ConnectedProps } from "react-redux";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, Theme } from "@material-ui/core/styles";
 import Button, { ButtonProps } from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
 import IconButton from "@material-ui/core/IconButton";
@@ -20,6 +20,7 @@ import FilterListIcon from "@material-ui/icons/FilterList";
 import dayjs from "dayjs";
 import { currentUnixtime, parseDuration } from "../utils";
 import { AppState } from "../store";
+import { isDarkTheme } from "../theme";
 
 function mapStateToProps(state: AppState) {
   return { pollInterval: state.settings.pollInterval };
@@ -113,7 +114,7 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(1),
     paddingRight: theme.spacing(1),
   },
-  radioButtonLabel: {
+  formControlLabel: {
     fontSize: 14,
   },
   buttonLabel: {
@@ -137,6 +138,10 @@ const useStyles = makeStyles((theme) => ({
   },
   queueFilters: {
     padding: theme.spacing(2),
+    maxHeight: 400,
+  },
+  checkbox: {
+    padding: 6,
   },
 }));
 
@@ -615,13 +620,16 @@ function MetricsFetchControls(props: Props) {
           }}
         >
           <FormControl className={classes.queueFilters}>
-            <FormLabel>Select Queues</FormLabel>
+            <FormLabel className={classes.formLabel} component="legend">
+              Queues
+            </FormLabel>
             <FormGroup>
               {props.queues.map((qname) => (
                 <FormControlLabel
                   key={qname}
                   control={
                     <Checkbox
+                      size="small"
                       checked={props.selectedQueues.includes(qname)}
                       onChange={() => {
                         if (props.selectedQueues.includes(qname)) {
@@ -631,9 +639,11 @@ function MetricsFetchControls(props: Props) {
                         }
                       }}
                       name={qname}
+                      className={classes.checkbox}
                     />
                   }
                   label={qname}
+                  classes={{ label: classes.formControlLabel }}
                 />
               ))}
             </FormGroup>
@@ -662,9 +672,7 @@ function RadioInput(props: RadioInputProps) {
   const classes = useStyles();
   return (
     <FormControlLabel
-      classes={{
-        label: classes.radioButtonLabel,
-      }}
+      classes={{ label: classes.formControlLabel }}
       value={props.value}
       control={
         <Radio size="small" classes={{ root: classes.radioButtonRoot }} />
@@ -681,7 +689,7 @@ interface ShiftButtonProps extends ButtonProps {
   dense?: boolean;
 }
 
-const useShiftButtonStyles = makeStyles((theme) => ({
+const useShiftButtonStyles = makeStyles((theme: Theme) => ({
   root: {
     minWidth: 40,
     fontWeight: (props: ShiftButtonProps) => (props.dense ? 400 : 500),
@@ -693,7 +701,9 @@ const useShiftButtonStyles = makeStyles((theme) => ({
     marginLeft: (props: ShiftButtonProps) =>
       props.direction === "right" ? (props.dense ? -8 : -4) : 0,
     color: (props: ShiftButtonProps) =>
-      props.color ? props.color : theme.palette.grey[700],
+      props.color
+        ? props.color
+        : theme.palette.grey[isDarkTheme(theme) ? 200 : 700],
   },
 }));
 

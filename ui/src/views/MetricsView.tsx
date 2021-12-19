@@ -91,7 +91,7 @@ function MetricsView(props: Props) {
 
   const [endTimeSec, setEndTimeSec] = React.useState(endTime);
   const [durationSec, setDurationSec] = React.useState(duration);
-  const [selectedQueues, setSelectedQueues] = React.useState<string[]>([]); // TODO: initialize from URL param if any.
+  const [selectedQueues, setSelectedQueues] = React.useState<string[]>([]);
 
   const handleEndTimeChange = (endTime: number, isEndTimeFixed: boolean) => {
     const urlQuery = isEndTimeFixed
@@ -152,8 +152,6 @@ function MetricsView(props: Props) {
   React.useEffect(() => {
     getMetricsAsync(endTimeSec, durationSec, selectedQueues);
   }, [pollInterval, getMetricsAsync, durationSec, endTimeSec, selectedQueues]);
-
-  console.log("DEBUG: selectedQueues", selectedQueues);
 
   return (
     <Container maxWidth="lg" className={classes.container}>
