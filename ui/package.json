@@ -21,6 +21,7 @@
     "@types/recharts": "1.8.20",
     "axios": "0.21.2",
     "clsx": "1.1.1",
+    "dayjs": "1.10.7",
     "lodash.uniqby": "4.7.0",
     "query-string": "7.0.1",
     "react": "^16.13.1",
