@@ -119,6 +119,9 @@ The metrics data is now available under `/metrics` for Prometheus server to scra
 Once the metrics data is collected by a Prometheus server, you can pass the address of the Prometheus server to asynqmon to query the time-series data.
 The address can be specified via `--prometheus-addr`. This enables the metrics view on the Web UI.
 
+<img width="1532" alt="Screen Shot 2021-12-19 at 4 37 19 PM" src="https://user-images.githubusercontent.com/10953044/146696852-25916465-07f0-4ed5-af31-18be02390bcb.png">
+
+
 ### Examples
 
 ```bash
