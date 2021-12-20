@@ -16,7 +16,7 @@ const StyledBreadcrumb = withStyles((theme: Theme) => ({
       : theme.palette.background.default,
     height: theme.spacing(3),
     color: theme.palette.text.secondary,
-    fontWeight: theme.typography.fontWeightRegular,
+    fontWeight: 400,
     "&:hover, &:focus": {
       backgroundColor: theme.palette.action.hover,
     },
