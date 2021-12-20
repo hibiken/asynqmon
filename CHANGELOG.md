@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2021-12-19
+
+Version 0.5 added support for [Prometheus](https://prometheus.io/) integration.
+
+- (cmd): Added `--enable-metrics-exporter` option to export queue metrics.
+- (cmd): Added `--prometheus-addr` to enable metrics view in Web UI.
+- (pkg): Added `Options.PrometheusAddress` to enable metrics view in Web UI.
+
 ## [0.4.0] - 2021-11-06
 
 - Added "completed" state
