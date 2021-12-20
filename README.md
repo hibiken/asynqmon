@@ -1,23 +1,33 @@
 <img src="https://user-images.githubusercontent.com/11155743/114745460-57760500-9d57-11eb-9a2c-43fa88171807.png" alt="Asynqmon logo" width="360px" />
 
-# A modern web based tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues and tasks
+# A modern web based tool for monitoring & administering [Asynq](https://github.com/hibiken/asynq) queues and tasks
 
 ## Overview
 
-Asynqmon is a web UI tool for monitoring & administrating [Asynq](https://github.com/hibiken/asynq) queues and tasks.
-It optionally integrates with Prometheus to display time-series data.
+Asynqmon is a web UI tool for monitoring and administering [Asynq](https://github.com/hibiken/asynq) queues and tasks.
+It supports integration with [Prometheus](https://prometheus.io) to display time-series data.
 
 Asynqmon is both a library that you can include in your web application, as well as a binary that you can simply install and run.
 
 ## Version Compatibility
 
+Please make sure the version compatibility with the Asynq package you are using.
+
 | Asynq version  | WebUI (asynqmon) version |
 | -------------- | ------------------------ |
+| 0.20.x         | 0.5.x                    |
 | 0.19.x         | 0.4.x                    |
 | 0.18.x         | 0.2.x, 0.3.x             |
 | 0.16.x, 0.17.x | 0.1.x                    |
 
 ## Install the binary
+
+There're a few options to install the binary:
+
+- [Download a release binary](#release-binaries)
+- [Download a docker image](#docker-image)
+- [Build a binary from source](building-from-source)
+- [Build a docker image from source](#building-docker-image-locally)
 
 ### Release binaries
 
@@ -60,10 +70,10 @@ make docker
 To use the defaults, simply run and open http://localhost:8080.
 
 ```bash
-# with a local binary
+# with a binary
 ./asynqmon
 
-# with docker
+# with a docker image
 docker run --rm \
     --name asynqmon \
     -p 8080:8080 \
@@ -75,10 +85,10 @@ By default, Asynqmon web server listens on port `8080` and connects to a Redis s
 To see all available flags, run:
 
 ```bash
-# with a local binary
+# with a binary
 ./asynqmon --help
 
-# with Docker
+# with a docker image
 docker run hibiken/asynqmon --help
 ```
 
@@ -104,7 +114,7 @@ _Note_: Use `--redis-url` to specify address, db-number, and password with one f
 The binary supports two flags to enable integration with [Prometheus](https://prometheus.io/).
 
 First, enable metrics exporter to expose queue metrics to Prometheus server by passing `--enable-metrics-exporter` flag.
-The metrics data is now available under `/metrics` for Prometheus to scape.
+The metrics data is now available under `/metrics` for Prometheus server to scrape.
 
 Once the metrics data is collected by a Prometheus server, you can pass the address of the Prometheus server to asynqmon to query the time-series data.
 The address can be specified via `--prometheus-addr`. This enables the metrics view on the Web UI.
