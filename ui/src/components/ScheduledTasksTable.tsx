@@ -44,7 +44,7 @@ import { usePolling } from "../hooks";
 import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
-import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
+import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -325,11 +325,17 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
 const useRowStyles = makeStyles((theme) => ({
   root: {
     cursor: "pointer",
+    "& #copy-button": {
+      display: "none",
+    },
     "&:hover": {
       boxShadow: theme.shadows[2],
+      "& #copy-button": {
+        display: "inline-block",
+      },
     },
     "&:hover $copyButton": {
-      display: "inline-block"
+      display: "inline-block",
     },
     "&:hover .MuiTableCell-root": {
       borderBottomColor: theme.palette.background.paper,
@@ -346,12 +352,12 @@ const useRowStyles = makeStyles((theme) => ({
     width: "200px",
   },
   copyButton: {
-    display: "none"
+    display: "none",
   },
   IdGroup: {
     display: "flex",
     alignItems: "center",
-  }
+  },
 }));
 
 interface RowProps {
@@ -390,19 +396,19 @@ function Row(props: RowProps) {
       </TableCell>
       <TableCell component="th" scope="row" className={classes.idCell}>
         <div className={classes.IdGroup}>
-        {uuidPrefix(task.id)}
-        <Tooltip title="Copy full ID to clipboard">
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation()
-              navigator.clipboard.writeText(task.id)
-            }}
-            size="small"
-            className={classes.copyButton}
-          >
-            <FileCopyOutlinedIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+          {uuidPrefix(task.id)}
+          <Tooltip title="Copy full ID to clipboard">
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(task.id);
+              }}
+              size="small"
+              className={classes.copyButton}
+            >
+              <FileCopyOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </div>
       </TableCell>
       <TableCell>{task.type}</TableCell>
