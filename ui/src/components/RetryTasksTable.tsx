@@ -335,7 +335,7 @@ const useRowStyles = makeStyles((theme) => ({
       boxShadow: theme.shadows[2],
       "& #copy-button": {
         display: "inline-block"
-      }
+      },
     },
     "&:hover .MuiTableCell-root": {
       borderBottomColor: theme.palette.background.paper,
