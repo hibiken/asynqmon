@@ -36,6 +36,7 @@ import { ActiveTaskExtended } from "../reducers/tasksReducer";
 import { durationBefore, timeAgo, uuidPrefix, prettifyPayload } from "../utils";
 import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
+import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -264,8 +265,14 @@ function ActiveTasksTable(props: Props & ReduxProps) {
 const useRowStyles = makeStyles((theme) => ({
   root: {
     cursor: "pointer",
+    "& #copy-button": {
+      display: "none"
+    },
     "&:hover": {
       boxShadow: theme.shadows[2],
+      "& #copy-button": {
+        display: "inline-block"
+      }
     },
     "&:hover .MuiTableCell-root": {
       borderBottomColor: theme.palette.background.paper,
@@ -306,6 +313,19 @@ function Row(props: RowProps) {
       </TableCell>
       <TableCell component="th" scope="row">
         {uuidPrefix(task.id)}
+        <Tooltip title="Copy text to clipboard">
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation()
+              navigator.clipboard.writeText(task.id)
+            }
+            }
+            size="small"
+            id="copy-button"
+          >
+            <FileCopyOutlinedIcon fontSize="small" style={{ height: "12px", width: "12px" }} />
+          </IconButton>
+        </Tooltip>
       </TableCell>
       <TableCell>{task.type}</TableCell>
       <TableCell>

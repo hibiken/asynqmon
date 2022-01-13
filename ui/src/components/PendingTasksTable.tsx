@@ -346,14 +346,12 @@ function Row(props: RowProps) {
         {uuidPrefix(task.id)}
         <Tooltip title="Copy text to clipboard">
           <IconButton
-            onClick={(e) => 
-            { 
+            onClick={(e) =>{ 
               e.stopPropagation()
               navigator.clipboard.writeText(task.id) }
             }
             size="small"
             id="copy-button"
-            className={classes.actionButton}
           >
             <FileCopyOutlinedIcon fontSize="small" style={{height:"12px", width:"12px"}} />
           </IconButton>
