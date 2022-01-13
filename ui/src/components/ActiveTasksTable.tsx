@@ -12,7 +12,7 @@ import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import Tooltip from "@material-ui/core/Tooltip";
 import CancelIcon from "@material-ui/icons/Cancel";
-import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
+import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
@@ -20,7 +20,12 @@ import React, { useCallback, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { taskRowsPerPageChange } from "../actions/settingsActions";
-import { batchCancelActiveTasksAsync, cancelActiveTaskAsync, cancelAllActiveTasksAsync, listActiveTasksAsync } from "../actions/tasksActions";
+import {
+  batchCancelActiveTasksAsync,
+  cancelActiveTaskAsync,
+  cancelAllActiveTasksAsync,
+  listActiveTasksAsync,
+} from "../actions/tasksActions";
 import { usePolling } from "../hooks";
 import { taskDetailsPath } from "../paths";
 import { ActiveTaskExtended } from "../reducers/tasksReducer";
@@ -29,7 +34,9 @@ import { TableColumn } from "../types/table";
 import { durationBefore, prettifyPayload, timeAgo, uuidPrefix } from "../utils";
 import SyntaxHighlighter from "./SyntaxHighlighter";
 import TableActions from "./TableActions";
-import TablePaginationActions, { rowsPerPageOptions } from "./TablePaginationActions";
+import TablePaginationActions, {
+  rowsPerPageOptions,
+} from "./TablePaginationActions";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -258,11 +265,14 @@ function ActiveTasksTable(props: Props & ReduxProps) {
 const useRowStyles = makeStyles((theme) => ({
   root: {
     cursor: "pointer",
+    "& #copy-button": {
+      display: "none",
+    },
     "&:hover": {
       boxShadow: theme.shadows[2],
-    }, 
+    },
     "&:hover $copyButton": {
-      display: "inline-block"
+      display: "inline-block",
     },
     "&:hover .MuiTableCell-root": {
       borderBottomColor: theme.palette.background.paper,
@@ -272,12 +282,12 @@ const useRowStyles = makeStyles((theme) => ({
     width: "200px",
   },
   copyButton: {
-    display: "none"
+    display: "none",
   },
   IdGroup: {
     display: "flex",
     alignItems: "center",
-  }
+  },
 }));
 
 interface RowProps {
@@ -313,19 +323,19 @@ function Row(props: RowProps) {
       </TableCell>
       <TableCell component="th" scope="row" className={classes.idCell}>
         <div className={classes.IdGroup}>
-        {uuidPrefix(task.id)}
-        <Tooltip title="Copy full ID to clipboard">
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation()
-              navigator.clipboard.writeText(task.id)
-            }}
-            size="small"
-            className={classes.copyButton}
-          >
-          <FileCopyOutlinedIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+          {uuidPrefix(task.id)}
+          <Tooltip title="Copy full ID to clipboard">
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(task.id);
+              }}
+              size="small"
+              className={classes.copyButton}
+            >
+              <FileCopyOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </div>
       </TableCell>
       <TableCell>{task.type}</TableCell>
