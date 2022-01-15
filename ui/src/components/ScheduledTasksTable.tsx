@@ -325,12 +325,9 @@ function ScheduledTasksTable(props: Props & ReduxProps) {
 const useRowStyles = makeStyles((theme) => ({
   root: {
     cursor: "pointer",
-    "& #copy-button": {
-      display: "none"
-    },
     "&:hover": {
       boxShadow: theme.shadows[2],
-      "& #copy-button": {
+      copyButton: {
         display: "inline-block"
       },
     },
@@ -344,6 +341,12 @@ const useRowStyles = makeStyles((theme) => ({
   actionButton: {
     marginLeft: 3,
     marginRight: 3,
+  },
+  idCell: {
+    width: "200px",
+  },
+  copyButton: {
+    display: "none"
   },
 }));
 
@@ -381,7 +384,7 @@ function Row(props: RowProps) {
           />
         </IconButton>
       </TableCell>
-      <TableCell component="th" scope="row">
+      <TableCell component="th" scope="row" className={classes.idCell} >
         {uuidPrefix(task.id)}
         <Tooltip title="Copy text to clipboard">
           <IconButton
@@ -391,7 +394,7 @@ function Row(props: RowProps) {
             }
             }
             size="small"
-            id="copy-button"
+            className={classes.copyButton}
           >
             <FileCopyOutlinedIcon fontSize="small" style={{ height: "12px", width: "12px" }} />
           </IconButton>

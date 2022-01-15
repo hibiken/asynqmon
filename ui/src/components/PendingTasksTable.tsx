@@ -86,6 +86,7 @@ function PendingTasksTable(props: Props & ReduxProps) {
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
+  
   const handlePageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
@@ -286,12 +287,9 @@ function PendingTasksTable(props: Props & ReduxProps) {
 const useRowStyles = makeStyles((theme) => ({
   root: {
     cursor: "pointer",
-    "& #copy-button": {
-      display: "none"
-    },
     "&:hover": {
       boxShadow: theme.shadows[2],
-      "& #copy-button": {
+      copyButton: {
         display: "inline-block"
       },
     },
@@ -306,6 +304,12 @@ const useRowStyles = makeStyles((theme) => ({
   actionButton: {
     marginLeft: 3,
     marginRight: 3,
+  },
+  idCell:{
+    width: "200px",
+  },
+  copyButton: {
+    display: "none"
   },
 }));
 
@@ -342,7 +346,7 @@ function Row(props: RowProps) {
           />
         </IconButton>
       </TableCell>
-      <TableCell component="th" scope="row" style={{width:'200px'}}>
+      <TableCell component="th" scope="row" className={classes.idCell} >
         {uuidPrefix(task.id)}
         <Tooltip title="Copy text to clipboard">
           <IconButton
@@ -351,7 +355,7 @@ function Row(props: RowProps) {
               navigator.clipboard.writeText(task.id) }
             }
             size="small"
-            id="copy-button"
+            className={classes.copyButton}
           >
             <FileCopyOutlinedIcon fontSize="small" style={{height:"12px", width:"12px"}} />
           </IconButton>
