@@ -353,7 +353,7 @@ function Row(props: RowProps) {
       <TableCell component="th" scope="row" className={classes.idCell}>
         <div className={classes.IdGroup}>
         {uuidPrefix(task.id)}
-        <Tooltip title="Copy text to clipboard">
+        <Tooltip title="Copy full ID to clipboard">
           <IconButton
             onClick={(e) => {
               e.stopPropagation()
