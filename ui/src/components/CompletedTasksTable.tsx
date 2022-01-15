@@ -332,7 +332,7 @@ function Row(props: RowProps) {
             size="small"
             className={classes.copyButton}
           >
-            <FileCopyOutlinedIcon fontSize="small" style={{ height: "12px", width: "12px" }} />
+            <FileCopyOutlinedIcon fontSize="small" />
           </IconButton>
         </Tooltip>
         </div>
