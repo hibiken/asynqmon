@@ -44,6 +44,7 @@ import { usePolling } from "../hooks";
 import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
+import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -327,6 +328,9 @@ const useRowStyles = makeStyles((theme) => ({
     "&:hover": {
       boxShadow: theme.shadows[2],
     },
+    "&:hover $copyButton": {
+      display: "inline-block"
+    },
     "&:hover .MuiTableCell-root": {
       borderBottomColor: theme.palette.background.paper,
     },
@@ -338,6 +342,16 @@ const useRowStyles = makeStyles((theme) => ({
     marginLeft: 3,
     marginRight: 3,
   },
+  idCell: {
+    width: "200px",
+  },
+  copyButton: {
+    display: "none"
+  },
+  IdGroup: {
+    display: "flex",
+    alignItems: "center",
+  }
 }));
 
 interface RowProps {
@@ -374,8 +388,22 @@ function Row(props: RowProps) {
           />
         </IconButton>
       </TableCell>
-      <TableCell component="th" scope="row">
+      <TableCell component="th" scope="row" className={classes.idCell}>
+        <div className={classes.IdGroup}>
         {uuidPrefix(task.id)}
+        <Tooltip title="Copy full ID to clipboard">
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation()
+              navigator.clipboard.writeText(task.id)
+            }}
+            size="small"
+            className={classes.copyButton}
+          >
+            <FileCopyOutlinedIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        </div>
       </TableCell>
       <TableCell>{task.type}</TableCell>
       <TableCell>

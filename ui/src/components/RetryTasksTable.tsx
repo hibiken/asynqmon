@@ -1,49 +1,37 @@
-import React, { useCallback, useState } from "react";
-import { useHistory } from "react-router-dom";
-import { connect, ConnectedProps } from "react-redux";
+import Checkbox from "@material-ui/core/Checkbox";
+import IconButton from "@material-ui/core/IconButton";
+import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
 import TableFooter from "@material-ui/core/TableFooter";
+import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
-import Paper from "@material-ui/core/Paper";
+import TableRow from "@material-ui/core/TableRow";
 import Tooltip from "@material-ui/core/Tooltip";
-import Checkbox from "@material-ui/core/Checkbox";
-import IconButton from "@material-ui/core/IconButton";
-import PlayArrowIcon from "@material-ui/icons/PlayArrow";
-import DeleteIcon from "@material-ui/icons/Delete";
 import ArchiveIcon from "@material-ui/icons/Archive";
+import DeleteIcon from "@material-ui/icons/Delete";
+import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
-import SyntaxHighlighter from "./SyntaxHighlighter";
-import {
-  batchDeleteRetryTasksAsync,
-  batchRunRetryTasksAsync,
-  batchArchiveRetryTasksAsync,
-  deleteAllRetryTasksAsync,
-  runAllRetryTasksAsync,
-  archiveAllRetryTasksAsync,
-  listRetryTasksAsync,
-  deleteRetryTaskAsync,
-  runRetryTaskAsync,
-  archiveRetryTaskAsync,
-} from "../actions/tasksActions";
-import { AppState } from "../store";
-import TablePaginationActions, {
-  rowsPerPageOptions,
-} from "./TablePaginationActions";
+import React, { useCallback, useState } from "react";
+import { connect, ConnectedProps } from "react-redux";
+import { useHistory } from "react-router-dom";
 import { taskRowsPerPageChange } from "../actions/settingsActions";
-import TableActions from "./TableActions";
-import { durationBefore, uuidPrefix, prettifyPayload } from "../utils";
+import { archiveAllRetryTasksAsync, archiveRetryTaskAsync, batchArchiveRetryTasksAsync, batchDeleteRetryTasksAsync, batchRunRetryTasksAsync, deleteAllRetryTasksAsync, deleteRetryTaskAsync, listRetryTasksAsync, runAllRetryTasksAsync, runRetryTaskAsync } from "../actions/tasksActions";
 import { usePolling } from "../hooks";
-import { TaskInfoExtended } from "../reducers/tasksReducer";
-import { TableColumn } from "../types/table";
 import { taskDetailsPath } from "../paths";
+import { TaskInfoExtended } from "../reducers/tasksReducer";
+import { AppState } from "../store";
+import { TableColumn } from "../types/table";
+import { durationBefore, prettifyPayload, uuidPrefix } from "../utils";
+import SyntaxHighlighter from "./SyntaxHighlighter";
+import TableActions from "./TableActions";
+import TablePaginationActions, { rowsPerPageOptions } from "./TablePaginationActions";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -330,6 +318,9 @@ const useRowStyles = makeStyles((theme) => ({
     "&:hover": {
       boxShadow: theme.shadows[2],
     },
+    "&:hover $copyButton": {
+      display: "inline-block"
+    },
     "&:hover .MuiTableCell-root": {
       borderBottomColor: theme.palette.background.paper,
     },
@@ -341,6 +332,16 @@ const useRowStyles = makeStyles((theme) => ({
     marginLeft: 3,
     marginRight: 3,
   },
+  idCell: {
+    width: "200px",
+  },
+  copyButton: {
+    display: "none"
+  }, 
+  IdGroup: {
+    display: "flex",
+    alignItems: "center",
+  }
 }));
 
 interface RowProps {
@@ -378,8 +379,22 @@ function Row(props: RowProps) {
           />
         </IconButton>
       </TableCell>
-      <TableCell component="th" scope="row">
+      <TableCell component="th" scope="row" className={classes.idCell}>
+        <div className={classes.IdGroup}>
         {uuidPrefix(task.id)}
+        <Tooltip title="Copy full ID to clipboard">
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation()
+              navigator.clipboard.writeText(task.id)
+            }}
+            size="small"
+            className={classes.copyButton}
+          >
+            <FileCopyOutlinedIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        </div>
       </TableCell>
       <TableCell>{task.type}</TableCell>
       <TableCell>
