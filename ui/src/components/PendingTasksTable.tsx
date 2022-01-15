@@ -96,7 +96,6 @@ function PendingTasksTable(props: Props & ReduxProps) {
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
-
   const handlePageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
