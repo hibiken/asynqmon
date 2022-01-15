@@ -289,9 +289,9 @@ const useRowStyles = makeStyles((theme) => ({
     cursor: "pointer",
     "&:hover": {
       boxShadow: theme.shadows[2],
-      copyButton: {
-        display: "inline-block"
-      },
+    },
+    "&:hover $copyButton":{
+      display: "inline-block"
     },
     "&:hover .MuiTableCell-root": {
       borderBottomColor: theme.palette.background.paper,
@@ -311,6 +311,10 @@ const useRowStyles = makeStyles((theme) => ({
   copyButton: {
     display: "none"
   },
+  IdGroup:{
+    display:"flex",
+    alignItems:"center",
+  }
 }));
 
 interface RowProps {
@@ -347,6 +351,7 @@ function Row(props: RowProps) {
         </IconButton>
       </TableCell>
       <TableCell component="th" scope="row" className={classes.idCell} >
+        <div className={classes.IdGroup}>
         {uuidPrefix(task.id)}
         <Tooltip title="Copy text to clipboard">
           <IconButton
@@ -357,9 +362,10 @@ function Row(props: RowProps) {
             size="small"
             className={classes.copyButton}
           >
-            <FileCopyOutlinedIcon fontSize="small" style={{height:"12px", width:"12px"}} />
+            <FileCopyOutlinedIcon fontSize="small" />
           </IconButton>
         </Tooltip>
+        </div>
       </TableCell>
       <TableCell>{task.type}</TableCell>
       <TableCell>
