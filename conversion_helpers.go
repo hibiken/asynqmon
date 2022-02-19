@@ -247,6 +247,9 @@ type activeTask struct {
 	// Value is either time formatted in RFC3339 format, or "-" which indicates that
 	// the data is not available yet.
 	Deadline string `json:"deadline"`
+
+	// IsOrphaned indicates whether the task is left in active state with no worker processing it.
+	IsOrphaned bool `json:"is_orphaned"`
 }
 
 func toActiveTask(ti *asynq.TaskInfo, pf PayloadFormatter) *activeTask {
@@ -259,7 +262,7 @@ func toActiveTask(ti *asynq.TaskInfo, pf PayloadFormatter) *activeTask {
 		Retried:   ti.Retried,
 		LastError: ti.LastErr,
 	}
-	return &activeTask{baseTask: base}
+	return &activeTask{baseTask: base, IsOrphaned: ti.IsOrphaned}
 }
 
 func toActiveTasks(in []*asynq.TaskInfo, pf PayloadFormatter) []*activeTask {

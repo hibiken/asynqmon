@@ -347,9 +347,19 @@ function Row(props: RowProps) {
           {prettifyPayload(task.payload)}
         </SyntaxHighlighter>
       </TableCell>
-      <TableCell>{task.canceling ? "Canceling" : "Running"}</TableCell>
       <TableCell>
-        {task.start_time === "-" ? "just now" : timeAgo(task.start_time)}
+        {task.canceling
+          ? "Canceling"
+          : task.is_orphaned
+          ? "Orphaned"
+          : "Running"}
+      </TableCell>
+      <TableCell>
+        {task.is_orphaned
+          ? "-"
+          : task.start_time === "-"
+          ? "just now"
+          : timeAgo(task.start_time)}
       </TableCell>
       <TableCell>
         {task.deadline === "-" ? "-" : durationBefore(task.deadline)}
@@ -365,7 +375,9 @@ function Row(props: RowProps) {
             <Tooltip title="Cancel">
               <IconButton
                 onClick={props.onCancelClick}
-                disabled={task.requestPending || task.canceling}
+                disabled={
+                  task.requestPending || task.canceling || task.is_orphaned
+                }
                 size="small"
               >
                 <CancelIcon fontSize="small" />

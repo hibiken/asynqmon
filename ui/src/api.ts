@@ -290,6 +290,7 @@ export interface TaskInfo {
   completed_at: string;
   result: string;
   ttl_seconds: number;
+  is_orphaned: boolean; // Only applies to task.state == 'active'
 }
 
 export interface ServerInfo {
