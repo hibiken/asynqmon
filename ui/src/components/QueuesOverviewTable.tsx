@@ -50,6 +50,7 @@ enum SortBy {
   State,
   Size,
   MemoryUsage,
+  Latency,
   Processed,
   Failed,
   ErrorRate,
@@ -70,6 +71,12 @@ const colConfigs: SortableTableColumn<SortBy>[] = [
     label: "Memory usage",
     key: "memory_usage",
     sortBy: SortBy.MemoryUsage,
+    align: "right",
+  },
+  {
+    label: "Latency",
+    key: "latency",
+    sortBy: SortBy.Latency,
     align: "right",
   },
   {
@@ -136,6 +143,10 @@ export default function QueuesOverviewTable(props: Props) {
       case SortBy.MemoryUsage:
         if (q1.memory_usage_bytes === q2.memory_usage_bytes) return 0;
         isQ1Smaller = q1.memory_usage_bytes < q2.memory_usage_bytes;
+        break;
+      case SortBy.Latency:
+        if (q1.latency_msec === q2.latency_msec) return 0;
+        isQ1Smaller = q1.latency_msec < q2.latency_msec;
         break;
       case SortBy.Processed:
         if (q1.processed === q2.processed) return 0;
@@ -283,6 +294,7 @@ function Row(props: RowProps) {
       </TableCell>
       <TableCell align="right">{q.size}</TableCell>
       <TableCell align="right">{prettyBytes(q.memory_usage_bytes)}</TableCell>
+      <TableCell align="right">{q.display_latency}</TableCell>
       <TableCell align="right">{q.processed}</TableCell>
       <TableCell align="right">{q.failed}</TableCell>
       <TableCell align="right">{percentage(q.failed, q.processed)}</TableCell>
