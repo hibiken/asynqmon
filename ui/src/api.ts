@@ -254,6 +254,8 @@ export interface Queue {
   queue: string;
   paused: boolean;
   size: number;
+  latency_msec: number;
+  display_latency: string;
   memory_usage_bytes: number;
   active: number;
   pending: number;

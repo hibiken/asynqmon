@@ -82,6 +82,11 @@ type queueStateSnapshot struct {
 	MemoryUsage int64 `json:"memory_usage_bytes"`
 	// Total number of tasks in the queue.
 	Size int `json:"size"`
+	// Latency of the queue in milliseconds.
+	LatencyMillisec int64 `json:"latency_msec"`
+	// Latency duration string for display purpose.
+	DisplayLatency string `json:"display_latency"`
+
 	// Number of tasks in each state.
 	Active    int `json:"active"`
 	Pending   int `json:"pending"`
@@ -103,22 +108,24 @@ type queueStateSnapshot struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func toQueueStateSnapshot(s *asynq.QueueInfo) *queueStateSnapshot {
+func toQueueStateSnapshot(info *asynq.QueueInfo) *queueStateSnapshot {
 	return &queueStateSnapshot{
-		Queue:       s.Queue,
-		MemoryUsage: s.MemoryUsage,
-		Size:        s.Size,
-		Active:      s.Active,
-		Pending:     s.Pending,
-		Scheduled:   s.Scheduled,
-		Retry:       s.Retry,
-		Archived:    s.Archived,
-		Completed:   s.Completed,
-		Processed:   s.Processed,
-		Succeeded:   s.Processed - s.Failed,
-		Failed:      s.Failed,
-		Paused:      s.Paused,
-		Timestamp:   s.Timestamp,
+		Queue:           info.Queue,
+		MemoryUsage:     info.MemoryUsage,
+		Size:            info.Size,
+		LatencyMillisec: info.Latency.Milliseconds(),
+		DisplayLatency:  info.Latency.String(),
+		Active:          info.Active,
+		Pending:         info.Pending,
+		Scheduled:       info.Scheduled,
+		Retry:           info.Retry,
+		Archived:        info.Archived,
+		Completed:       info.Completed,
+		Processed:       info.Processed,
+		Succeeded:       info.Processed - info.Failed,
+		Failed:          info.Failed,
+		Paused:          info.Paused,
+		Timestamp:       info.Timestamp,
 	}
 }
 
