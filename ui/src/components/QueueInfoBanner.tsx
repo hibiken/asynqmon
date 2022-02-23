@@ -76,6 +76,15 @@ function QueueInfoBanner(props: Props & ReduxProps) {
 
       <div className={classes.bannerItem}>
         <Typography variant="subtitle2" color="textPrimary" gutterBottom>
+          Latency
+        </Typography>
+        <Typography color="textSecondary">
+          {queue ? queue.display_latency : "-"}
+        </Typography>
+      </div>
+
+      <div className={classes.bannerItem}>
+        <Typography variant="subtitle2" color="textPrimary" gutterBottom>
           Processed
         </Typography>
         <Typography color="textSecondary">
