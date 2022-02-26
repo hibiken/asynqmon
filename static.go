@@ -20,6 +20,7 @@ type uiAssetsHandler struct {
 	staticDirPath  string
 	indexFileName  string
 	prometheusAddr string
+	readOnly       bool
 }
 
 // ServeHTTP inspects the URL path to locate a file within the static dir
@@ -62,9 +63,11 @@ func (h *uiAssetsHandler) renderIndexFile(w http.ResponseWriter) error {
 	data := struct {
 		RootPath       string
 		PrometheusAddr string
+		ReadOnly       bool
 	}{
 		RootPath:       h.rootPath,
 		PrometheusAddr: h.prometheusAddr,
+		ReadOnly:       h.readOnly,
 	}
 	return tmpl.Execute(w, data)
 }
