@@ -40,6 +40,9 @@ type Options struct {
 	// This field is optional. If this field is set, asynqmon will query the Prometheus server
 	// to get the time series data about queue metrics and show them in the web UI.
 	PrometheusAddress string
+
+	// Set ReadOnly to true to restrict user to view-only mode.
+	ReadOnly bool
 }
 
 // HTTPHandler is a http.Handler for asynqmon application.
@@ -111,6 +114,7 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 	}
 
 	api := router.PathPrefix("/api").Subrouter()
+
 	// Queue endpoints.
 	api.HandleFunc("/queues", newListQueuesHandlerFunc(inspector)).Methods("GET")
 	api.HandleFunc("/queues/{qname}", newGetQueueHandlerFunc(inspector)).Methods("GET")
@@ -190,6 +194,11 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 	// Time series metrics endpoints.
 	api.HandleFunc("/metrics", newGetMetricsHandlerFunc(http.DefaultClient, opts.PrometheusAddress)).Methods("GET")
 
+	// Restrict APIs when running in read-only mode.
+	if opts.ReadOnly {
+		api.Use(restrictToReadOnly)
+	}
+
 	// Everything else, route to uiAssetsHandler.
 	router.NotFoundHandler = &uiAssetsHandler{
 		rootPath:       opts.RootPath,
@@ -197,6 +206,19 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 		staticDirPath:  "ui/build",
 		indexFileName:  "index.html",
 		prometheusAddr: opts.PrometheusAddress,
+		readOnly:       opts.ReadOnly,
 	}
+
 	return router
+}
+
+// restrictToReadOnly is a middleware function to restrict users to perform only GET requests.
+func restrictToReadOnly(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" && r.Method != "" {
+			http.Error(w, fmt.Sprintf("API Server is running in read-only mode: %s request is not allowed", r.Method), http.StatusMethodNotAllowed)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
 }
