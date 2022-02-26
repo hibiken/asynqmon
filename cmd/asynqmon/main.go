@@ -34,6 +34,7 @@ var (
 	flagMaxResultLength       int
 	flagEnableMetricsExporter bool
 	flagPrometheusServerAddr  string
+	flagReadOnly              bool
 )
 
 func init() {
@@ -49,6 +50,7 @@ func init() {
 	flag.IntVar(&flagMaxResultLength, "max-result-length", getEnvOrDefaultInt("MAX_RESULT_LENGTH", 200), "maximum number of utf8 characters printed in the result cell in the Web UI")
 	flag.BoolVar(&flagEnableMetricsExporter, "enable-metrics-exporter", getEnvOrDefaultBool("ENABLE_METRICS_EXPORTER", false), "enable prometheus metrics exporter to expose queue metrics")
 	flag.StringVar(&flagPrometheusServerAddr, "prometheus-addr", getEnvDefaultString("PROMETHEUS_ADDR", ""), "address of prometheus server to query time series")
+	flag.BoolVar(&flagReadOnly, "read-only", getEnvOrDefaultBool("READ_ONLY", false), "restrict to read-only mode")
 }
 
 // TODO: Write test and refactor this code.
@@ -114,6 +116,7 @@ func main() {
 		PayloadFormatter:  asynqmon.PayloadFormatterFunc(formatPayload),
 		ResultFormatter:   asynqmon.ResultFormatterFunc(formatResult),
 		PrometheusAddress: flagPrometheusServerAddr,
+		ReadOnly:          flagReadOnly,
 	})
 	defer h.Close()
 
