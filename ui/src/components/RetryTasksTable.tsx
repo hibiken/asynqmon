@@ -13,7 +13,7 @@ import TableRow from "@material-ui/core/TableRow";
 import Tooltip from "@material-ui/core/Tooltip";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import DeleteIcon from "@material-ui/icons/Delete";
-import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
+import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import Alert from "@material-ui/lab/Alert";
@@ -22,7 +22,18 @@ import React, { useCallback, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { taskRowsPerPageChange } from "../actions/settingsActions";
-import { archiveAllRetryTasksAsync, archiveRetryTaskAsync, batchArchiveRetryTasksAsync, batchDeleteRetryTasksAsync, batchRunRetryTasksAsync, deleteAllRetryTasksAsync, deleteRetryTaskAsync, listRetryTasksAsync, runAllRetryTasksAsync, runRetryTaskAsync } from "../actions/tasksActions";
+import {
+  archiveAllRetryTasksAsync,
+  archiveRetryTaskAsync,
+  batchArchiveRetryTasksAsync,
+  batchDeleteRetryTasksAsync,
+  batchRunRetryTasksAsync,
+  deleteAllRetryTasksAsync,
+  deleteRetryTaskAsync,
+  listRetryTasksAsync,
+  runAllRetryTasksAsync,
+  runRetryTaskAsync,
+} from "../actions/tasksActions";
 import { usePolling } from "../hooks";
 import { taskDetailsPath } from "../paths";
 import { TaskInfoExtended } from "../reducers/tasksReducer";
@@ -31,7 +42,9 @@ import { TableColumn } from "../types/table";
 import { durationBefore, prettifyPayload, uuidPrefix } from "../utils";
 import SyntaxHighlighter from "./SyntaxHighlighter";
 import TableActions from "./TableActions";
-import TablePaginationActions, { rowsPerPageOptions } from "./TablePaginationActions";
+import TablePaginationActions, {
+  rowsPerPageOptions,
+} from "./TablePaginationActions";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -183,46 +196,48 @@ function RetryTasksTable(props: Props & ReduxProps) {
   const numSelected = selectedIds.length;
   return (
     <div>
-      <TableActions
-        showIconButtons={numSelected > 0}
-        iconButtonActions={[
-          {
-            tooltip: "Delete",
-            icon: <DeleteIcon />,
-            onClick: handleBatchDeleteClick,
-            disabled: props.batchActionPending,
-          },
-          {
-            tooltip: "Archive",
-            icon: <ArchiveIcon />,
-            onClick: handleBatchArchiveClick,
-            disabled: props.batchActionPending,
-          },
-          {
-            tooltip: "Run",
-            icon: <PlayArrowIcon />,
-            onClick: handleBatchRunClick,
-            disabled: props.batchActionPending,
-          },
-        ]}
-        menuItemActions={[
-          {
-            label: "Delete All",
-            onClick: handleDeleteAllClick,
-            disabled: props.allActionPending,
-          },
-          {
-            label: "Archive All",
-            onClick: handleArchiveAllClick,
-            disabled: props.allActionPending,
-          },
-          {
-            label: "Run All",
-            onClick: handleRunAllClick,
-            disabled: props.allActionPending,
-          },
-        ]}
-      />
+      {!window.READ_ONLY && (
+        <TableActions
+          showIconButtons={numSelected > 0}
+          iconButtonActions={[
+            {
+              tooltip: "Delete",
+              icon: <DeleteIcon />,
+              onClick: handleBatchDeleteClick,
+              disabled: props.batchActionPending,
+            },
+            {
+              tooltip: "Archive",
+              icon: <ArchiveIcon />,
+              onClick: handleBatchArchiveClick,
+              disabled: props.batchActionPending,
+            },
+            {
+              tooltip: "Run",
+              icon: <PlayArrowIcon />,
+              onClick: handleBatchRunClick,
+              disabled: props.batchActionPending,
+            },
+          ]}
+          menuItemActions={[
+            {
+              label: "Delete All",
+              onClick: handleDeleteAllClick,
+              disabled: props.allActionPending,
+            },
+            {
+              label: "Archive All",
+              onClick: handleArchiveAllClick,
+              disabled: props.allActionPending,
+            },
+            {
+              label: "Run All",
+              onClick: handleRunAllClick,
+              disabled: props.allActionPending,
+            },
+          ]}
+        />
+      )}
       <TableContainer component={Paper}>
         <Table
           stickyHeader={true}
@@ -232,30 +247,37 @@ function RetryTasksTable(props: Props & ReduxProps) {
         >
           <TableHead>
             <TableRow>
-              <TableCell
-                padding="checkbox"
-                classes={{ stickyHeader: classes.stickyHeaderCell }}
-              >
-                <IconButton>
-                  <Checkbox
-                    indeterminate={numSelected > 0 && numSelected < rowCount}
-                    checked={rowCount > 0 && numSelected === rowCount}
-                    onChange={handleSelectAllClick}
-                    inputProps={{
-                      "aria-label": "select all tasks shown in the table",
-                    }}
-                  />
-                </IconButton>
-              </TableCell>
-              {columns.map((col) => (
+              {!window.READ_ONLY && (
                 <TableCell
-                  key={col.label}
-                  align={col.align}
+                  padding="checkbox"
                   classes={{ stickyHeader: classes.stickyHeaderCell }}
                 >
-                  {col.label}
+                  <IconButton>
+                    <Checkbox
+                      indeterminate={numSelected > 0 && numSelected < rowCount}
+                      checked={rowCount > 0 && numSelected === rowCount}
+                      onChange={handleSelectAllClick}
+                      inputProps={{
+                        "aria-label": "select all tasks shown in the table",
+                      }}
+                    />
+                  </IconButton>
                 </TableCell>
-              ))}
+              )}
+              {columns
+                .filter((col) => {
+                  // Filter out actions column in readonly mode.
+                  return !window.READ_ONLY || col.key !== "actions";
+                })
+                .map((col) => (
+                  <TableCell
+                    key={col.label}
+                    align={col.align}
+                    classes={{ stickyHeader: classes.stickyHeaderCell }}
+                  >
+                    {col.label}
+                  </TableCell>
+                ))}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -319,7 +341,7 @@ const useRowStyles = makeStyles((theme) => ({
       boxShadow: theme.shadows[2],
     },
     "&:hover $copyButton": {
-      display: "inline-block"
+      display: "inline-block",
     },
     "&:hover .MuiTableCell-root": {
       borderBottomColor: theme.palette.background.paper,
@@ -336,12 +358,12 @@ const useRowStyles = makeStyles((theme) => ({
     width: "200px",
   },
   copyButton: {
-    display: "none"
-  }, 
+    display: "none",
+  },
   IdGroup: {
     display: "flex",
     alignItems: "center",
-  }
+  },
 }));
 
 interface RowProps {
@@ -369,31 +391,33 @@ function Row(props: RowProps) {
       selected={props.isSelected}
       onClick={() => history.push(taskDetailsPath(task.queue, task.id))}
     >
-      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-        <IconButton>
-          <Checkbox
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              props.onSelectChange(event.target.checked)
-            }
-            checked={props.isSelected}
-          />
-        </IconButton>
-      </TableCell>
+      {!window.READ_ONLY && (
+        <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+          <IconButton>
+            <Checkbox
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                props.onSelectChange(event.target.checked)
+              }
+              checked={props.isSelected}
+            />
+          </IconButton>
+        </TableCell>
+      )}
       <TableCell component="th" scope="row" className={classes.idCell}>
         <div className={classes.IdGroup}>
-        {uuidPrefix(task.id)}
-        <Tooltip title="Copy full ID to clipboard">
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation()
-              navigator.clipboard.writeText(task.id)
-            }}
-            size="small"
-            className={classes.copyButton}
-          >
-            <FileCopyOutlinedIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+          {uuidPrefix(task.id)}
+          <Tooltip title="Copy full ID to clipboard">
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(task.id);
+              }}
+              size="small"
+              className={classes.copyButton}
+            >
+              <FileCopyOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </div>
       </TableCell>
       <TableCell>{task.type}</TableCell>
@@ -409,52 +433,54 @@ function Row(props: RowProps) {
       <TableCell>{task.error_message}</TableCell>
       <TableCell align="right">{task.retried}</TableCell>
       <TableCell align="right">{task.max_retry}</TableCell>
-      <TableCell
-        align="center"
-        className={classes.actionCell}
-        onMouseEnter={props.onActionCellEnter}
-        onMouseLeave={props.onActionCellLeave}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {props.showActions ? (
-          <React.Fragment>
-            <Tooltip title="Delete">
-              <IconButton
-                onClick={props.onDeleteClick}
-                disabled={task.requestPending || props.allActionPending}
-                size="small"
-                className={classes.actionButton}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Archive">
-              <IconButton
-                onClick={props.onArchiveClick}
-                disabled={task.requestPending || props.allActionPending}
-                size="small"
-                className={classes.actionButton}
-              >
-                <ArchiveIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Run">
-              <IconButton
-                onClick={props.onRunClick}
-                disabled={task.requestPending || props.allActionPending}
-                size="small"
-                className={classes.actionButton}
-              >
-                <PlayArrowIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </React.Fragment>
-        ) : (
-          <IconButton size="small" onClick={props.onActionCellEnter}>
-            <MoreHorizIcon fontSize="small" />
-          </IconButton>
-        )}
-      </TableCell>
+      {!window.READ_ONLY && (
+        <TableCell
+          align="center"
+          className={classes.actionCell}
+          onMouseEnter={props.onActionCellEnter}
+          onMouseLeave={props.onActionCellLeave}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {props.showActions ? (
+            <React.Fragment>
+              <Tooltip title="Delete">
+                <IconButton
+                  onClick={props.onDeleteClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                  className={classes.actionButton}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Archive">
+                <IconButton
+                  onClick={props.onArchiveClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                  className={classes.actionButton}
+                >
+                  <ArchiveIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Run">
+                <IconButton
+                  onClick={props.onRunClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                  className={classes.actionButton}
+                >
+                  <PlayArrowIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </React.Fragment>
+          ) : (
+            <IconButton size="small" onClick={props.onActionCellEnter}>
+              <MoreHorizIcon fontSize="small" />
+            </IconButton>
+          )}
+        </TableCell>
+      )}
     </TableRow>
   );
 }

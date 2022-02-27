@@ -161,24 +161,26 @@ function ActiveTasksTable(props: Props & ReduxProps) {
   const numSelected = selectedIds.length;
   return (
     <div>
-      <TableActions
-        showIconButtons={numSelected > 0}
-        iconButtonActions={[
-          {
-            tooltip: "Cancel",
-            icon: <CancelIcon />,
-            onClick: handleBatchCancelClick,
-            disabled: props.batchActionPending,
-          },
-        ]}
-        menuItemActions={[
-          {
-            label: "Cancel All",
-            onClick: handleCancelAllClick,
-            disabled: props.allActionPending,
-          },
-        ]}
-      />
+      {!window.READ_ONLY && (
+        <TableActions
+          showIconButtons={numSelected > 0}
+          iconButtonActions={[
+            {
+              tooltip: "Cancel",
+              icon: <CancelIcon />,
+              onClick: handleBatchCancelClick,
+              disabled: props.batchActionPending,
+            },
+          ]}
+          menuItemActions={[
+            {
+              label: "Cancel All",
+              onClick: handleCancelAllClick,
+              disabled: props.allActionPending,
+            },
+          ]}
+        />
+      )}
       <TableContainer component={Paper}>
         <Table
           stickyHeader={true}
@@ -188,30 +190,37 @@ function ActiveTasksTable(props: Props & ReduxProps) {
         >
           <TableHead>
             <TableRow>
-              <TableCell
-                padding="checkbox"
-                classes={{ stickyHeader: classes.stickyHeaderCell }}
-              >
-                <IconButton>
-                  <Checkbox
-                    indeterminate={numSelected > 0 && numSelected < rowCount}
-                    checked={rowCount > 0 && numSelected === rowCount}
-                    onChange={handleSelectAllClick}
-                    inputProps={{
-                      "aria-label": "select all tasks shown in the table",
-                    }}
-                  />
-                </IconButton>
-              </TableCell>
-              {columns.map((col) => (
+              {!window.READ_ONLY && (
                 <TableCell
-                  key={col.key}
-                  align={col.align}
+                  padding="checkbox"
                   classes={{ stickyHeader: classes.stickyHeaderCell }}
                 >
-                  {col.label}
+                  <IconButton>
+                    <Checkbox
+                      indeterminate={numSelected > 0 && numSelected < rowCount}
+                      checked={rowCount > 0 && numSelected === rowCount}
+                      onChange={handleSelectAllClick}
+                      inputProps={{
+                        "aria-label": "select all tasks shown in the table",
+                      }}
+                    />
+                  </IconButton>
                 </TableCell>
-              ))}
+              )}
+              {columns
+                .filter((col) => {
+                  // Filter out actions column in readonly mode.
+                  return !window.READ_ONLY || col.key !== "actions";
+                })
+                .map((col) => (
+                  <TableCell
+                    key={col.key}
+                    align={col.align}
+                    classes={{ stickyHeader: classes.stickyHeaderCell }}
+                  >
+                    {col.label}
+                  </TableCell>
+                ))}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -308,16 +317,18 @@ function Row(props: RowProps) {
       selected={props.isSelected}
       onClick={() => history.push(taskDetailsPath(task.queue, task.id))}
     >
-      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-        <IconButton>
-          <Checkbox
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              props.onSelectChange(event.target.checked)
-            }
-            checked={props.isSelected}
-          />
-        </IconButton>
-      </TableCell>
+      {!window.READ_ONLY && (
+        <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+          <IconButton>
+            <Checkbox
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                props.onSelectChange(event.target.checked)
+              }
+              checked={props.isSelected}
+            />
+          </IconButton>
+        </TableCell>
+      )}
       <TableCell component="th" scope="row" className={classes.idCell}>
         <div className={classes.IdGroup}>
           {uuidPrefix(task.id)}
@@ -361,32 +372,34 @@ function Row(props: RowProps) {
       <TableCell>
         {task.deadline === "-" ? "-" : durationBefore(task.deadline)}
       </TableCell>
-      <TableCell
-        align="center"
-        onMouseEnter={props.onActionCellEnter}
-        onMouseLeave={props.onActionCellLeave}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {props.showActions ? (
-          <React.Fragment>
-            <Tooltip title="Cancel">
-              <IconButton
-                onClick={props.onCancelClick}
-                disabled={
-                  task.requestPending || task.canceling || task.is_orphaned
-                }
-                size="small"
-              >
-                <CancelIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </React.Fragment>
-        ) : (
-          <IconButton size="small" onClick={props.onActionCellEnter}>
-            <MoreHorizIcon fontSize="small" />
-          </IconButton>
-        )}
-      </TableCell>
+      {!window.READ_ONLY && (
+        <TableCell
+          align="center"
+          onMouseEnter={props.onActionCellEnter}
+          onMouseLeave={props.onActionCellLeave}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {props.showActions ? (
+            <React.Fragment>
+              <Tooltip title="Cancel">
+                <IconButton
+                  onClick={props.onCancelClick}
+                  disabled={
+                    task.requestPending || task.canceling || task.is_orphaned
+                  }
+                  size="small"
+                >
+                  <CancelIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </React.Fragment>
+          ) : (
+            <IconButton size="small" onClick={props.onActionCellEnter}>
+              <MoreHorizIcon fontSize="small" />
+            </IconButton>
+          )}
+        </TableCell>
+      )}
     </TableRow>
   );
 }

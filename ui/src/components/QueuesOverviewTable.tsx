@@ -183,25 +183,30 @@ export default function QueuesOverviewTable(props: Props) {
         <Table className={classes.table} aria-label="queues overview table">
           <TableHead>
             <TableRow>
-              {colConfigs.map((cfg, i) => (
-                <TableCell
-                  key={cfg.key}
-                  align={cfg.align}
-                  className={clsx(i === 0 && classes.fixedCell)}
-                >
-                  {cfg.sortBy !== SortBy.None ? (
-                    <TableSortLabel
-                      active={sortBy === cfg.sortBy}
-                      direction={sortDir}
-                      onClick={createSortClickHandler(cfg.sortBy)}
-                    >
-                      {cfg.label}
-                    </TableSortLabel>
-                  ) : (
-                    <div>{cfg.label}</div>
-                  )}
-                </TableCell>
-              ))}
+              {colConfigs
+                .filter((cfg) => {
+                  // Filter out actions column in readonly mode.
+                  return !window.READ_ONLY || cfg.key !== "actions";
+                })
+                .map((cfg, i) => (
+                  <TableCell
+                    key={cfg.key}
+                    align={cfg.align}
+                    className={clsx(i === 0 && classes.fixedCell)}
+                  >
+                    {cfg.sortBy !== SortBy.None ? (
+                      <TableSortLabel
+                        active={sortBy === cfg.sortBy}
+                        direction={sortDir}
+                        onClick={createSortClickHandler(cfg.sortBy)}
+                      >
+                        {cfg.label}
+                      </TableSortLabel>
+                    ) : (
+                      <div>{cfg.label}</div>
+                    )}
+                  </TableCell>
+                ))}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -298,50 +303,52 @@ function Row(props: RowProps) {
       <TableCell align="right">{q.processed}</TableCell>
       <TableCell align="right">{q.failed}</TableCell>
       <TableCell align="right">{percentage(q.failed, q.processed)}</TableCell>
-      <TableCell
-        align="center"
-        onMouseEnter={() => setShowIcons(true)}
-        onMouseLeave={() => setShowIcons(false)}
-      >
-        <div className={classes.actionIconsContainer}>
-          {showIcons ? (
-            <React.Fragment>
-              {q.paused ? (
-                <Tooltip title="Resume">
-                  <IconButton
-                    color="secondary"
-                    onClick={props.onResumeClick}
-                    disabled={q.requestPending}
-                    size="small"
-                  >
-                    <PlayCircleFilledIcon fontSize="small" />
+      {!window.READ_ONLY && (
+        <TableCell
+          align="center"
+          onMouseEnter={() => setShowIcons(true)}
+          onMouseLeave={() => setShowIcons(false)}
+        >
+          <div className={classes.actionIconsContainer}>
+            {showIcons ? (
+              <React.Fragment>
+                {q.paused ? (
+                  <Tooltip title="Resume">
+                    <IconButton
+                      color="secondary"
+                      onClick={props.onResumeClick}
+                      disabled={q.requestPending}
+                      size="small"
+                    >
+                      <PlayCircleFilledIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <Tooltip title="Pause">
+                    <IconButton
+                      color="primary"
+                      onClick={props.onPauseClick}
+                      disabled={q.requestPending}
+                      size="small"
+                    >
+                      <PauseCircleFilledIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                <Tooltip title="Delete">
+                  <IconButton onClick={props.onDeleteClick} size="small">
+                    <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-              ) : (
-                <Tooltip title="Pause">
-                  <IconButton
-                    color="primary"
-                    onClick={props.onPauseClick}
-                    disabled={q.requestPending}
-                    size="small"
-                  >
-                    <PauseCircleFilledIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-              <Tooltip title="Delete">
-                <IconButton onClick={props.onDeleteClick} size="small">
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </React.Fragment>
-          ) : (
-            <IconButton size="small">
-              <MoreHorizIcon fontSize="small" />
-            </IconButton>
-          )}
-        </div>
-      </TableCell>
+              </React.Fragment>
+            ) : (
+              <IconButton size="small">
+                <MoreHorizIcon fontSize="small" />
+              </IconButton>
+            )}
+          </div>
+        </TableCell>
+      )}
     </TableRow>
   );
 }
