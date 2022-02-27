@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- (cmd): Added `--read-only` flag to specify read-only mode
+- (pkg): Added `Options.ReadOnly` to restrict user to view-only mode
+- (ui): Hide action buttons in read-only mode
 - (ui): Display queue latency in dashboard page and queue detail page.
 - (ui): Added copy-to-clipboard button for task ID in tasks list-view page.
 
