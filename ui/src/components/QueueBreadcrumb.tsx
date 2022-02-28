@@ -6,7 +6,7 @@ import Chip from "@material-ui/core/Chip";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { paths, queueDetailsPath } from "../paths";
+import { paths as getPaths, queueDetailsPath } from "../paths";
 import { isDarkTheme } from "../theme";
 
 const StyledBreadcrumb = withStyles((theme: Theme) => ({
@@ -39,6 +39,7 @@ interface Props {
 export default function QueueBreadcrumbs(props: Props) {
   const history = useHistory();
   const [anchorEl, setAnchorEl] = useState<null | Element>(null);
+  const paths = getPaths();
 
   const handleClick = (event: React.MouseEvent<Element, MouseEvent>) => {
     event.preventDefault();
