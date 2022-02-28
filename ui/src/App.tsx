@@ -26,7 +26,7 @@ import TimelineIcon from "@material-ui/icons/Timeline";
 import DoubleArrowIcon from "@material-ui/icons/DoubleArrow";
 import CloseIcon from "@material-ui/icons/Close";
 import { AppState } from "./store";
-import { paths } from "./paths";
+import { paths as getPaths } from "./paths";
 import { isDarkTheme, useTheme } from "./theme";
 import { closeSnackbar } from "./actions/snackbarActions";
 import { toggleDrawer } from "./actions/settingsActions";
@@ -156,6 +156,7 @@ function SlideUpTransition(props: TransitionProps) {
 function App(props: ConnectedProps<typeof connector>) {
   const theme = useTheme(props.themePreference);
   const classes = useStyles(theme)();
+  const paths = getPaths();
   return (
     <ThemeProvider theme={theme}>
       <Router>
