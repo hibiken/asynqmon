@@ -4,9 +4,12 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { Provider } from "react-redux";
 import App from "./App";
 import store from "./store";
+import parseFlagsUnderWindow from "./parseFlags";
 import * as serviceWorker from "./serviceWorker";
 import { saveState } from "./localStorage";
 import { SettingsState } from "./reducers/settingsReducer";
+
+parseFlagsUnderWindow();
 
 let currentSettings: SettingsState | undefined = undefined;
 store.subscribe(() => {

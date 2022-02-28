@@ -1,4 +1,10 @@
 interface Window {
+  // FLAG values are assigned by server under the window object.
+  // parseFlagsUnderWindow function parses these values and assigns the interpretted value under the window.
+  FLAG_ROOT_PATH: string;
+  FLAG_PROMETHEUS_SERVER_ADDRESS: string;
+  FLAG_READ_ONLY: string;
+
   // Root URL path for asynqmon app.
   // ROOT_PATH should not have the tailing slash.
   ROOT_PATH: string;
