@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (ui): Hide action buttons in read-only mode
 - (ui): Display queue latency in dashboard page and queue detail page.
 - (ui): Added copy-to-clipboard button for task ID in tasks list-view page.
+- (ui): Use logo image in the appbar (thank you @koddr!)
 
 ### Fixed
 - (ui): Pagination in ActiveTasks table is fixed

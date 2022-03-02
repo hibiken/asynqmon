@@ -12,7 +12,6 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Snackbar from "@material-ui/core/Snackbar";
 import SnackbarContent from "@material-ui/core/SnackbarContent";
-import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Slide from "@material-ui/core/Slide";
 import { TransitionProps } from "@material-ui/core/transitions";
@@ -40,6 +39,8 @@ import ServersView from "./views/ServersView";
 import RedisInfoView from "./views/RedisInfoView";
 import MetricsView from "./views/MetricsView";
 import PageNotFoundView from "./views/PageNotFoundView";
+import { ReactComponent as Logo } from "./images/logo-color.svg";
+import { ReactComponent as LogoDarkTheme } from "./images/logo-white.svg";
 
 const drawerWidth = 220;
 
@@ -73,9 +74,6 @@ const useStyles = (theme: Theme) =>
     },
     menuButtonHidden: {
       display: "none",
-    },
-    title: {
-      flexGrow: 1,
     },
     drawerPaper: {
       position: "relative",
@@ -176,15 +174,11 @@ function App(props: ConnectedProps<typeof connector>) {
               >
                 <MenuIcon />
               </IconButton>
-              <Typography
-                component="h1"
-                variant="h6"
-                noWrap
-                className={classes.title}
-                color="textPrimary"
-              >
-                Asynq Monitoring
-              </Typography>
+              {isDarkTheme(theme) ? (
+                <LogoDarkTheme width={200} height={48} />
+              ) : (
+                <Logo width={200} height={48} />
+              )}
             </Toolbar>
           </AppBar>
           <div className={classes.mainContainer}>
