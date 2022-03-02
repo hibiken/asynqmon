@@ -1,17 +1,19 @@
 {
   "files": {
-    "main.js": "/[[.RootPath]]/static/js/main.9ab02e37.chunk.js",
-    "main.js.map": "/[[.RootPath]]/static/js/main.9ab02e37.chunk.js.map",
+    "main.js": "/[[.RootPath]]/static/js/main.0094b47e.chunk.js",
+    "main.js.map": "/[[.RootPath]]/static/js/main.0094b47e.chunk.js.map",
     "runtime-main.js": "/[[.RootPath]]/static/js/runtime-main.4c7af7c1.js",
     "runtime-main.js.map": "/[[.RootPath]]/static/js/runtime-main.4c7af7c1.js.map",
-    "static/js/2.5eff4c2a.chunk.js": "/[[.RootPath]]/static/js/2.5eff4c2a.chunk.js",
-    "static/js/2.5eff4c2a.chunk.js.map": "/[[.RootPath]]/static/js/2.5eff4c2a.chunk.js.map",
+    "static/js/2.8c4ddcd7.chunk.js": "/[[.RootPath]]/static/js/2.8c4ddcd7.chunk.js",
+    "static/js/2.8c4ddcd7.chunk.js.map": "/[[.RootPath]]/static/js/2.8c4ddcd7.chunk.js.map",
     "index.html": "/[[.RootPath]]/index.html",
-    "static/js/2.5eff4c2a.chunk.js.LICENSE.txt": "/[[.RootPath]]/static/js/2.5eff4c2a.chunk.js.LICENSE.txt"
+    "static/js/2.8c4ddcd7.chunk.js.LICENSE.txt": "/[[.RootPath]]/static/js/2.8c4ddcd7.chunk.js.LICENSE.txt",
+    "static/media/logo-color.c2b0c1f3.svg": "/[[.RootPath]]/static/media/logo-color.c2b0c1f3.svg",
+    "static/media/logo-white.3fa2ac55.svg": "/[[.RootPath]]/static/media/logo-white.3fa2ac55.svg"
   },
   "entrypoints": [
     "static/js/runtime-main.4c7af7c1.js",
-    "static/js/2.5eff4c2a.chunk.js",
-    "static/js/main.9ab02e37.chunk.js"
+    "static/js/2.8c4ddcd7.chunk.js",
+    "static/js/main.0094b47e.chunk.js"
   ]
 }
