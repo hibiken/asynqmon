@@ -15,7 +15,8 @@ Please make sure the version compatibility with the Asynq package you are using.
 
 | Asynq version  | WebUI (asynqmon) version |
 | -------------- | ------------------------ |
-| 0.20.x         | 0.5.x                    |
+| 0.22.x         | 0.6.x                    |
+| 0.20.x, 0.21.x | 0.5.x                    |
 | 0.19.x         | 0.4.x                    |
 | 0.18.x         | 0.2.x, 0.3.x             |
 | 0.16.x, 0.17.x | 0.1.x                    |
@@ -120,7 +121,6 @@ Once the metrics data is collected by a Prometheus server, you can pass the addr
 The address can be specified via `--prometheus-addr`. This enables the metrics view on the Web UI.
 
 <img width="1532" alt="Screen Shot 2021-12-19 at 4 37 19 PM" src="https://user-images.githubusercontent.com/10953044/146696852-25916465-07f0-4ed5-af31-18be02390bcb.png">
-
 
 ### Examples
 
