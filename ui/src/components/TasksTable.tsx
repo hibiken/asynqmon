@@ -207,7 +207,10 @@ function TasksTable(props: Props & ReduxProps) {
         </div>
       </div>
       <TabPanel value="active" selected={props.selected}>
-        <ActiveTasksTable queue={props.queue} />
+        <ActiveTasksTable
+          queue={props.queue}
+          totalTaskCount={currentStats.active}
+        />
       </TabPanel>
       <TabPanel value="pending" selected={props.selected}>
         <PendingTasksTable

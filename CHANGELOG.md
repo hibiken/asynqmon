@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (ui): Display queue latency in dashboard page and queue detail page.
 - (ui): Added copy-to-clipboard button for task ID in tasks list-view page.
 
+### Fixed
+- (ui): Pagination in ActiveTasks table is fixed
+
 ## [0.5.0] - 2021-12-19
 
 Version 0.5 added support for [Prometheus](https://prometheus.io/) integration.

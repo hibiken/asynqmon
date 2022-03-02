@@ -90,6 +90,7 @@ type ReduxProps = ConnectedProps<typeof connector>;
 
 interface Props {
   queue: string; // name of the queue
+  totalTaskCount: number; // total number of active tasks
 }
 
 function ActiveTasksTable(props: Props & ReduxProps) {
@@ -251,7 +252,7 @@ function ActiveTasksTable(props: Props & ReduxProps) {
               <TablePagination
                 rowsPerPageOptions={rowsPerPageOptions}
                 colSpan={columns.length + 1}
-                count={props.tasks.length}
+                count={props.totalTaskCount}
                 rowsPerPage={pageSize}
                 page={page}
                 SelectProps={{
