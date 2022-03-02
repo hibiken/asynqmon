@@ -114,7 +114,7 @@ func toQueueStateSnapshot(info *asynq.QueueInfo) *queueStateSnapshot {
 		MemoryUsage:     info.MemoryUsage,
 		Size:            info.Size,
 		LatencyMillisec: info.Latency.Milliseconds(),
-		DisplayLatency:  info.Latency.String(),
+		DisplayLatency:  info.Latency.Round(10 * time.Millisecond).String(),
 		Active:          info.Active,
 		Pending:         info.Pending,
 		Scheduled:       info.Scheduled,
