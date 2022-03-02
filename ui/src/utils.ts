@@ -64,7 +64,11 @@ export function durationBefore(timestamp: string): string {
   }
 }
 
+const zeroTimestamp = "0001-01-01T00:00:00Z";
 export function timeAgo(timestamp: string): string {
+  if (timestamp === zeroTimestamp) {
+    return "-";
+  }
   try {
     return timeAgoUnix(Date.parse(timestamp) / 1000);
   } catch (error) {
