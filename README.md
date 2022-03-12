@@ -1,6 +1,6 @@
 <img src="https://user-images.githubusercontent.com/11155743/114745460-57760500-9d57-11eb-9a2c-43fa88171807.png" alt="Asynqmon logo" width="360px" />
 
-# A modern web based tool for monitoring & administering [Asynq](https://github.com/hibiken/asynq) queues and tasks
+# Web UI for monitoring & administering [Asynq](https://github.com/hibiken/asynq) task queue
 
 ## Overview
 
@@ -109,6 +109,7 @@ _Note_: Use `--redis-url` to specify address, db-number, and password with one f
 | `--redis-insecure-tls`(bool)      | `REDIS_INSECURE_TLS`      | disable TLS certificate host checks                                 | false            |
 | `--enable-metrics-exporter`(bool) | `ENABLE_METRICS_EXPORTER` | enable prometheus metrics exporter to expose queue metrics          | false            |
 | `--prometheus-addr`(string)       | `PROMETHEUS_ADDR`         | address of prometheus server to query time series                   | ""               |
+| `--read-only`(bool)               | `READ_ONLY`               | use web UI in read-only mode                                        | false            |
 
 ### Integration with Prometheus
 
