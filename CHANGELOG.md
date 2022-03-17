@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2022-03-17
+
+### Fixed
+- (ui): Show metrics link in sidebar when --prometheus-addr flag is provided
+
 ## [0.6.0] - 2022-03-02
 
 ### Added
