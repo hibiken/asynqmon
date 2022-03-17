@@ -25,6 +25,7 @@ export default function parseFlagsUnderWindow() {
     );
     window.PROMETHEUS_SERVER_ADDRESS = "";
   } else {
+      window.PROMETHEUS_SERVER_ADDRESS = window.FLAG_PROMETHEUS_SERVER_ADDRESS;
   }
 
   // READ_ONLY
