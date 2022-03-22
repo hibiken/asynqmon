@@ -67,6 +67,15 @@ function QueueInfoBanner(props: Props & ReduxProps) {
 
       <div className={classes.bannerItem}>
         <Typography variant="subtitle2" color="textPrimary" gutterBottom>
+          Task groups
+        </Typography>
+        <Typography color="textSecondary">
+          {queue ? queue.groups : "-"}
+        </Typography>
+      </div>
+
+      <div className={classes.bannerItem}>
+        <Typography variant="subtitle2" color="textPrimary" gutterBottom>
           Memory usage
         </Typography>
         <Typography color="textSecondary">

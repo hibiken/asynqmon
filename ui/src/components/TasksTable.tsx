@@ -52,8 +52,10 @@ function mapStatetoProps(state: AppState, ownProps: Props) {
         queue: ownProps.queue,
         paused: false,
         size: 0,
+        groups: 0,
         active: 0,
         pending: 0,
+        aggregating: 0,
         scheduled: 0,
         retry: 0,
         archived: 0,
@@ -111,7 +113,7 @@ const useStyles = makeStyles((theme) => ({
   },
   search: {
     position: "relative",
-    width: "312px",
+    width: "280px",
     borderRadius: "18px",
     backgroundColor: isDarkTheme(theme) ? "#303030" : theme.palette.grey[100],
     "&:hover, &:focus": {
@@ -147,6 +149,11 @@ function TasksTable(props: Props & ReduxProps) {
   const chips = [
     { key: "active", label: "Active", count: currentStats.active },
     { key: "pending", label: "Pending", count: currentStats.pending },
+    {
+      key: "aggregating",
+      label: "Aggregating",
+      count: currentStats.aggregating,
+    },
     { key: "scheduled", label: "Scheduled", count: currentStats.scheduled },
     { key: "retry", label: "Retry", count: currentStats.retry },
     { key: "archived", label: "Archived", count: currentStats.archived },
@@ -217,6 +224,9 @@ function TasksTable(props: Props & ReduxProps) {
           queue={props.queue}
           totalTaskCount={currentStats.pending}
         />
+      </TabPanel>
+      <TabPanel value="aggregating" selected={props.selected}>
+        <h3>TODO: GroupTable here</h3>
       </TabPanel>
       <TabPanel value="scheduled" selected={props.selected}>
         <ScheduledTasksTable

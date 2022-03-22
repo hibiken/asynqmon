@@ -38,6 +38,7 @@ const useStyles = makeStyles((theme) => ({
 const validStatus = [
   "active",
   "pending",
+  "aggregating",
   "scheduled",
   "retry",
   "archived",
