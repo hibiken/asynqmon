@@ -82,18 +82,21 @@ type queueStateSnapshot struct {
 	MemoryUsage int64 `json:"memory_usage_bytes"`
 	// Total number of tasks in the queue.
 	Size int `json:"size"`
+	// Totoal number of groups in the queue.
+	Groups int `json:"groups"`
 	// Latency of the queue in milliseconds.
 	LatencyMillisec int64 `json:"latency_msec"`
 	// Latency duration string for display purpose.
 	DisplayLatency string `json:"display_latency"`
 
 	// Number of tasks in each state.
-	Active    int `json:"active"`
-	Pending   int `json:"pending"`
-	Scheduled int `json:"scheduled"`
-	Retry     int `json:"retry"`
-	Archived  int `json:"archived"`
-	Completed int `json:"completed"`
+	Active      int `json:"active"`
+	Pending     int `json:"pending"`
+	Aggregating int `json:"aggregating"`
+	Scheduled   int `json:"scheduled"`
+	Retry       int `json:"retry"`
+	Archived    int `json:"archived"`
+	Completed   int `json:"completed"`
 
 	// Total number of tasks processed during the given date.
 	// The number includes both succeeded and failed tasks.
@@ -117,6 +120,7 @@ func toQueueStateSnapshot(info *asynq.QueueInfo) *queueStateSnapshot {
 		DisplayLatency:  info.Latency.Round(10 * time.Millisecond).String(),
 		Active:          info.Active,
 		Pending:         info.Pending,
+		Aggregating:     info.Aggregating,
 		Scheduled:       info.Scheduled,
 		Retry:           info.Retry,
 		Archived:        info.Archived,
