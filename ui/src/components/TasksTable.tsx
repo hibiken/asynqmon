@@ -12,6 +12,7 @@ import ScheduledTasksTable from "./ScheduledTasksTable";
 import RetryTasksTable from "./RetryTasksTable";
 import ArchivedTasksTable from "./ArchivedTasksTable";
 import CompletedTasksTable from "./CompletedTasksTable";
+import TaskGroupsTable from "./TaskGroupsTable";
 import { useHistory } from "react-router-dom";
 import { queueDetailsPath, taskDetailsPath } from "../paths";
 import { QueueInfo } from "../reducers/queuesReducer";
@@ -108,12 +109,14 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: "2px",
   },
   searchbar: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    flex: 1,
   },
   search: {
     position: "relative",
-    width: "280px",
+    maxWidth: 400,
     borderRadius: "18px",
     backgroundColor: isDarkTheme(theme) ? "#303030" : theme.palette.grey[100],
     "&:hover, &:focus": {
@@ -226,7 +229,7 @@ function TasksTable(props: Props & ReduxProps) {
         />
       </TabPanel>
       <TabPanel value="aggregating" selected={props.selected}>
-        <h3>TODO: GroupTable here</h3>
+        <TaskGroupsTable />
       </TabPanel>
       <TabPanel value="scheduled" selected={props.selected}>
         <ScheduledTasksTable
