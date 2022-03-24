@@ -58,6 +58,10 @@ export interface ListQueueStatsResponse {
   stats: { [qname: string]: DailyStat[] };
 }
 
+export interface ListGroupsResponse {
+  groups: GroupInfo[];
+}
+
 export interface RedisInfoResponse {
   address: string;
   info: RedisInfo;
@@ -250,6 +254,11 @@ export interface RedisInfo {
   used_memory_startup: string;
 }
 
+export interface GroupInfo {
+  group: string;
+  size: number;
+}
+
 export interface Queue {
   queue: string;
   paused: boolean;
@@ -372,6 +381,14 @@ export async function listQueueStats(): Promise<ListQueueStatsResponse> {
   const resp = await axios({
     method: "get",
     url: `${getBaseUrl()}/queue_stats`,
+  });
+  return resp.data;
+}
+
+export async function listGroups(qname: string): Promise<ListGroupsResponse> {
+  const resp = await axios({
+    method: "get",
+    url: `${getBaseUrl()}/queues/${qname}`,
   });
   return resp.data;
 }
