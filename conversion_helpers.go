@@ -433,6 +433,26 @@ func toCompletedTasks(in []*asynq.TaskInfo, pf PayloadFormatter, rf ResultFormat
 	return out
 }
 
+type groupInfo struct {
+	Group string `json:"group"`
+	Size  int    `json:"size"`
+}
+
+func toGroupInfos(in []*asynq.GroupInfo) []*groupInfo {
+	out := make([]*groupInfo, len(in))
+	for i, g := range in {
+		out[i] = toGroupInfo(g)
+	}
+	return out
+}
+
+func toGroupInfo(in *asynq.GroupInfo) *groupInfo {
+	return &groupInfo{
+		Group: in.Group,
+		Size:  in.Size,
+	}
+}
+
 type schedulerEntry struct {
 	ID            string   `json:"id"`
 	Spec          string   `json:"spec"`
