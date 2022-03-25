@@ -25,6 +25,10 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "10px",
     marginRight: "2px",
   },
+  inputRoot: {
+    borderRadius: 20,
+    paddingLeft: "12px !important",
+  },
 }));
 
 interface Props {
@@ -67,6 +71,10 @@ export default function GroupSelect(props: Props) {
       renderInput={(params) => (
         <TextField {...params} label="Select group" variant="outlined" />
       )}
+      classes={{
+        inputRoot: classes.inputRoot,
+      }}
+      size="small"
     />
   );
 }
