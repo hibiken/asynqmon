@@ -56,6 +56,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-window": "1.8.5",
     "redux-devtools": "3.7.0"
   },
   "homepage": "/[[.RootPath]]"
