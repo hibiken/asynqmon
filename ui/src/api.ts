@@ -388,7 +388,7 @@ export async function listQueueStats(): Promise<ListQueueStatsResponse> {
 export async function listGroups(qname: string): Promise<ListGroupsResponse> {
   const resp = await axios({
     method: "get",
-    url: `${getBaseUrl()}/queues/${qname}`,
+    url: `${getBaseUrl()}/queues/${qname}/groups`,
   });
   return resp.data;
 }

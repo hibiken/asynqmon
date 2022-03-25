@@ -229,7 +229,7 @@ function TasksTable(props: Props & ReduxProps) {
         />
       </TabPanel>
       <TabPanel value="aggregating" selected={props.selected}>
-        <TaskGroupsTable />
+        <TaskGroupsTable queue={props.queue} />
       </TabPanel>
       <TabPanel value="scheduled" selected={props.selected}>
         <ScheduledTasksTable
