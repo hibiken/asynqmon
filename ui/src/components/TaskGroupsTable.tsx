@@ -5,6 +5,7 @@ import { listGroupsAsync } from "../actions/groupsActions";
 import GroupSelect from "./GroupSelect";
 import { usePolling } from "../hooks";
 import { AppState } from "../store";
+import { GroupInfo } from "../api";
 
 const useStyles = makeStyles((theme) => ({
   groupSelector: {
@@ -34,6 +35,9 @@ interface Props {
 }
 
 function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
+  const [selectedGroup, setSelectedGroup] = React.useState<GroupInfo | null>(
+    null
+  );
   const { pollInterval, listGroupsAsync, queue } = props;
   const classes = useStyles();
 
@@ -46,7 +50,12 @@ function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
   return (
     <div>
       <div className={classes.groupSelector}>
-        <GroupSelect groups={props.groups} error={props.groupsError} />
+        <GroupSelect
+          selected={selectedGroup}
+          onSelect={setSelectedGroup}
+          groups={props.groups}
+          error={props.groupsError}
+        />
       </div>
     </div>
   );

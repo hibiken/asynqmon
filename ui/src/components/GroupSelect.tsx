@@ -28,15 +28,27 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
+  selected: GroupInfo | null;
+  onSelect: (newVal: GroupInfo | null) => void;
   groups: GroupInfo[];
   error: string;
 }
 
 export default function GroupSelect(props: Props) {
   const classes = useStyles();
+  const [inputValue, setInputValue] = React.useState("");
+
   return (
     <Autocomplete
       id="task-group-selector"
+      value={props.selected}
+      onChange={(event: any, newValue: GroupInfo | null) => {
+        props.onSelect(newValue);
+      }}
+      inputValue={inputValue}
+      onInputChange={(event, newInputValue) => {
+        setInputValue(newInputValue);
+      }}
       disableListWrap
       ListboxComponent={
         ListboxComponent as React.ComponentType<
