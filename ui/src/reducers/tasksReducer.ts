@@ -129,6 +129,9 @@ import {
   BATCH_DELETE_COMPLETED_TASKS_BEGIN,
   BATCH_DELETE_COMPLETED_TASKS_ERROR,
   BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
+  LIST_AGGREGATING_TASKS_BEGIN,
+  LIST_AGGREGATING_TASKS_SUCCESS,
+  LIST_AGGREGATING_TASKS_ERROR,
 } from "../actions/tasksActions";
 import { TaskInfo } from "../api";
 
@@ -191,6 +194,13 @@ interface TasksState {
     error: string;
     data: TaskInfoExtended[];
   };
+  aggregatingTasks: {
+    loading: boolean;
+    batchActionPending: boolean;
+    allActionPending: boolean;
+    error: string;
+    data: TaskInfoExtended[];
+  };
   taskInfo: {
     loading: boolean;
     error: string;
@@ -235,6 +245,13 @@ const initialState: TasksState = {
     data: [],
   },
   completedTasks: {
+    loading: false,
+    batchActionPending: false,
+    allActionPending: false,
+    error: "",
+    data: [],
+  },
+  aggregatingTasks: {
     loading: false,
     batchActionPending: false,
     allActionPending: false,
@@ -479,6 +496,40 @@ function tasksReducer(
         ...state,
         completedTasks: {
           ...state.completedTasks,
+          loading: false,
+          error: action.error,
+          data: [],
+        },
+      };
+
+    case LIST_AGGREGATING_TASKS_BEGIN:
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          loading: true,
+        },
+      };
+
+    case LIST_AGGREGATING_TASKS_SUCCESS:
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          loading: false,
+          error: "",
+          data: action.payload.tasks.map((task) => ({
+            ...task,
+            requestPending: false,
+          })),
+        },
+      };
+
+    case LIST_AGGREGATING_TASKS_ERROR:
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
           loading: false,
           error: action.error,
           data: [],

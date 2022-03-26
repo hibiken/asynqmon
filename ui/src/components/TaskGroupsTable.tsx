@@ -32,6 +32,7 @@ import { TableColumn } from "../types/table";
 import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
+import { listAggregatingTasksAsync } from "../actions/tasksActions";
 
 const useStyles = makeStyles((theme) => ({
   groupSelector: {
@@ -60,11 +61,13 @@ function mapStateToProps(state: AppState) {
     groups: state.groups.data,
     groupsError: state.groups.error,
     pollInterval: state.settings.pollInterval,
+    pageSize: state.settings.taskRowsPerPage,
   };
 }
 
 const mapDispatchToProps = {
   listGroupsAsync,
+  listAggregatingTasksAsync,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -87,15 +90,31 @@ function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
   const [selectedGroup, setSelectedGroup] = React.useState<GroupInfo | null>(
     null
   );
+  const [page, setPage] = React.useState(0);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
-  const { pollInterval, listGroupsAsync, queue } = props;
+  const [activeTaskId, setActiveTaskId] = React.useState<string>("");
+  const {
+    pollInterval,
+    listGroupsAsync,
+    listAggregatingTasksAsync,
+    queue,
+    pageSize,
+  } = props;
   const classes = useStyles();
 
   const fetchGroups = useCallback(() => {
     listGroupsAsync(queue);
   }, [listGroupsAsync, queue]);
 
+  const fetchTasks = useCallback(() => {
+    const pageOpts = { page: page + 1, size: pageSize };
+    if (selectedGroup !== null) {
+      listAggregatingTasksAsync(queue, selectedGroup.group, pageOpts);
+    }
+  }, [page, pageSize, queue, selectedGroup, listAggregatingTasksAsync]);
+
   usePolling(fetchGroups, pollInterval);
+  usePolling(fetchTasks, pollInterval);
 
   const rowCount = 0; // TODO: props.tasks.length;
   const numSelected = selectedIds.length;

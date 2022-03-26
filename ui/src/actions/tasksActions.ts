@@ -34,6 +34,7 @@ import {
   listRetryTasks,
   listScheduledTasks,
   listCompletedTasks,
+  listAggregatingTasks,
   PaginationOptions,
   runAllArchivedTasks,
   runAllRetryTasks,
@@ -75,6 +76,9 @@ export const LIST_ARCHIVED_TASKS_ERROR = "LIST_ARCHIVED_TASKS_ERROR";
 export const LIST_COMPLETED_TASKS_BEGIN = "LIST_COMPLETED_TASKS_BEGIN";
 export const LIST_COMPLETED_TASKS_SUCCESS = "LIST_COMPLETED_TASKS_SUCCESS";
 export const LIST_COMPLETED_TASKS_ERROR = "LIST_COMPLETED_TASKS_ERROR";
+export const LIST_AGGREGATING_TASKS_BEGIN = "LIST_AGGREGATING_TASKS_BEGIN";
+export const LIST_AGGREGATING_TASKS_SUCCESS = "LIST_AGGREGATING_TASKS_SUCCESS";
+export const LIST_AGGREGATING_TASKS_ERROR = "LIST_AGGREGATING_TASKS_ERROR";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
@@ -345,6 +349,26 @@ interface ListCompletedTasksSuccessAction {
 interface ListCompletedTasksErrorAction {
   type: typeof LIST_COMPLETED_TASKS_ERROR;
   queue: string;
+  error: string; // error description
+}
+
+interface ListAggregatingTasksBeginAction {
+  type: typeof LIST_AGGREGATING_TASKS_BEGIN;
+  queue: string;
+  group: string;
+}
+
+interface ListAggregatingTasksSuccessAction {
+  type: typeof LIST_AGGREGATING_TASKS_SUCCESS;
+  queue: string;
+  group: string;
+  payload: ListTasksResponse;
+}
+
+interface ListAggregatingTasksErrorAction {
+  type: typeof LIST_AGGREGATING_TASKS_ERROR;
+  queue: string;
+  group: string;
   error: string; // error description
 }
 
@@ -1024,6 +1048,9 @@ export type TasksActionTypes =
   | ListCompletedTasksBeginAction
   | ListCompletedTasksSuccessAction
   | ListCompletedTasksErrorAction
+  | ListAggregatingTasksBeginAction
+  | ListAggregatingTasksSuccessAction
+  | ListAggregatingTasksErrorAction
   | CancelActiveTaskBeginAction
   | CancelActiveTaskSuccessAction
   | CancelActiveTaskErrorAction
@@ -1308,6 +1335,40 @@ export function listCompletedTasksAsync(
       dispatch({
         type: LIST_COMPLETED_TASKS_ERROR,
         queue: qname,
+        error: toErrorString(error),
+      });
+    }
+  };
+}
+
+export function listAggregatingTasksAsync(
+  qname: string,
+  gname: string,
+  pageOpts?: PaginationOptions
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    try {
+      dispatch({
+        type: LIST_AGGREGATING_TASKS_BEGIN,
+        queue: qname,
+        group: gname,
+      });
+      const response = await listAggregatingTasks(qname, gname, pageOpts);
+      dispatch({
+        type: LIST_AGGREGATING_TASKS_SUCCESS,
+        queue: qname,
+        group: gname,
+        payload: response,
+      });
+    } catch (error) {
+      console.error(
+        "listAggregatingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: LIST_AGGREGATING_TASKS_ERROR,
+        queue: qname,
+        group: gname,
         error: toErrorString(error),
       });
     }
