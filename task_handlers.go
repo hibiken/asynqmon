@@ -310,6 +310,38 @@ func newListCompletedTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadForm
 	}
 }
 
+func newListAggregatingTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadFormatter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname := vars["qname"]
+		gname := vars["gname"]
+		pageSize, pageNum := getPageOptions(r)
+		tasks, err := inspector.ListAggregatingTasks(
+			qname, gname, asynq.PageSize(pageSize), asynq.Page(pageNum))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		qinfo, err := inspector.GetQueueInfo(qname)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		payload := make(map[string]interface{})
+		if len(tasks) == 0 {
+			// avoid nil for the tasks field in json output.
+			payload["tasks"] = make([]*aggregatingTask, 0)
+		} else {
+			payload["tasks"] = toAggregatingTasks(tasks, pf)
+		}
+		payload["stats"] = toQueueStateSnapshot(qinfo)
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func newDeleteTaskHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)

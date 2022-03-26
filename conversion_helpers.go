@@ -313,6 +313,35 @@ func toPendingTasks(in []*asynq.TaskInfo, pf PayloadFormatter) []*pendingTask {
 	return out
 }
 
+type aggregatingTask struct {
+	*baseTask
+	Group string `json:"group"`
+}
+
+func toAggregatingTask(ti *asynq.TaskInfo, pf PayloadFormatter) *aggregatingTask {
+	base := &baseTask{
+		ID:        ti.ID,
+		Type:      ti.Type,
+		Payload:   pf.FormatPayload(ti.Type, ti.Payload),
+		Queue:     ti.Queue,
+		MaxRetry:  ti.MaxRetry,
+		Retried:   ti.Retried,
+		LastError: ti.LastErr,
+	}
+	return &aggregatingTask{
+		baseTask: base,
+		Group:    ti.Group,
+	}
+}
+
+func toAggregatingTasks(in []*asynq.TaskInfo, pf PayloadFormatter) []*aggregatingTask {
+	out := make([]*aggregatingTask, len(in))
+	for i, ti := range in {
+		out[i] = toAggregatingTask(ti, pf)
+	}
+	return out
+}
+
 type scheduledTask struct {
 	*baseTask
 	NextProcessAt time.Time `json:"next_process_at"`
