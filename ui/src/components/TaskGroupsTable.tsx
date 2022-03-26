@@ -33,6 +33,7 @@ import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
 import { listAggregatingTasksAsync } from "../actions/tasksActions";
+import { taskRowsPerPageChange } from "../actions/settingsActions";
 
 const useStyles = makeStyles((theme) => ({
   groupSelector: {
@@ -60,6 +61,9 @@ function mapStateToProps(state: AppState) {
   return {
     groups: state.groups.data,
     groupsError: state.groups.error,
+    loading: state.tasks.aggregatingTasks.loading,
+    group: state.tasks.aggregatingTasks.group,
+    tasks: state.tasks.aggregatingTasks.data,
     pollInterval: state.settings.pollInterval,
     pageSize: state.settings.taskRowsPerPage,
   };
@@ -68,6 +72,7 @@ function mapStateToProps(state: AppState) {
 const mapDispatchToProps = {
   listGroupsAsync,
   listAggregatingTasksAsync,
+  taskRowsPerPageChange,
 };
 
 const connector = connect(mapStateToProps, mapDispatchToProps);
@@ -80,11 +85,9 @@ const columns: TableColumn[] = [
   { key: "id", label: "ID", align: "left" },
   { key: "type", label: "Type", align: "left" },
   { key: "paylod", label: "Payload", align: "left" },
+  { key: "group", label: "Group", align: "left" },
   { key: "actions", label: "Actions", align: "center" },
 ];
-
-// TODO: remove this once we read the real data.
-const dummyTasks: TaskInfoExtended[] = [];
 
 function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
   const [selectedGroup, setSelectedGroup] = React.useState<GroupInfo | null>(
@@ -102,6 +105,29 @@ function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
   } = props;
   const classes = useStyles();
 
+  const handlePageChange = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    props.taskRowsPerPageChange(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      const newSelected = props.tasks.map((t) => t.id);
+      setSelectedIds(newSelected);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
   const fetchGroups = useCallback(() => {
     listGroupsAsync(queue);
   }, [listGroupsAsync, queue]);
@@ -116,7 +142,7 @@ function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
   usePolling(fetchGroups, pollInterval);
   usePolling(fetchTasks, pollInterval);
 
-  const rowCount = 0; // TODO: props.tasks.length;
+  const rowCount = props.tasks.length;
   const numSelected = selectedIds.length;
   return (
     <div>
@@ -177,7 +203,7 @@ function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
                     <Checkbox
                       indeterminate={numSelected > 0 && numSelected < rowCount}
                       checked={rowCount > 0 && numSelected === rowCount}
-                      onChange={() => {} /*TODO: handleSelectAllClick*/}
+                      onChange={handleSelectAllClick}
                       inputProps={{
                         "aria-label": "select all tasks shown in the table",
                       }}
@@ -204,8 +230,8 @@ function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {
-              /*props.tasks */ dummyTasks.map((task) => (
+            {props.group === selectedGroup?.group &&
+              props.tasks.map((task) => (
                 <Row
                   key={task.id}
                   task={task}
@@ -227,27 +253,26 @@ function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
                   onArchiveClick={() => {
                     // TODO: props.archivePendingTaskAsync(queue, task.id);
                   }}
-                  onActionCellEnter={() => {} /*setActiveTaskId(task.id) */}
-                  onActionCellLeave={() => {} /*setActiveTaskId("")*/}
-                  showActions={false /*activeTaskId === task.id*/}
+                  onActionCellEnter={() => setActiveTaskId(task.id)}
+                  onActionCellLeave={() => setActiveTaskId("")}
+                  showActions={activeTaskId === task.id}
                 />
-              ))
-            }
+              ))}
           </TableBody>
           <TableFooter>
             <TableRow>
               <TablePagination
                 rowsPerPageOptions={rowsPerPageOptions}
                 colSpan={columns.length + 1}
-                count={0 /* props.totalTaskCount */}
-                rowsPerPage={20 /*pageSize*/}
-                page={0 /*page*/}
+                count={selectedGroup === null ? 0 : selectedGroup.size}
+                rowsPerPage={pageSize}
+                page={page}
                 SelectProps={{
                   inputProps: { "aria-label": "rows per page" },
                   native: true,
                 }}
-                onPageChange={() => {} /* handlePageChange */}
-                onRowsPerPageChange={() => {} /* handleRowsPerPageChange */}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
                 ActionsComponent={TablePaginationActions}
                 className={classes.pagination}
               />
@@ -359,8 +384,7 @@ function Row(props: RowProps) {
           {prettifyPayload(task.payload)}
         </SyntaxHighlighter>
       </TableCell>
-      <TableCell align="right">{task.retried}</TableCell>
-      <TableCell align="right">{task.max_retry}</TableCell>
+      <TableCell>{task.group}</TableCell>
       {!window.READ_ONLY && (
         <TableCell
           align="center"

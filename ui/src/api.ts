@@ -300,6 +300,7 @@ export interface TaskInfo {
   next_process_at: string;
   timeout_seconds: number;
   deadline: string;
+  group: string;
   completed_at: string;
   result: string;
   ttl_seconds: number;
