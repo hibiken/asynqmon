@@ -526,6 +526,22 @@ export async function listCompletedTasks(
   return resp.data;
 }
 
+export async function listAggregatingTasks(
+  qname: string,
+  gname: string,
+  pageOpts?: PaginationOptions
+): Promise<ListTasksResponse> {
+  let url = `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks`;
+  if (pageOpts) {
+    url += `?${queryString.stringify(pageOpts)}`;
+  }
+  const resp = await axios({
+    method: "get",
+    url,
+  });
+  return resp.data;
+}
+
 export async function archivePendingTask(
   qname: string,
   taskId: string
