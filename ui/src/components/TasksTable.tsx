@@ -12,7 +12,7 @@ import ScheduledTasksTable from "./ScheduledTasksTable";
 import RetryTasksTable from "./RetryTasksTable";
 import ArchivedTasksTable from "./ArchivedTasksTable";
 import CompletedTasksTable from "./CompletedTasksTable";
-import TaskGroupsTable from "./TaskGroupsTable";
+import AggregatingTasksTable from "./AggregatingTasksTable";
 import { useHistory } from "react-router-dom";
 import { queueDetailsPath, taskDetailsPath } from "../paths";
 import { QueueInfo } from "../reducers/queuesReducer";
@@ -229,7 +229,7 @@ function TasksTable(props: Props & ReduxProps) {
         />
       </TabPanel>
       <TabPanel value="aggregating" selected={props.selected}>
-        <TaskGroupsTable queue={props.queue} />
+        <AggregatingTasksTable queue={props.queue} />
       </TabPanel>
       <TabPanel value="scheduled" selected={props.selected}>
         <ScheduledTasksTable

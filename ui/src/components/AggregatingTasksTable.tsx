@@ -89,7 +89,9 @@ const columns: TableColumn[] = [
   { key: "actions", label: "Actions", align: "center" },
 ];
 
-function TaskGroupsTable(props: Props & ConnectedProps<typeof connector>) {
+function AggregatingTasksTable(
+  props: Props & ConnectedProps<typeof connector>
+) {
   const [selectedGroup, setSelectedGroup] = React.useState<GroupInfo | null>(
     null
   );
@@ -427,4 +429,4 @@ function Row(props: RowProps) {
   );
 }
 
-export default connector(TaskGroupsTable);
+export default connector(AggregatingTasksTable);
