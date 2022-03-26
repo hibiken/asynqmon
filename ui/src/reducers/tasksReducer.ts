@@ -195,6 +195,7 @@ interface TasksState {
     data: TaskInfoExtended[];
   };
   aggregatingTasks: {
+    group: string;
     loading: boolean;
     batchActionPending: boolean;
     allActionPending: boolean;
@@ -252,6 +253,7 @@ const initialState: TasksState = {
     data: [],
   },
   aggregatingTasks: {
+    group: "",
     loading: false,
     batchActionPending: false,
     allActionPending: false,
@@ -507,6 +509,7 @@ function tasksReducer(
         ...state,
         aggregatingTasks: {
           ...state.aggregatingTasks,
+          group: action.group,
           loading: true,
         },
       };
@@ -516,6 +519,7 @@ function tasksReducer(
         ...state,
         aggregatingTasks: {
           ...state.aggregatingTasks,
+          group: action.group,
           loading: false,
           error: "",
           data: action.payload.tasks.map((task) => ({
@@ -530,6 +534,7 @@ function tasksReducer(
         ...state,
         aggregatingTasks: {
           ...state.aggregatingTasks,
+          group: action.group,
           loading: false,
           error: action.error,
           data: [],
