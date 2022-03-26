@@ -17,6 +17,8 @@ import ArchiveIcon from "@material-ui/icons/Archive";
 import DeleteIcon from "@material-ui/icons/Delete";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
+import Alert from "@material-ui/lab/Alert";
+import AlertTitle from "@material-ui/lab/AlertTitle";
 import { useHistory } from "react-router-dom";
 import { listGroupsAsync } from "../actions/groupsActions";
 import GroupSelect from "./GroupSelect";
@@ -62,6 +64,7 @@ function mapStateToProps(state: AppState) {
     groups: state.groups.data,
     groupsError: state.groups.error,
     loading: state.tasks.aggregatingTasks.loading,
+    error: state.tasks.aggregatingTasks.error,
     group: state.tasks.aggregatingTasks.group,
     tasks: state.tasks.aggregatingTasks.data,
     pollInterval: state.settings.pollInterval,
@@ -143,6 +146,23 @@ function AggregatingTasksTable(
 
   usePolling(fetchGroups, pollInterval);
   usePolling(fetchTasks, pollInterval);
+
+  if (props.error.length > 0) {
+    return (
+      <Alert severity="error" className={classes.alert}>
+        <AlertTitle>Error</AlertTitle>
+        {props.error}
+      </Alert>
+    );
+  }
+  if (props.groups.length === 0) {
+    return (
+      <Alert severity="info" className={classes.alert}>
+        <AlertTitle>Info</AlertTitle>
+        No aggregating tasks at this time.
+      </Alert>
+    );
+  }
 
   const rowCount = props.tasks.length;
   const numSelected = selectedIds.length;
