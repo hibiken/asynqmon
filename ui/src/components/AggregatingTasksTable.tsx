@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -95,12 +95,10 @@ const columns: TableColumn[] = [
 function AggregatingTasksTable(
   props: Props & ConnectedProps<typeof connector>
 ) {
-  const [selectedGroup, setSelectedGroup] = React.useState<GroupInfo | null>(
-    null
-  );
-  const [page, setPage] = React.useState(0);
-  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
-  const [activeTaskId, setActiveTaskId] = React.useState<string>("");
+  const [selectedGroup, setSelectedGroup] = useState<GroupInfo | null>(null);
+  const [page, setPage] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState<string>("");
   const {
     pollInterval,
     listGroupsAsync,
