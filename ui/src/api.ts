@@ -608,6 +608,115 @@ export async function deleteAllPendingTasks(
   return resp.data;
 }
 
+export async function deleteAggregatingTask(
+  qname: string,
+  gname: string,
+  taskId: string
+): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks/${taskId}`,
+  });
+}
+
+export async function batchDeleteAggregatingTasks(
+  qname: string,
+  gname: string,
+  taskIds: string[]
+): Promise<BatchDeleteTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks:batch_delete`,
+    data: {
+      task_ids: taskIds,
+    },
+  });
+  return resp.data;
+}
+
+export async function deleteAllAggregatingTasks(
+  qname: string,
+  gname: string
+): Promise<DeleteAllTasksResponse> {
+  const resp = await axios({
+    method: "delete",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks:delete_all`,
+  });
+  return resp.data;
+}
+
+export async function runAggregatingTask(
+  qname: string,
+  gname: string,
+  taskId: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks/${taskId}:run`,
+  });
+}
+
+export async function batchRunAggregatingTasks(
+  qname: string,
+  gname: string,
+  taskIds: string[]
+): Promise<BatchRunTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks:batch_run`,
+    data: {
+      task_ids: taskIds,
+    },
+  });
+  return resp.data;
+}
+
+export async function runAllAggregatingTasks(
+  qname: string,
+  gname: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks:run_all`,
+  });
+}
+
+export async function archiveAggregatingTask(
+  qname: string,
+  gname: string,
+  taskId: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks/${taskId}:archive`,
+  });
+}
+
+export async function batchArchiveAggregatingTasks(
+  qname: string,
+  gname: string,
+  taskIds: string[]
+): Promise<BatchArchiveTasksResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks:batch_archive`,
+    data: {
+      task_ids: taskIds,
+    },
+  });
+  return resp.data;
+}
+
+export async function archiveAllAggregatingTasks(
+  qname: string,
+  gname: string
+): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks:archive_all`,
+  });
+}
+
 export async function runScheduledTask(
   qname: string,
   taskId: string
