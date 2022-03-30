@@ -414,6 +414,23 @@ func newDeleteAllPendingTasksHandlerFunc(inspector *asynq.Inspector) http.Handle
 	}
 }
 
+func newDeleteAllAggregatingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname, gname := vars["qname"], vars["gname"]
+		n, err := inspector.DeleteAllAggregatingTasks(qname, gname)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		resp := deleteAllTasksResponse{n}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func newDeleteAllScheduledTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
@@ -511,10 +528,34 @@ func newRunAllArchivedTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerF
 	}
 }
 
+func newRunAllAggregatingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname, gname := vars["qname"], vars["gname"]
+		if _, err := inspector.RunAllAggregatingTasks(qname, gname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 func newArchiveAllPendingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qname := mux.Vars(r)["qname"]
 		if _, err := inspector.ArchiveAllPendingTasks(qname); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func newArchiveAllAggregatingTasksHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		qname, gname := vars["qname"], vars["gname"]
+		if _, err := inspector.ArchiveAllAggregatingTasks(qname, gname); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
