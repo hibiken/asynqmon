@@ -132,6 +132,9 @@ import {
   LIST_AGGREGATING_TASKS_BEGIN,
   LIST_AGGREGATING_TASKS_SUCCESS,
   LIST_AGGREGATING_TASKS_ERROR,
+  DELETE_ALL_AGGREGATING_TASKS_BEGIN,
+  DELETE_ALL_AGGREGATING_TASKS_SUCCESS,
+  DELETE_ALL_AGGREGATING_TASKS_ERROR,
 } from "../actions/tasksActions";
 import { TaskInfo } from "../api";
 
@@ -1399,6 +1402,44 @@ function tasksReducer(
               requestPending: false,
             };
           }),
+        },
+      };
+
+    case DELETE_ALL_AGGREGATING_TASKS_BEGIN:
+      if (state.aggregatingTasks.group !== action.group) {
+        return state;
+      }
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          allActionPending: true,
+        },
+      };
+
+    case DELETE_ALL_AGGREGATING_TASKS_SUCCESS:
+      if (state.aggregatingTasks.group !== action.group) {
+        return state;
+      }
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          allActionPending: false,
+          data: [],
+        },
+      };
+
+    case DELETE_ALL_AGGREGATING_TASKS_ERROR:
+      if (state.aggregatingTasks.group !== action.group) {
+        return state;
+      }
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          allActionPending: false,
+          error: action.error,
         },
       };
 

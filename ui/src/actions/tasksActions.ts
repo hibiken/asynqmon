@@ -50,6 +50,7 @@ import {
   archiveAllPendingTasks,
   TaskInfo,
   getTaskInfo,
+  deleteAllAggregatingTasks,
 } from "../api";
 import { Dispatch } from "redux";
 import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
@@ -235,6 +236,42 @@ export const BATCH_DELETE_COMPLETED_TASKS_SUCCESS =
   "BATCH_DELETE_COMPLETED_TASKS_SUCCESS";
 export const BATCH_DELETE_COMPLETED_TASKS_ERROR =
   "BATCH_DELETE_COMPLETED_TASKS_ERROR";
+export const BATCH_RUN_AGGREGATING_TASKS_BEGIN =
+  "BATCH_RUN_AGGREGATING_TASKS_BEGIN";
+export const BATCH_RUN_AGGREGATING_TASKS_SUCCESS =
+  "BATCH_RUN_AGGREGATING_TASKS_SUCCESS";
+export const BATCH_RUN_AGGREGATING_TASKS_ERROR =
+  "BATCH_RUN_AGGREGATING_TASKS_ERROR";
+export const BATCH_ARCHIVE_AGGREGATING_TASKS_BEGIN =
+  "BATCH_ARCHIVE_AGGREGATING_TASKS_BEGIN";
+export const BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS =
+  "BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS";
+export const BATCH_ARCHIVE_AGGREGATING_TASKS_ERROR =
+  "BATCH_RUN_AGGREGATING_TASKS_ERROR";
+export const BATCH_DELETE_AGGREGATING_TASKS_BEGIN =
+  "BATCH_DELETE_AGGREGATING_TASKS_BEGIN";
+export const BATCH_DELETE_AGGREGATING_TASKS_SUCCESS =
+  "BATCH_DELETE_AGGREGATING_TASKS_SUCCESS";
+export const BATCH_DELETE_AGGREGATING_TASKS_ERROR =
+  "BATCH_DELETE_AGGREGATING_TASKS_ERROR";
+export const RUN_ALL_AGGREGATING_TASKS_BEGIN =
+  "RUN_ALL_AGGREGATING_TASKS_BEGIN";
+export const RUN_ALL_AGGREGATING_TASKS_SUCCESS =
+  "RUN_ALL_AGGREGATING_TASKS_SUCCESS";
+export const RUN_ALL_AGGREGATING_TASKS_ERROR =
+  "RUN_ALL_AGGREGATING_TASKS_ERROR";
+export const ARCHIVE_ALL_AGGREGATING_TASKS_BEGIN =
+  "ARCHIVE_ALL_AGGREGATING_TASKS_BEGIN";
+export const ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS =
+  "ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS";
+export const ARCHIVE_ALL_AGGREGATING_TASKS_ERROR =
+  "ARCHIVE_ALL_AGGREGATING_TASKS_ERROR";
+export const DELETE_ALL_AGGREGATING_TASKS_BEGIN =
+  "DELETE_ALL_AGGREGATING_TASKS_BEGIN";
+export const DELETE_ALL_AGGREGATING_TASKS_SUCCESS =
+  "DELETE_ALL_AGGREGATING_TASKS_SUCCESS";
+export const DELETE_ALL_AGGREGATING_TASKS_ERROR =
+  "DELETE_ALL_AGGREGATING_TASKS_ERROR";
 
 interface GetTaskInfoBeginAction {
   type: typeof GET_TASK_INFO_BEGIN;
@@ -1025,6 +1062,124 @@ interface DeleteAllCompletedTasksErrorAction {
   error: string;
 }
 
+interface BatchDeleteAggregatingTasksBeginAction {
+  type: typeof BATCH_DELETE_AGGREGATING_TASKS_BEGIN;
+  queue: string;
+  taskIds: string[];
+}
+
+interface BatchDeleteAggregatingTasksSuccessAction {
+  type: typeof BATCH_DELETE_AGGREGATING_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchDeleteTasksResponse;
+}
+
+interface BatchDeleteAggregatingTasksErrorAction {
+  type: typeof BATCH_DELETE_AGGREGATING_TASKS_ERROR;
+  queue: string;
+  taskIds: string[];
+  error: string;
+}
+
+interface BatchRunAggregatingTasksBeginAction {
+  type: typeof BATCH_RUN_AGGREGATING_TASKS_BEGIN;
+  queue: string;
+  taskIds: string[];
+}
+
+interface BatchRunAggregatingTasksSuccessAction {
+  type: typeof BATCH_RUN_AGGREGATING_TASKS_SUCCESS;
+  queue: string;
+  payload: BatchRunTasksResponse;
+}
+
+interface BatchRunAggregatingTasksErrorAction {
+  type: typeof BATCH_RUN_AGGREGATING_TASKS_ERROR;
+  queue: string;
+  taskIds: string[];
+  error: string;
+}
+
+interface RunAllAggregatingTasksBeginAction {
+  type: typeof RUN_ALL_AGGREGATING_TASKS_BEGIN;
+  queue: string;
+  group: string;
+}
+
+interface RunAllAggregatingTasksSuccessAction {
+  type: typeof RUN_ALL_AGGREGATING_TASKS_SUCCESS;
+  queue: string;
+  group: string;
+}
+
+interface RunAllAggregatingTasksErrorAction {
+  type: typeof RUN_ALL_AGGREGATING_TASKS_ERROR;
+  queue: string;
+  group: string;
+  error: string;
+}
+
+interface BatchArchiveAggregatingTasksBeginAction {
+  type: typeof BATCH_ARCHIVE_AGGREGATING_TASKS_BEGIN;
+  queue: string;
+  group: string;
+  taskIds: string[];
+}
+
+interface BatchArchiveAggregatingTasksSuccessAction {
+  type: typeof BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS;
+  queue: string;
+  group: string;
+  payload: BatchArchiveTasksResponse;
+}
+
+interface BatchArchiveAggregatingTasksErrorAction {
+  type: typeof BATCH_ARCHIVE_AGGREGATING_TASKS_ERROR;
+  queue: string;
+  group: string;
+  taskIds: string[];
+  error: string;
+}
+
+interface ArchiveAllAggregatingTasksBeginAction {
+  type: typeof ARCHIVE_ALL_AGGREGATING_TASKS_BEGIN;
+  queue: string;
+  group: string;
+}
+
+interface ArchiveAllAggregatingTasksSuccessAction {
+  type: typeof ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS;
+  queue: string;
+  group: string;
+}
+
+interface ArchiveAllAggregatingTasksErrorAction {
+  type: typeof ARCHIVE_ALL_AGGREGATING_TASKS_ERROR;
+  queue: string;
+  group: string;
+  error: string;
+}
+
+interface DeleteAllAggregatingTasksBeginAction {
+  type: typeof DELETE_ALL_AGGREGATING_TASKS_BEGIN;
+  queue: string;
+  group: string;
+}
+
+interface DeleteAllAggregatingTasksSuccessAction {
+  type: typeof DELETE_ALL_AGGREGATING_TASKS_SUCCESS;
+  queue: string;
+  group: string;
+  deleted: number;
+}
+
+interface DeleteAllAggregatingTasksErrorAction {
+  type: typeof DELETE_ALL_AGGREGATING_TASKS_ERROR;
+  queue: string;
+  group: string;
+  error: string;
+}
+
 // Union of all tasks related action types.
 export type TasksActionTypes =
   | GetTaskInfoBeginAction
@@ -1158,7 +1313,25 @@ export type TasksActionTypes =
   | BatchDeleteCompletedTasksErrorAction
   | DeleteAllCompletedTasksBeginAction
   | DeleteAllCompletedTasksSuccessAction
-  | DeleteAllCompletedTasksErrorAction;
+  | DeleteAllCompletedTasksErrorAction
+  | BatchDeleteAggregatingTasksBeginAction
+  | BatchDeleteAggregatingTasksSuccessAction
+  | BatchDeleteAggregatingTasksErrorAction
+  | BatchRunAggregatingTasksBeginAction
+  | BatchRunAggregatingTasksSuccessAction
+  | BatchRunAggregatingTasksErrorAction
+  | RunAllAggregatingTasksBeginAction
+  | RunAllAggregatingTasksSuccessAction
+  | RunAllAggregatingTasksErrorAction
+  | BatchArchiveAggregatingTasksBeginAction
+  | BatchArchiveAggregatingTasksSuccessAction
+  | BatchArchiveAggregatingTasksErrorAction
+  | ArchiveAllAggregatingTasksBeginAction
+  | ArchiveAllAggregatingTasksSuccessAction
+  | ArchiveAllAggregatingTasksErrorAction
+  | DeleteAllAggregatingTasksBeginAction
+  | DeleteAllAggregatingTasksSuccessAction
+  | DeleteAllAggregatingTasksErrorAction;
 
 export function getTaskInfoAsync(qname: string, id: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
@@ -1779,6 +1952,32 @@ export function deleteAllPendingTasksAsync(queue: string) {
         type: DELETE_ALL_PENDING_TASKS_ERROR,
         error: toErrorString(error),
         queue,
+      });
+    }
+  };
+}
+
+export function deleteAllAggregatingTasksAsync(queue: string, group: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_ALL_AGGREGATING_TASKS_BEGIN, queue, group });
+    try {
+      const response = await deleteAllAggregatingTasks(queue, group);
+      dispatch({
+        type: DELETE_ALL_AGGREGATING_TASKS_SUCCESS,
+        deleted: response.deleted,
+        queue,
+        group,
+      });
+    } catch (error) {
+      console.error(
+        "deleteAllAggregatingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: DELETE_ALL_AGGREGATING_TASKS_ERROR,
+        error: toErrorString(error),
+        queue,
+        group,
       });
     }
   };
