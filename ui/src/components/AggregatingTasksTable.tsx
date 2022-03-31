@@ -16,6 +16,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import DeleteIcon from "@material-ui/icons/Delete";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
@@ -37,6 +38,14 @@ import TablePaginationActions, {
 import {
   listAggregatingTasksAsync,
   deleteAllAggregatingTasksAsync,
+  archiveAllAggregatingTasksAsync,
+  runAllAggregatingTasksAsync,
+  batchDeleteAggregatingTasksAsync,
+  batchRunAggregatingTasksAsync,
+  batchArchiveAggregatingTasksAsync,
+  deleteAggregatingTaskAsync,
+  runAggregatingTaskAsync,
+  archiveAggregatingTaskAsync,
 } from "../actions/tasksActions";
 import { taskRowsPerPageChange } from "../actions/settingsActions";
 
@@ -67,6 +76,8 @@ function mapStateToProps(state: AppState) {
     groups: state.groups.data,
     groupsError: state.groups.error,
     loading: state.tasks.aggregatingTasks.loading,
+    allActionPending: state.tasks.aggregatingTasks.allActionPending,
+    batchActionPending: state.tasks.aggregatingTasks.batchActionPending,
     error: state.tasks.aggregatingTasks.error,
     group: state.tasks.aggregatingTasks.group,
     tasks: state.tasks.aggregatingTasks.data,
@@ -79,6 +90,14 @@ const mapDispatchToProps = {
   listGroupsAsync,
   listAggregatingTasksAsync,
   deleteAllAggregatingTasksAsync,
+  archiveAllAggregatingTasksAsync,
+  runAllAggregatingTasksAsync,
+  batchDeleteAggregatingTasksAsync,
+  batchRunAggregatingTasksAsync,
+  batchArchiveAggregatingTasksAsync,
+  deleteAggregatingTaskAsync,
+  runAggregatingTaskAsync,
+  archiveAggregatingTaskAsync,
   taskRowsPerPageChange,
 };
 
@@ -142,6 +161,51 @@ function AggregatingTasksTable(
     props.deleteAllAggregatingTasksAsync(queue, selectedGroup.group);
   };
 
+  const handleArchiveAllClick = () => {
+    if (selectedGroup === null) {
+      return;
+    }
+    props.archiveAllAggregatingTasksAsync(queue, selectedGroup.group);
+  };
+
+  const handleRunAllClick = () => {
+    if (selectedGroup === null) {
+      return;
+    }
+    props.runAllAggregatingTasksAsync(queue, selectedGroup.group);
+  };
+
+  const handleBatchRunClick = () => {
+    if (selectedGroup === null) {
+      return;
+    }
+    props
+      .batchRunAggregatingTasksAsync(queue, selectedGroup.group, selectedIds)
+      .then(() => setSelectedIds([]));
+  };
+
+  const handleBatchDeleteClick = () => {
+    if (selectedGroup === null) {
+      return;
+    }
+    props
+      .batchDeleteAggregatingTasksAsync(queue, selectedGroup.group, selectedIds)
+      .then(() => setSelectedIds([]));
+  };
+
+  const handleBatchArchiveClick = () => {
+    if (selectedGroup === null) {
+      return;
+    }
+    props
+      .batchArchiveAggregatingTasksAsync(
+        queue,
+        selectedGroup.group,
+        selectedIds
+      )
+      .then(() => setSelectedIds([]));
+  };
+
   const fetchGroups = useCallback(() => {
     listGroupsAsync(queue);
   }, [listGroupsAsync, queue]);
@@ -192,26 +256,37 @@ function AggregatingTasksTable(
             {
               tooltip: "Delete",
               icon: <DeleteIcon />,
-              onClick: () => {}, // TODO: handleBatchDeleteClick,
-              disabled: false, //TODO: props.batchActionPending,
+              onClick: handleBatchDeleteClick,
+              disabled: props.batchActionPending,
             },
             {
               tooltip: "Archive",
               icon: <ArchiveIcon />,
-              onClick: () => {}, //TODO: handleBatchArchiveClick,
-              disabled: false, //TODO: props.batchActionPending,
+              onClick: handleBatchArchiveClick,
+              disabled: props.batchActionPending,
+            },
+            {
+              tooltip: "Run",
+              icon: <PlayArrowIcon />,
+              onClick: handleBatchRunClick,
+              disabled: props.batchActionPending,
             },
           ]}
           menuItemActions={[
             {
               label: "Delete All",
               onClick: handleDeleteAllClick,
-              disabled: false, // TODO: props.allActionPending,
+              disabled: props.allActionPending,
             },
             {
               label: "Archive All",
-              onClick: () => {}, // TODO: handleArchiveAllClick,
-              disabled: false, // TODO: props.allActionPending,
+              onClick: handleArchiveAllClick,
+              disabled: props.allActionPending,
+            },
+            {
+              label: "Run All",
+              onClick: handleRunAllClick,
+              disabled: props.allActionPending,
             },
           ]}
         />
@@ -276,13 +351,30 @@ function AggregatingTasksTable(
                       );
                     }
                   }}
-                  allActionPending={false /* TODO: props.allActionPending */}
-                  onDeleteClick={
-                    () => {}
-                    //TODO: props.deletePendingTaskAsync(queue, task.id)
-                  }
+                  allActionPending={props.allActionPending}
+                  onDeleteClick={() => {
+                    if (selectedGroup === null) return;
+                    props.deleteAggregatingTaskAsync(
+                      queue,
+                      selectedGroup.group,
+                      task.id
+                    );
+                  }}
                   onArchiveClick={() => {
-                    // TODO: props.archivePendingTaskAsync(queue, task.id);
+                    if (selectedGroup === null) return;
+                    props.archiveAggregatingTaskAsync(
+                      queue,
+                      selectedGroup.group,
+                      task.id
+                    );
+                  }}
+                  onRunClick={() => {
+                    if (selectedGroup === null) return;
+                    props.runAggregatingTaskAsync(
+                      queue,
+                      selectedGroup.group,
+                      task.id
+                    );
                   }}
                   onActionCellEnter={() => setActiveTaskId(task.id)}
                   onActionCellLeave={() => setActiveTaskId("")}
@@ -360,6 +452,7 @@ interface RowProps {
   onSelectChange: (checked: boolean) => void;
   onDeleteClick: () => void;
   onArchiveClick: () => void;
+  onRunClick: () => void;
   allActionPending: boolean;
   showActions: boolean;
   onActionCellEnter: () => void;
@@ -444,6 +537,16 @@ function Row(props: RowProps) {
                   className={classes.actionButton}
                 >
                   <ArchiveIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Run">
+                <IconButton
+                  onClick={props.onRunClick}
+                  disabled={task.requestPending || props.allActionPending}
+                  size="small"
+                  className={classes.actionButton}
+                >
+                  <PlayArrowIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </React.Fragment>

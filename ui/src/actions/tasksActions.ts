@@ -51,6 +51,14 @@ import {
   TaskInfo,
   getTaskInfo,
   deleteAllAggregatingTasks,
+  archiveAllAggregatingTasks,
+  runAllAggregatingTasks,
+  batchDeleteAggregatingTasks,
+  batchArchiveAggregatingTasks,
+  batchRunAggregatingTasks,
+  deleteAggregatingTask,
+  runAggregatingTask,
+  archiveAggregatingTask,
 } from "../api";
 import { Dispatch } from "redux";
 import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
@@ -117,6 +125,17 @@ export const ARCHIVE_SCHEDULED_TASK_ERROR = "ARCHIVE_SCHEDULED_TASK_ERROR";
 export const ARCHIVE_RETRY_TASK_BEGIN = "ARCHIVE_RETRY_TASK_BEGIN";
 export const ARCHIVE_RETRY_TASK_SUCCESS = "ARCHIVE_RETRY_TASK_SUCCESS";
 export const ARCHIVE_RETRY_TASK_ERROR = "ARCHIVE_RETRY_TASK_ERROR";
+export const RUN_AGGREGATING_TASK_BEGIN = "RUN_AGGREGATING_TASK_BEGIN";
+export const RUN_AGGREGATING_TASK_SUCCESS = "RUN_AGGREGATING_TASK_SUCCESS";
+export const RUN_AGGREGATING_TASK_ERROR = "RUN_AGGREGATING_TASK_ERROR";
+export const DELETE_AGGREGATING_TASK_BEGIN = "DELETE_AGGREGATING_TASK_BEGIN";
+export const DELETE_AGGREGATING_TASK_SUCCESS =
+  "DELETE_AGGREGATING_TASK_SUCCESS";
+export const DELETE_AGGREGATING_TASK_ERROR = "DELETE_AGGREGATING_TASK_ERROR";
+export const ARCHIVE_AGGREGATING_TASK_BEGIN = "ARCHIVE_AGGREGATING_TASK_BEGIN";
+export const ARCHIVE_AGGREGATING_TASK_SUCCESS =
+  "ARCHIVE_AGGREGATING_TASK_SUCCESS";
+export const ARCHIVE_AGGREGATING_TASK_ERROR = "ARCHIVE_AGGREGATING_TASK_ERROR";
 export const BATCH_ARCHIVE_PENDING_TASKS_BEGIN =
   "BATCH_ARCHIVE_PENDING_TASKS_BEGIN";
 export const BATCH_ARCHIVE_PENDING_TASKS_SUCCESS =
@@ -1062,21 +1081,81 @@ interface DeleteAllCompletedTasksErrorAction {
   error: string;
 }
 
+interface DeleteAggregatingTaskBeginAction {
+  type: typeof DELETE_AGGREGATING_TASK_BEGIN;
+  queue: string;
+  taskId: string;
+}
+
+interface DeleteAggregatingTaskSuccessAction {
+  type: typeof DELETE_AGGREGATING_TASK_SUCCESS;
+  queue: string;
+  taskId: string;
+}
+
+interface DeleteAggregatingTaskErrorAction {
+  type: typeof DELETE_AGGREGATING_TASK_ERROR;
+  queue: string;
+  taskId: string;
+  error: string;
+}
+
+interface RunAggregatingTaskBeginAction {
+  type: typeof RUN_AGGREGATING_TASK_BEGIN;
+  queue: string;
+  taskId: string;
+}
+
+interface RunAggregatingTaskSuccessAction {
+  type: typeof RUN_AGGREGATING_TASK_SUCCESS;
+  queue: string;
+  taskId: string;
+}
+
+interface RunAggregatingTaskErrorAction {
+  type: typeof RUN_AGGREGATING_TASK_ERROR;
+  queue: string;
+  taskId: string;
+  error: string;
+}
+
+interface ArchiveAggregatingTaskBeginAction {
+  type: typeof ARCHIVE_AGGREGATING_TASK_BEGIN;
+  queue: string;
+  taskId: string;
+}
+
+interface ArchiveAggregatingTaskSuccessAction {
+  type: typeof ARCHIVE_AGGREGATING_TASK_SUCCESS;
+  queue: string;
+  taskId: string;
+}
+
+interface ArchiveAggregatingTaskErrorAction {
+  type: typeof ARCHIVE_AGGREGATING_TASK_ERROR;
+  queue: string;
+  taskId: string;
+  error: string;
+}
+
 interface BatchDeleteAggregatingTasksBeginAction {
   type: typeof BATCH_DELETE_AGGREGATING_TASKS_BEGIN;
   queue: string;
+  group: string;
   taskIds: string[];
 }
 
 interface BatchDeleteAggregatingTasksSuccessAction {
   type: typeof BATCH_DELETE_AGGREGATING_TASKS_SUCCESS;
   queue: string;
+  group: string;
   payload: BatchDeleteTasksResponse;
 }
 
 interface BatchDeleteAggregatingTasksErrorAction {
   type: typeof BATCH_DELETE_AGGREGATING_TASKS_ERROR;
   queue: string;
+  group: string;
   taskIds: string[];
   error: string;
 }
@@ -1084,18 +1163,21 @@ interface BatchDeleteAggregatingTasksErrorAction {
 interface BatchRunAggregatingTasksBeginAction {
   type: typeof BATCH_RUN_AGGREGATING_TASKS_BEGIN;
   queue: string;
+  group: string;
   taskIds: string[];
 }
 
 interface BatchRunAggregatingTasksSuccessAction {
   type: typeof BATCH_RUN_AGGREGATING_TASKS_SUCCESS;
   queue: string;
+  group: string;
   payload: BatchRunTasksResponse;
 }
 
 interface BatchRunAggregatingTasksErrorAction {
   type: typeof BATCH_RUN_AGGREGATING_TASKS_ERROR;
   queue: string;
+  group: string;
   taskIds: string[];
   error: string;
 }
@@ -1108,6 +1190,7 @@ interface RunAllAggregatingTasksBeginAction {
 
 interface RunAllAggregatingTasksSuccessAction {
   type: typeof RUN_ALL_AGGREGATING_TASKS_SUCCESS;
+  scheduled: number;
   queue: string;
   group: string;
 }
@@ -1151,6 +1234,7 @@ interface ArchiveAllAggregatingTasksSuccessAction {
   type: typeof ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS;
   queue: string;
   group: string;
+  archived: number;
 }
 
 interface ArchiveAllAggregatingTasksErrorAction {
@@ -1331,7 +1415,16 @@ export type TasksActionTypes =
   | ArchiveAllAggregatingTasksErrorAction
   | DeleteAllAggregatingTasksBeginAction
   | DeleteAllAggregatingTasksSuccessAction
-  | DeleteAllAggregatingTasksErrorAction;
+  | DeleteAllAggregatingTasksErrorAction
+  | DeleteAggregatingTaskBeginAction
+  | DeleteAggregatingTaskSuccessAction
+  | DeleteAggregatingTaskErrorAction
+  | RunAggregatingTaskBeginAction
+  | RunAggregatingTaskSuccessAction
+  | RunAggregatingTaskErrorAction
+  | ArchiveAggregatingTaskBeginAction
+  | ArchiveAggregatingTaskSuccessAction
+  | ArchiveAggregatingTaskErrorAction;
 
 export function getTaskInfoAsync(qname: string, id: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
@@ -1913,6 +2006,121 @@ export function batchArchivePendingTasksAsync(
   };
 }
 
+export function deleteAggregatingTaskAsync(
+  queue: string,
+  group: string,
+  taskId: string
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: DELETE_AGGREGATING_TASK_BEGIN, queue, taskId });
+    try {
+      await deleteAggregatingTask(queue, group, taskId);
+      dispatch({ type: DELETE_AGGREGATING_TASK_SUCCESS, queue, taskId });
+    } catch (error) {
+      console.error(
+        "deleteAggregatingTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: DELETE_AGGREGATING_TASK_ERROR,
+        error: toErrorString(error),
+        queue,
+        taskId,
+      });
+    }
+  };
+}
+
+export function runAggregatingTaskAsync(
+  queue: string,
+  group: string,
+  taskId: string
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: RUN_AGGREGATING_TASK_BEGIN, queue, taskId });
+    try {
+      await runAggregatingTask(queue, group, taskId);
+      dispatch({ type: RUN_AGGREGATING_TASK_SUCCESS, queue, taskId });
+    } catch (error) {
+      console.error(
+        "runAggregatingTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: RUN_AGGREGATING_TASK_ERROR,
+        error: toErrorString(error),
+        queue,
+        taskId,
+      });
+    }
+  };
+}
+
+export function archiveAggregatingTaskAsync(
+  queue: string,
+  group: string,
+  taskId: string
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: ARCHIVE_AGGREGATING_TASK_BEGIN, queue, taskId });
+    try {
+      await archiveAggregatingTask(queue, group, taskId);
+      dispatch({ type: ARCHIVE_AGGREGATING_TASK_SUCCESS, queue, taskId });
+    } catch (error) {
+      console.error(
+        "archiveAggregatingTaskAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: ARCHIVE_AGGREGATING_TASK_ERROR,
+        error: toErrorString(error),
+        queue,
+        taskId,
+      });
+    }
+  };
+}
+
+export function batchArchiveAggregatingTasksAsync(
+  queue: string,
+  group: string,
+  taskIds: string[]
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({
+      type: BATCH_ARCHIVE_AGGREGATING_TASKS_BEGIN,
+      queue,
+      group,
+      taskIds,
+    });
+    try {
+      const response = await batchArchiveAggregatingTasks(
+        queue,
+        group,
+        taskIds
+      );
+      dispatch({
+        type: BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS,
+        payload: response,
+        queue,
+        group,
+      });
+    } catch (error) {
+      console.error(
+        "batchArchiveAggregatingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: BATCH_ARCHIVE_AGGREGATING_TASKS_ERROR,
+        error: toErrorString(error),
+        queue,
+        group,
+        taskIds,
+      });
+    }
+  };
+}
+
 export function archiveAllPendingTasksAsync(queue: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: ARCHIVE_ALL_PENDING_TASKS_BEGIN, queue });
@@ -2047,6 +2255,58 @@ export function archiveAllScheduledTasksAsync(queue: string) {
   };
 }
 
+export function archiveAllAggregatingTasksAsync(queue: string, group: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: ARCHIVE_ALL_AGGREGATING_TASKS_BEGIN, queue, group });
+    try {
+      const response = await archiveAllAggregatingTasks(queue, group);
+      dispatch({
+        type: ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS,
+        archived: response.archived,
+        queue,
+        group,
+      });
+    } catch (error) {
+      console.error(
+        "archiveAllAggregatingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: ARCHIVE_ALL_AGGREGATING_TASKS_ERROR,
+        error: toErrorString(error),
+        queue,
+        group,
+      });
+    }
+  };
+}
+
+export function runAllAggregatingTasksAsync(queue: string, group: string) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({ type: RUN_ALL_AGGREGATING_TASKS_BEGIN, queue, group });
+    try {
+      const resp = await runAllAggregatingTasks(queue, group);
+      dispatch({
+        type: RUN_ALL_AGGREGATING_TASKS_SUCCESS,
+        scheduled: resp.scheduled,
+        queue,
+        group,
+      });
+    } catch (error) {
+      console.error(
+        "runAllAggregatingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: RUN_ALL_AGGREGATING_TASKS_ERROR,
+        error: toErrorString(error),
+        queue,
+        group,
+      });
+    }
+  };
+}
+
 export function deleteRetryTaskAsync(queue: string, taskId: string) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     dispatch({ type: DELETE_RETRY_TASK_BEGIN, queue, taskId });
@@ -2112,6 +2372,42 @@ export function batchRunRetryTasksAsync(queue: string, taskIds: string[]) {
         type: BATCH_RUN_RETRY_TASKS_ERROR,
         error: toErrorString(error),
         queue,
+        taskIds,
+      });
+    }
+  };
+}
+
+export function batchRunAggregatingTasksAsync(
+  queue: string,
+  group: string,
+  taskIds: string[]
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({
+      type: BATCH_RUN_AGGREGATING_TASKS_BEGIN,
+      queue,
+      group,
+      taskIds,
+    });
+    try {
+      const response = await batchRunAggregatingTasks(queue, group, taskIds);
+      dispatch({
+        type: BATCH_RUN_AGGREGATING_TASKS_SUCCESS,
+        payload: response,
+        queue,
+        group,
+      });
+    } catch (error) {
+      console.error(
+        "batchRunAggregatingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: BATCH_RUN_AGGREGATING_TASKS_ERROR,
+        error: toErrorString(error),
+        queue,
+        group,
         taskIds,
       });
     }
@@ -2368,6 +2664,42 @@ export function batchDeleteCompletedTasksAsync(
         type: BATCH_DELETE_COMPLETED_TASKS_ERROR,
         error: toErrorString(error),
         queue,
+        taskIds,
+      });
+    }
+  };
+}
+
+export function batchDeleteAggregatingTasksAsync(
+  queue: string,
+  group: string,
+  taskIds: string[]
+) {
+  return async (dispatch: Dispatch<TasksActionTypes>) => {
+    dispatch({
+      type: BATCH_DELETE_AGGREGATING_TASKS_BEGIN,
+      queue,
+      group,
+      taskIds,
+    });
+    try {
+      const response = await batchDeleteAggregatingTasks(queue, group, taskIds);
+      dispatch({
+        type: BATCH_DELETE_AGGREGATING_TASKS_SUCCESS,
+        payload: response,
+        queue,
+        group,
+      });
+    } catch (error) {
+      console.error(
+        "batchDeleteAggregatingTasksAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: BATCH_DELETE_AGGREGATING_TASKS_ERROR,
+        error: toErrorString(error),
+        queue,
+        group,
         taskIds,
       });
     }
