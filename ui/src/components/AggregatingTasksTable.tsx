@@ -34,7 +34,10 @@ import { TableColumn } from "../types/table";
 import TablePaginationActions, {
   rowsPerPageOptions,
 } from "./TablePaginationActions";
-import { listAggregatingTasksAsync } from "../actions/tasksActions";
+import {
+  listAggregatingTasksAsync,
+  deleteAllAggregatingTasksAsync,
+} from "../actions/tasksActions";
 import { taskRowsPerPageChange } from "../actions/settingsActions";
 
 const useStyles = makeStyles((theme) => ({
@@ -75,6 +78,7 @@ function mapStateToProps(state: AppState) {
 const mapDispatchToProps = {
   listGroupsAsync,
   listAggregatingTasksAsync,
+  deleteAllAggregatingTasksAsync,
   taskRowsPerPageChange,
 };
 
@@ -129,6 +133,13 @@ function AggregatingTasksTable(
     } else {
       setSelectedIds([]);
     }
+  };
+
+  const handleDeleteAllClick = () => {
+    if (selectedGroup === null) {
+      return;
+    }
+    props.deleteAllAggregatingTasksAsync(queue, selectedGroup.group);
   };
 
   const fetchGroups = useCallback(() => {
@@ -194,7 +205,7 @@ function AggregatingTasksTable(
           menuItemActions={[
             {
               label: "Delete All",
-              onClick: () => {}, //TODO: handleDeleteAllClick,
+              onClick: handleDeleteAllClick,
               disabled: false, // TODO: props.allActionPending,
             },
             {
