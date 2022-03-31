@@ -135,6 +135,30 @@ import {
   DELETE_ALL_AGGREGATING_TASKS_BEGIN,
   DELETE_ALL_AGGREGATING_TASKS_SUCCESS,
   DELETE_ALL_AGGREGATING_TASKS_ERROR,
+  ARCHIVE_ALL_AGGREGATING_TASKS_BEGIN,
+  ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS,
+  ARCHIVE_ALL_AGGREGATING_TASKS_ERROR,
+  RUN_ALL_AGGREGATING_TASKS_BEGIN,
+  RUN_ALL_AGGREGATING_TASKS_SUCCESS,
+  RUN_ALL_AGGREGATING_TASKS_ERROR,
+  BATCH_ARCHIVE_AGGREGATING_TASKS_BEGIN,
+  BATCH_RUN_AGGREGATING_TASKS_BEGIN,
+  BATCH_DELETE_AGGREGATING_TASKS_BEGIN,
+  BATCH_RUN_AGGREGATING_TASKS_ERROR,
+  BATCH_ARCHIVE_AGGREGATING_TASKS_ERROR,
+  BATCH_DELETE_AGGREGATING_TASKS_ERROR,
+  BATCH_DELETE_AGGREGATING_TASKS_SUCCESS,
+  BATCH_RUN_AGGREGATING_TASKS_SUCCESS,
+  BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS,
+  RUN_AGGREGATING_TASK_BEGIN,
+  ARCHIVE_AGGREGATING_TASK_BEGIN,
+  DELETE_AGGREGATING_TASK_BEGIN,
+  RUN_AGGREGATING_TASK_ERROR,
+  ARCHIVE_AGGREGATING_TASK_ERROR,
+  DELETE_AGGREGATING_TASK_ERROR,
+  RUN_AGGREGATING_TASK_SUCCESS,
+  ARCHIVE_AGGREGATING_TASK_SUCCESS,
+  DELETE_AGGREGATING_TASK_SUCCESS,
 } from "../actions/tasksActions";
 import { TaskInfo } from "../api";
 
@@ -1105,6 +1129,148 @@ function tasksReducer(
         },
       };
 
+    case RUN_AGGREGATING_TASK_BEGIN:
+    case ARCHIVE_AGGREGATING_TASK_BEGIN:
+    case DELETE_AGGREGATING_TASK_BEGIN:
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          data: state.aggregatingTasks.data.map((task) => {
+            if (task.id !== action.taskId) {
+              return task;
+            }
+            return { ...task, requestPending: true };
+          }),
+        },
+      };
+
+    case RUN_AGGREGATING_TASK_ERROR:
+    case ARCHIVE_AGGREGATING_TASK_ERROR:
+    case DELETE_AGGREGATING_TASK_ERROR:
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          data: state.aggregatingTasks.data.map((task) => {
+            if (task.id !== action.taskId) {
+              return task;
+            }
+            return { ...task, requestPending: false };
+          }),
+        },
+      };
+
+    case RUN_AGGREGATING_TASK_SUCCESS:
+    case ARCHIVE_AGGREGATING_TASK_SUCCESS:
+    case DELETE_AGGREGATING_TASK_SUCCESS:
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          data: state.aggregatingTasks.data.filter(
+            (task) => task.id !== action.taskId
+          ),
+        },
+      };
+
+    case BATCH_RUN_AGGREGATING_TASKS_BEGIN:
+    case BATCH_ARCHIVE_AGGREGATING_TASKS_BEGIN:
+    case BATCH_DELETE_AGGREGATING_TASKS_BEGIN:
+      if (action.group !== state.aggregatingTasks.group) {
+        return state;
+      }
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          batchActionPending: true,
+          data: state.aggregatingTasks.data.map((task) => {
+            if (!action.taskIds.includes(task.id)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: true,
+            };
+          }),
+        },
+      };
+
+    case BATCH_RUN_AGGREGATING_TASKS_ERROR:
+    case BATCH_ARCHIVE_AGGREGATING_TASKS_ERROR:
+    case BATCH_DELETE_AGGREGATING_TASKS_ERROR:
+      if (action.group !== state.aggregatingTasks.group) {
+        return state;
+      }
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          batchActionPending: false,
+          data: state.scheduledTasks.data.map((task) => {
+            if (!action.taskIds.includes(task.id)) {
+              return task;
+            }
+            return {
+              ...task,
+              requestPending: false,
+            };
+          }),
+        },
+      };
+
+    case BATCH_DELETE_AGGREGATING_TASKS_SUCCESS: {
+      if (action.group !== state.aggregatingTasks.group) {
+        return state;
+      }
+      const newData = state.aggregatingTasks.data.filter(
+        (task) => !action.payload.deleted_ids.includes(task.id)
+      );
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_RUN_AGGREGATING_TASKS_SUCCESS: {
+      if (action.group !== state.aggregatingTasks.group) {
+        return state;
+      }
+      const newData = state.aggregatingTasks.data.filter(
+        (task) => !action.payload.pending_ids.includes(task.id)
+      );
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
+    case BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS: {
+      if (action.group !== state.aggregatingTasks.group) {
+        return state;
+      }
+      const newData = state.aggregatingTasks.data.filter(
+        (task) => !action.payload.archived_ids.includes(task.id)
+      );
+      return {
+        ...state,
+        aggregatingTasks: {
+          ...state.aggregatingTasks,
+          batchActionPending: false,
+          data: newData,
+        },
+      };
+    }
+
     case RUN_RETRY_TASK_BEGIN:
     case ARCHIVE_RETRY_TASK_BEGIN:
     case DELETE_RETRY_TASK_BEGIN:
@@ -1405,6 +1571,8 @@ function tasksReducer(
         },
       };
 
+    case RUN_ALL_AGGREGATING_TASKS_BEGIN:
+    case ARCHIVE_ALL_AGGREGATING_TASKS_BEGIN:
     case DELETE_ALL_AGGREGATING_TASKS_BEGIN:
       if (state.aggregatingTasks.group !== action.group) {
         return state;
@@ -1417,6 +1585,8 @@ function tasksReducer(
         },
       };
 
+    case RUN_ALL_AGGREGATING_TASKS_SUCCESS:
+    case ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS:
     case DELETE_ALL_AGGREGATING_TASKS_SUCCESS:
       if (state.aggregatingTasks.group !== action.group) {
         return state;
@@ -1430,6 +1600,8 @@ function tasksReducer(
         },
       };
 
+    case RUN_ALL_AGGREGATING_TASKS_ERROR:
+    case ARCHIVE_ALL_AGGREGATING_TASKS_ERROR:
     case DELETE_ALL_AGGREGATING_TASKS_ERROR:
       if (state.aggregatingTasks.group !== action.group) {
         return state;

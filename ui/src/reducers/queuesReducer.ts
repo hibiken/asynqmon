@@ -53,6 +53,15 @@ import {
   DELETE_COMPLETED_TASK_SUCCESS,
   DELETE_ALL_COMPLETED_TASKS_SUCCESS,
   BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
+  DELETE_ALL_AGGREGATING_TASKS_SUCCESS,
+  ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS,
+  RUN_ALL_AGGREGATING_TASKS_SUCCESS,
+  BATCH_DELETE_AGGREGATING_TASKS_SUCCESS,
+  BATCH_RUN_AGGREGATING_TASKS_SUCCESS,
+  BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS,
+  DELETE_AGGREGATING_TASK_SUCCESS,
+  RUN_AGGREGATING_TASK_SUCCESS,
+  ARCHIVE_AGGREGATING_TASK_SUCCESS,
 } from "../actions/tasksActions";
 import { Queue } from "../api";
 
@@ -175,6 +184,23 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
+    case RUN_AGGREGATING_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending: queueInfo.currentStats.pending + 1,
+            aggregating: queueInfo.currentStats.aggregating - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
     case RUN_SCHEDULED_TASK_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
@@ -237,6 +263,23 @@ function queuesReducer(
             ...queueInfo.currentStats,
             archived: queueInfo.currentStats.archived + 1,
             pending: queueInfo.currentStats.pending - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case ARCHIVE_AGGREGATING_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            archived: queueInfo.currentStats.archived + 1,
+            aggregating: queueInfo.currentStats.aggregating - 1,
           },
         };
       });
@@ -311,6 +354,23 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
+    case DELETE_AGGREGATING_TASK_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - 1,
+            aggregating: queueInfo.currentStats.aggregating - 1,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
     case BATCH_ARCHIVE_PENDING_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
@@ -364,6 +424,24 @@ function queuesReducer(
             archived:
               queueInfo.currentStats.archived + queueInfo.currentStats.pending,
             pending: 0,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            groups: queueInfo.currentStats.groups - 1,
+            archived: queueInfo.currentStats.archived + action.archived,
+            aggregating: queueInfo.currentStats.aggregating - action.archived,
           },
         };
       });
@@ -449,6 +527,24 @@ function queuesReducer(
       return { ...state, data: newData };
     }
 
+    case RUN_ALL_AGGREGATING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            groups: queueInfo.currentStats.groups - 1,
+            pending: queueInfo.currentStats.pending + action.scheduled,
+            aggregating: queueInfo.currentStats.aggregating - action.scheduled,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
     case RUN_ALL_SCHEDULED_TASKS_SUCCESS: {
       const newData = state.data.map((queueInfo) => {
         if (queueInfo.name !== action.queue) {
@@ -480,6 +576,24 @@ function queuesReducer(
               queueInfo.currentStats.archived +
               queueInfo.currentStats.scheduled,
             scheduled: 0,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case DELETE_ALL_AGGREGATING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            size: queueInfo.currentStats.size - action.deleted,
+            groups: queueInfo.currentStats.groups - 1,
+            aggregating: queueInfo.currentStats.aggregating - action.deleted,
           },
         };
       });
@@ -573,6 +687,68 @@ function queuesReducer(
               queueInfo.currentStats.size - action.payload.deleted_ids.length,
             retry:
               queueInfo.currentStats.retry - action.payload.deleted_ids.length,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case BATCH_RUN_AGGREGATING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            pending:
+              queueInfo.currentStats.pending +
+              action.payload.pending_ids.length,
+            aggregating:
+              queueInfo.currentStats.aggregating -
+              action.payload.pending_ids.length,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            archived:
+              queueInfo.currentStats.archived +
+              action.payload.archived_ids.length,
+            aggregating:
+              queueInfo.currentStats.aggregating -
+              action.payload.archived_ids.length,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case BATCH_DELETE_AGGREGATING_TASKS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            size:
+              queueInfo.currentStats.size - action.payload.deleted_ids.length,
+            aggregating:
+              queueInfo.currentStats.aggregating -
+              action.payload.deleted_ids.length,
           },
         };
       });

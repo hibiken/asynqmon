@@ -54,6 +54,14 @@ export interface DeleteAllTasksResponse {
   deleted: number;
 }
 
+export interface ArchiveAllTasksResponse {
+  archived: number;
+}
+
+export interface RunAllTasksResponse {
+  scheduled: number;
+}
+
 export interface ListQueueStatsResponse {
   stats: { [qname: string]: DailyStat[] };
 }
@@ -674,11 +682,12 @@ export async function batchRunAggregatingTasks(
 export async function runAllAggregatingTasks(
   qname: string,
   gname: string
-): Promise<void> {
-  await axios({
+): Promise<RunAllTasksResponse> {
+  const resp = await axios({
     method: "post",
     url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks:run_all`,
   });
+  return resp.data;
 }
 
 export async function archiveAggregatingTask(
@@ -710,11 +719,12 @@ export async function batchArchiveAggregatingTasks(
 export async function archiveAllAggregatingTasks(
   qname: string,
   gname: string
-): Promise<void> {
-  await axios({
+): Promise<ArchiveAllTasksResponse> {
+  const resp = await axios({
     method: "post",
     url: `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks:archive_all`,
   });
+  return resp.data;
 }
 
 export async function runScheduledTask(
