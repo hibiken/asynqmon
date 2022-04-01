@@ -1,4 +1,8 @@
 import {
+  GroupsActionTypes,
+  LIST_GROUPS_SUCCESS,
+} from "../actions/groupsActions";
+import {
   LIST_QUEUES_SUCCESS,
   LIST_QUEUES_BEGIN,
   QueuesActionTypes,
@@ -81,7 +85,7 @@ const initialState: QueuesState = { data: [], loading: false, error: "" };
 
 function queuesReducer(
   state = initialState,
-  action: QueuesActionTypes | TasksActionTypes
+  action: QueuesActionTypes | TasksActionTypes | GroupsActionTypes
 ): QueuesState {
   switch (action.type) {
     case LIST_QUEUES_BEGIN:
@@ -949,6 +953,22 @@ function queuesReducer(
             ...queueInfo.currentStats,
             size: queueInfo.currentStats.size - action.deleted,
             completed: 0,
+          },
+        };
+      });
+      return { ...state, data: newData };
+    }
+
+    case LIST_GROUPS_SUCCESS: {
+      const newData = state.data.map((queueInfo) => {
+        if (queueInfo.name !== action.queue) {
+          return queueInfo;
+        }
+        return {
+          ...queueInfo,
+          currentStats: {
+            ...queueInfo.currentStats,
+            groups: action.payload.groups.length,
           },
         };
       });
