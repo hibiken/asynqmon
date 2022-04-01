@@ -249,160 +249,175 @@ function AggregatingTasksTable(
           error={props.groupsError}
         />
       </div>
-      {!window.READ_ONLY && (
-        <TableActions
-          showIconButtons={numSelected > 0}
-          iconButtonActions={[
-            {
-              tooltip: "Delete",
-              icon: <DeleteIcon />,
-              onClick: handleBatchDeleteClick,
-              disabled: props.batchActionPending,
-            },
-            {
-              tooltip: "Archive",
-              icon: <ArchiveIcon />,
-              onClick: handleBatchArchiveClick,
-              disabled: props.batchActionPending,
-            },
-            {
-              tooltip: "Run",
-              icon: <PlayArrowIcon />,
-              onClick: handleBatchRunClick,
-              disabled: props.batchActionPending,
-            },
-          ]}
-          menuItemActions={[
-            {
-              label: "Delete All",
-              onClick: handleDeleteAllClick,
-              disabled: props.allActionPending,
-            },
-            {
-              label: "Archive All",
-              onClick: handleArchiveAllClick,
-              disabled: props.allActionPending,
-            },
-            {
-              label: "Run All",
-              onClick: handleRunAllClick,
-              disabled: props.allActionPending,
-            },
-          ]}
-        />
-      )}
-      <TableContainer component={Paper}>
-        <Table
-          stickyHeader={true}
-          className={classes.table}
-          aria-label="pending tasks table"
-          size="small"
-        >
-          <TableHead>
-            <TableRow>
-              {!window.READ_ONLY && (
-                <TableCell
-                  padding="checkbox"
-                  classes={{ stickyHeader: classes.stickyHeaderCell }}
-                >
-                  <IconButton>
-                    <Checkbox
-                      indeterminate={numSelected > 0 && numSelected < rowCount}
-                      checked={rowCount > 0 && numSelected === rowCount}
-                      onChange={handleSelectAllClick}
-                      inputProps={{
-                        "aria-label": "select all tasks shown in the table",
+      {props.tasks.length > 0 && selectedGroup !== null ? (
+        <>
+          {!window.READ_ONLY && (
+            <TableActions
+              showIconButtons={numSelected > 0}
+              iconButtonActions={[
+                {
+                  tooltip: "Delete",
+                  icon: <DeleteIcon />,
+                  onClick: handleBatchDeleteClick,
+                  disabled: props.batchActionPending,
+                },
+                {
+                  tooltip: "Archive",
+                  icon: <ArchiveIcon />,
+                  onClick: handleBatchArchiveClick,
+                  disabled: props.batchActionPending,
+                },
+                {
+                  tooltip: "Run",
+                  icon: <PlayArrowIcon />,
+                  onClick: handleBatchRunClick,
+                  disabled: props.batchActionPending,
+                },
+              ]}
+              menuItemActions={[
+                {
+                  label: "Delete All",
+                  onClick: handleDeleteAllClick,
+                  disabled: props.allActionPending,
+                },
+                {
+                  label: "Archive All",
+                  onClick: handleArchiveAllClick,
+                  disabled: props.allActionPending,
+                },
+                {
+                  label: "Run All",
+                  onClick: handleRunAllClick,
+                  disabled: props.allActionPending,
+                },
+              ]}
+            />
+          )}
+          <TableContainer component={Paper}>
+            <Table
+              stickyHeader={true}
+              className={classes.table}
+              aria-label="pending tasks table"
+              size="small"
+            >
+              <TableHead>
+                <TableRow>
+                  {!window.READ_ONLY && (
+                    <TableCell
+                      padding="checkbox"
+                      classes={{ stickyHeader: classes.stickyHeaderCell }}
+                    >
+                      <IconButton>
+                        <Checkbox
+                          indeterminate={
+                            numSelected > 0 && numSelected < rowCount
+                          }
+                          checked={rowCount > 0 && numSelected === rowCount}
+                          onChange={handleSelectAllClick}
+                          inputProps={{
+                            "aria-label": "select all tasks shown in the table",
+                          }}
+                        />
+                      </IconButton>
+                    </TableCell>
+                  )}
+                  {columns
+                    .filter((col) => {
+                      // Filter out actions column in readonly mode.
+                      return !window.READ_ONLY || col.key !== "actions";
+                    })
+                    .map((col) => (
+                      <TableCell
+                        key={col.key}
+                        align={col.align}
+                        classes={{
+                          stickyHeader: classes.stickyHeaderCell,
+                        }}
+                      >
+                        {col.label}
+                      </TableCell>
+                    ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {props.group === selectedGroup.group &&
+                  props.tasks.map((task) => (
+                    <Row
+                      key={task.id}
+                      task={task}
+                      isSelected={selectedIds.includes(task.id)}
+                      onSelectChange={(checked: boolean) => {
+                        if (checked) {
+                          setSelectedIds(selectedIds.concat(task.id));
+                        } else {
+                          setSelectedIds(
+                            selectedIds.filter((id) => id !== task.id)
+                          );
+                        }
                       }}
+                      allActionPending={props.allActionPending}
+                      onDeleteClick={() => {
+                        if (selectedGroup === null) return;
+                        props.deleteAggregatingTaskAsync(
+                          queue,
+                          selectedGroup.group,
+                          task.id
+                        );
+                      }}
+                      onArchiveClick={() => {
+                        if (selectedGroup === null) return;
+                        props.archiveAggregatingTaskAsync(
+                          queue,
+                          selectedGroup.group,
+                          task.id
+                        );
+                      }}
+                      onRunClick={() => {
+                        if (selectedGroup === null) return;
+                        props.runAggregatingTaskAsync(
+                          queue,
+                          selectedGroup.group,
+                          task.id
+                        );
+                      }}
+                      onActionCellEnter={() => setActiveTaskId(task.id)}
+                      onActionCellLeave={() => setActiveTaskId("")}
+                      showActions={activeTaskId === task.id}
                     />
-                  </IconButton>
-                </TableCell>
-              )}
-              {columns
-                .filter((col) => {
-                  // Filter out actions column in readonly mode.
-                  return !window.READ_ONLY || col.key !== "actions";
-                })
-                .map((col) => (
-                  <TableCell
-                    key={col.key}
-                    align={col.align}
-                    classes={{
-                      stickyHeader: classes.stickyHeaderCell,
+                  ))}
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TablePagination
+                    rowsPerPageOptions={rowsPerPageOptions}
+                    colSpan={columns.length + 1}
+                    count={selectedGroup === null ? 0 : selectedGroup.size}
+                    rowsPerPage={pageSize}
+                    page={page}
+                    SelectProps={{
+                      inputProps: { "aria-label": "rows per page" },
+                      native: true,
                     }}
-                  >
-                    {col.label}
-                  </TableCell>
-                ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {props.group === selectedGroup?.group &&
-              props.tasks.map((task) => (
-                <Row
-                  key={task.id}
-                  task={task}
-                  isSelected={selectedIds.includes(task.id)}
-                  onSelectChange={(checked: boolean) => {
-                    if (checked) {
-                      setSelectedIds(selectedIds.concat(task.id));
-                    } else {
-                      setSelectedIds(
-                        selectedIds.filter((id) => id !== task.id)
-                      );
-                    }
-                  }}
-                  allActionPending={props.allActionPending}
-                  onDeleteClick={() => {
-                    if (selectedGroup === null) return;
-                    props.deleteAggregatingTaskAsync(
-                      queue,
-                      selectedGroup.group,
-                      task.id
-                    );
-                  }}
-                  onArchiveClick={() => {
-                    if (selectedGroup === null) return;
-                    props.archiveAggregatingTaskAsync(
-                      queue,
-                      selectedGroup.group,
-                      task.id
-                    );
-                  }}
-                  onRunClick={() => {
-                    if (selectedGroup === null) return;
-                    props.runAggregatingTaskAsync(
-                      queue,
-                      selectedGroup.group,
-                      task.id
-                    );
-                  }}
-                  onActionCellEnter={() => setActiveTaskId(task.id)}
-                  onActionCellLeave={() => setActiveTaskId("")}
-                  showActions={activeTaskId === task.id}
-                />
-              ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={rowsPerPageOptions}
-                colSpan={columns.length + 1}
-                count={selectedGroup === null ? 0 : selectedGroup.size}
-                rowsPerPage={pageSize}
-                page={page}
-                SelectProps={{
-                  inputProps: { "aria-label": "rows per page" },
-                  native: true,
-                }}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-                ActionsComponent={TablePaginationActions}
-                className={classes.pagination}
-              />
-            </TableRow>
-          </TableFooter>
-        </Table>
-      </TableContainer>
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                    ActionsComponent={TablePaginationActions}
+                    className={classes.pagination}
+                  />
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </TableContainer>
+        </>
+      ) : (
+        <Alert severity="info" className={classes.alert}>
+          <AlertTitle>Info</AlertTitle>
+          {selectedGroup === null ? (
+            <div>Please select group</div>
+          ) : (
+            <div>Group {selectedGroup.group} is empty</div>
+          )}
+        </Alert>
+      )}
     </div>
   );
 }
