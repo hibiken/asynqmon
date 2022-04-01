@@ -5,7 +5,8 @@ import {
   LIST_GROUPS_SUCCESS,
 } from "../actions/groupsActions";
 import {
-  LIST_AGGREGATING_TASKS_SUCCESS,
+  ListAggregatingTasksSuccessAction,
+  LIST_TASKS_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
 import { GroupInfo } from "../api";
@@ -41,10 +42,12 @@ function groupsReducer(
         data: action.payload.groups,
       };
 
-    case LIST_AGGREGATING_TASKS_SUCCESS:
+    case LIST_TASKS_SUCCESS:
+      if (action.taskState !== "aggregating") return state;
+      let act = action as ListAggregatingTasksSuccessAction;
       return {
         ...state,
-        data: action.payload.groups,
+        data: act.payload.groups,
       };
 
     default:

@@ -1,23 +1,5 @@
 import {
-  LIST_ACTIVE_TASKS_BEGIN,
-  LIST_ACTIVE_TASKS_SUCCESS,
-  LIST_ACTIVE_TASKS_ERROR,
   TasksActionTypes,
-  LIST_PENDING_TASKS_BEGIN,
-  LIST_PENDING_TASKS_SUCCESS,
-  LIST_PENDING_TASKS_ERROR,
-  LIST_SCHEDULED_TASKS_BEGIN,
-  LIST_SCHEDULED_TASKS_SUCCESS,
-  LIST_SCHEDULED_TASKS_ERROR,
-  LIST_RETRY_TASKS_BEGIN,
-  LIST_RETRY_TASKS_SUCCESS,
-  LIST_RETRY_TASKS_ERROR,
-  LIST_ARCHIVED_TASKS_BEGIN,
-  LIST_ARCHIVED_TASKS_SUCCESS,
-  LIST_ARCHIVED_TASKS_ERROR,
-  LIST_COMPLETED_TASKS_BEGIN,
-  LIST_COMPLETED_TASKS_SUCCESS,
-  LIST_COMPLETED_TASKS_ERROR,
   CANCEL_ACTIVE_TASK_BEGIN,
   CANCEL_ACTIVE_TASK_SUCCESS,
   CANCEL_ACTIVE_TASK_ERROR,
@@ -129,9 +111,6 @@ import {
   BATCH_DELETE_COMPLETED_TASKS_BEGIN,
   BATCH_DELETE_COMPLETED_TASKS_ERROR,
   BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
-  LIST_AGGREGATING_TASKS_BEGIN,
-  LIST_AGGREGATING_TASKS_SUCCESS,
-  LIST_AGGREGATING_TASKS_ERROR,
   DELETE_ALL_AGGREGATING_TASKS_BEGIN,
   DELETE_ALL_AGGREGATING_TASKS_SUCCESS,
   DELETE_ALL_AGGREGATING_TASKS_ERROR,
@@ -159,6 +138,12 @@ import {
   RUN_AGGREGATING_TASK_SUCCESS,
   ARCHIVE_AGGREGATING_TASK_SUCCESS,
   DELETE_AGGREGATING_TASK_SUCCESS,
+  LIST_TASKS_BEGIN,
+  LIST_TASKS_SUCCESS,
+  LIST_TASKS_ERROR,
+  ListAggregatingTasksBeginAction,
+  ListAggregatingTasksErrorAction,
+  ListAggregatingTasksSuccessAction,
 } from "../actions/tasksActions";
 import { TaskInfo } from "../api";
 
@@ -326,247 +311,248 @@ function tasksReducer(
         },
       };
 
-    case LIST_ACTIVE_TASKS_BEGIN:
-      return {
-        ...state,
-        activeTasks: {
-          ...state.activeTasks,
-          loading: true,
-        },
-      };
+    case LIST_TASKS_BEGIN:
+      switch (action.taskState) {
+        case "active":
+          return {
+            ...state,
+            activeTasks: {
+              ...state.activeTasks,
+              loading: true,
+            },
+          };
+        case "pending":
+          return {
+            ...state,
+            pendingTasks: {
+              ...state.pendingTasks,
+              loading: true,
+            },
+          };
+        case "aggregating": {
+          let act = action as ListAggregatingTasksBeginAction;
+          return {
+            ...state,
+            aggregatingTasks: {
+              ...state.aggregatingTasks,
+              group: act.group,
+              loading: true,
+            },
+          };
+        }
+        case "scheduled":
+          return {
+            ...state,
+            scheduledTasks: {
+              ...state.scheduledTasks,
+              loading: true,
+            },
+          };
+        case "retry":
+          return {
+            ...state,
+            retryTasks: {
+              ...state.retryTasks,
+              loading: true,
+            },
+          };
+        case "archived":
+          return {
+            ...state,
+            archivedTasks: {
+              ...state.archivedTasks,
+              loading: true,
+            },
+          };
+        case "completed":
+          return {
+            ...state,
+            completedTasks: {
+              ...state.completedTasks,
+              loading: true,
+            },
+          };
+        default:
+          return state;
+      }
 
-    case LIST_ACTIVE_TASKS_SUCCESS:
-      return {
-        ...state,
-        activeTasks: {
-          ...state.activeTasks,
-          loading: false,
-          error: "",
-          data: action.payload.tasks.map((task) => ({
-            ...task,
-            canceling: false,
-            requestPending: false,
-          })),
-        },
-      };
+    case LIST_TASKS_ERROR:
+      switch (action.taskState) {
+        case "active":
+          return {
+            ...state,
+            activeTasks: {
+              ...state.activeTasks,
+              loading: false,
+              error: action.error,
+              data: [],
+            },
+          };
+        case "pending":
+          return {
+            ...state,
+            pendingTasks: {
+              ...state.pendingTasks,
+              loading: false,
+              error: action.error,
+              data: [],
+            },
+          };
+        case "aggregating":
+          let act = action as ListAggregatingTasksErrorAction;
+          return {
+            ...state,
+            aggregatingTasks: {
+              ...state.aggregatingTasks,
+              group: act.group,
+              loading: false,
+              error: action.error,
+              data: [],
+            },
+          };
+        case "scheduled":
+          return {
+            ...state,
+            scheduledTasks: {
+              ...state.scheduledTasks,
+              loading: false,
+              error: action.error,
+              data: [],
+            },
+          };
+        case "retry":
+          return {
+            ...state,
+            retryTasks: {
+              ...state.retryTasks,
+              loading: false,
+              error: action.error,
+              data: [],
+            },
+          };
+        case "archived":
+          return {
+            ...state,
+            archivedTasks: {
+              ...state.archivedTasks,
+              loading: false,
+              error: action.error,
+              data: [],
+            },
+          };
+        case "completed":
+          return {
+            ...state,
+            completedTasks: {
+              ...state.completedTasks,
+              loading: false,
+              error: action.error,
+              data: [],
+            },
+          };
+        default:
+          return state;
+      }
 
-    case LIST_ACTIVE_TASKS_ERROR:
-      return {
-        ...state,
-        activeTasks: {
-          ...state.activeTasks,
-          loading: false,
-          error: action.error,
-          data: [],
-        },
-      };
-
-    case LIST_PENDING_TASKS_BEGIN:
-      return {
-        ...state,
-        pendingTasks: {
-          ...state.pendingTasks,
-          loading: true,
-        },
-      };
-
-    case LIST_PENDING_TASKS_SUCCESS:
-      return {
-        ...state,
-        pendingTasks: {
-          ...state.pendingTasks,
-          loading: false,
-          error: "",
-          data: action.payload.tasks.map((task) => ({
-            ...task,
-            requestPending: false,
-          })),
-        },
-      };
-
-    case LIST_PENDING_TASKS_ERROR:
-      return {
-        ...state,
-        pendingTasks: {
-          ...state.pendingTasks,
-          loading: false,
-          error: action.error,
-          data: [],
-        },
-      };
-
-    case LIST_SCHEDULED_TASKS_BEGIN:
-      return {
-        ...state,
-        scheduledTasks: {
-          ...state.scheduledTasks,
-          loading: true,
-        },
-      };
-
-    case LIST_SCHEDULED_TASKS_SUCCESS:
-      return {
-        ...state,
-        scheduledTasks: {
-          ...state.scheduledTasks,
-          loading: false,
-          error: "",
-          data: action.payload.tasks.map((task) => ({
-            ...task,
-            requestPending: false,
-          })),
-        },
-      };
-
-    case LIST_SCHEDULED_TASKS_ERROR:
-      return {
-        ...state,
-        scheduledTasks: {
-          ...state.scheduledTasks,
-          loading: false,
-          error: action.error,
-          data: [],
-        },
-      };
-
-    case LIST_RETRY_TASKS_BEGIN:
-      return {
-        ...state,
-        retryTasks: {
-          ...state.retryTasks,
-          loading: true,
-        },
-      };
-
-    case LIST_RETRY_TASKS_SUCCESS:
-      return {
-        ...state,
-        retryTasks: {
-          ...state.retryTasks,
-          loading: false,
-          error: "",
-          data: action.payload.tasks.map((task) => ({
-            ...task,
-            requestPending: false,
-          })),
-        },
-      };
-
-    case LIST_RETRY_TASKS_ERROR:
-      return {
-        ...state,
-        retryTasks: {
-          ...state.retryTasks,
-          loading: false,
-          error: action.error,
-          data: [],
-        },
-      };
-
-    case LIST_ARCHIVED_TASKS_BEGIN:
-      return {
-        ...state,
-        archivedTasks: {
-          ...state.archivedTasks,
-          loading: true,
-        },
-      };
-
-    case LIST_ARCHIVED_TASKS_SUCCESS:
-      return {
-        ...state,
-        archivedTasks: {
-          ...state.archivedTasks,
-          loading: false,
-          error: "",
-          data: action.payload.tasks.map((task) => ({
-            ...task,
-            requestPending: false,
-          })),
-        },
-      };
-
-    case LIST_ARCHIVED_TASKS_ERROR:
-      return {
-        ...state,
-        archivedTasks: {
-          ...state.archivedTasks,
-          loading: false,
-          error: action.error,
-          data: [],
-        },
-      };
-
-    case LIST_COMPLETED_TASKS_BEGIN:
-      return {
-        ...state,
-        completedTasks: {
-          ...state.completedTasks,
-          loading: true,
-        },
-      };
-
-    case LIST_COMPLETED_TASKS_SUCCESS:
-      return {
-        ...state,
-        completedTasks: {
-          ...state.completedTasks,
-          loading: false,
-          error: "",
-          data: action.payload.tasks.map((task) => ({
-            ...task,
-            requestPending: false,
-          })),
-        },
-      };
-
-    case LIST_COMPLETED_TASKS_ERROR:
-      return {
-        ...state,
-        completedTasks: {
-          ...state.completedTasks,
-          loading: false,
-          error: action.error,
-          data: [],
-        },
-      };
-
-    case LIST_AGGREGATING_TASKS_BEGIN:
-      return {
-        ...state,
-        aggregatingTasks: {
-          ...state.aggregatingTasks,
-          group: action.group,
-          loading: true,
-        },
-      };
-
-    case LIST_AGGREGATING_TASKS_SUCCESS:
-      return {
-        ...state,
-        aggregatingTasks: {
-          ...state.aggregatingTasks,
-          group: action.group,
-          loading: false,
-          error: "",
-          data: action.payload.tasks.map((task) => ({
-            ...task,
-            requestPending: false,
-          })),
-        },
-      };
-
-    case LIST_AGGREGATING_TASKS_ERROR:
-      return {
-        ...state,
-        aggregatingTasks: {
-          ...state.aggregatingTasks,
-          group: action.group,
-          loading: false,
-          error: action.error,
-          data: [],
-        },
-      };
+    case LIST_TASKS_SUCCESS:
+      switch (action.taskState) {
+        case "active":
+          return {
+            ...state,
+            activeTasks: {
+              ...state.activeTasks,
+              loading: false,
+              error: "",
+              data: action.payload.tasks.map((task) => ({
+                ...task,
+                canceling: false,
+                requestPending: false,
+              })),
+            },
+          };
+        case "pending":
+          return {
+            ...state,
+            pendingTasks: {
+              ...state.pendingTasks,
+              loading: false,
+              error: "",
+              data: action.payload.tasks.map((task) => ({
+                ...task,
+                requestPending: false,
+              })),
+            },
+          };
+        case "aggregating":
+          let act = action as ListAggregatingTasksSuccessAction;
+          return {
+            ...state,
+            aggregatingTasks: {
+              ...state.aggregatingTasks,
+              group: act.group,
+              loading: false,
+              error: "",
+              data: action.payload.tasks.map((task) => ({
+                ...task,
+                requestPending: false,
+              })),
+            },
+          };
+        case "scheduled":
+          return {
+            ...state,
+            scheduledTasks: {
+              ...state.scheduledTasks,
+              loading: false,
+              error: "",
+              data: action.payload.tasks.map((task) => ({
+                ...task,
+                requestPending: false,
+              })),
+            },
+          };
+        case "retry":
+          return {
+            ...state,
+            retryTasks: {
+              ...state.retryTasks,
+              loading: false,
+              error: "",
+              data: action.payload.tasks.map((task) => ({
+                ...task,
+                requestPending: false,
+              })),
+            },
+          };
+        case "archived":
+          return {
+            ...state,
+            archivedTasks: {
+              ...state.archivedTasks,
+              loading: false,
+              error: "",
+              data: action.payload.tasks.map((task) => ({
+                ...task,
+                requestPending: false,
+              })),
+            },
+          };
+        case "completed":
+          return {
+            ...state,
+            completedTasks: {
+              ...state.completedTasks,
+              loading: false,
+              error: "",
+              data: action.payload.tasks.map((task) => ({
+                ...task,
+                requestPending: false,
+              })),
+            },
+          };
+        default:
+          return state;
+      }
 
     case DELETE_COMPLETED_TASK_BEGIN:
       return {

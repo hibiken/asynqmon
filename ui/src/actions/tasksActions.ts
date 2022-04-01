@@ -68,27 +68,6 @@ import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 export const GET_TASK_INFO_BEGIN = "GET_TASK_INFO_BEGIN";
 export const GET_TASK_INFO_SUCCESS = "GET_TASK_INFO_SUCCESS";
 export const GET_TASK_INFO_ERROR = "GET_TASK_INFO_ERROR";
-export const LIST_ACTIVE_TASKS_BEGIN = "LIST_ACTIVE_TASKS_BEGIN";
-export const LIST_ACTIVE_TASKS_SUCCESS = "LIST_ACTIVE_TASKS_SUCCESS";
-export const LIST_ACTIVE_TASKS_ERROR = "LIST_ACTIVE_TASKS_ERROR";
-export const LIST_PENDING_TASKS_BEGIN = "LIST_PENDING_TASKS_BEGIN";
-export const LIST_PENDING_TASKS_SUCCESS = "LIST_PENDING_TASKS_SUCCESS";
-export const LIST_PENDING_TASKS_ERROR = "LIST_PENDING_TASKS_ERROR";
-export const LIST_SCHEDULED_TASKS_BEGIN = "LIST_SCHEDULED_TASKS_BEGIN";
-export const LIST_SCHEDULED_TASKS_SUCCESS = "LIST_SCHEDULED_TASKS_SUCCESS";
-export const LIST_SCHEDULED_TASKS_ERROR = "LIST_SCHEDULED_TASKS_ERROR";
-export const LIST_RETRY_TASKS_BEGIN = "LIST_RETRY_TASKS_BEGIN";
-export const LIST_RETRY_TASKS_SUCCESS = "LIST_RETRY_TASKS_SUCCESS";
-export const LIST_RETRY_TASKS_ERROR = "LIST_RETRY_TASKS_ERROR";
-export const LIST_ARCHIVED_TASKS_BEGIN = "LIST_ARCHIVED_TASKS_BEGIN";
-export const LIST_ARCHIVED_TASKS_SUCCESS = "LIST_ARCHIVED_TASKS_SUCCESS";
-export const LIST_ARCHIVED_TASKS_ERROR = "LIST_ARCHIVED_TASKS_ERROR";
-export const LIST_COMPLETED_TASKS_BEGIN = "LIST_COMPLETED_TASKS_BEGIN";
-export const LIST_COMPLETED_TASKS_SUCCESS = "LIST_COMPLETED_TASKS_SUCCESS";
-export const LIST_COMPLETED_TASKS_ERROR = "LIST_COMPLETED_TASKS_ERROR";
-export const LIST_AGGREGATING_TASKS_BEGIN = "LIST_AGGREGATING_TASKS_BEGIN";
-export const LIST_AGGREGATING_TASKS_SUCCESS = "LIST_AGGREGATING_TASKS_SUCCESS";
-export const LIST_AGGREGATING_TASKS_ERROR = "LIST_AGGREGATING_TASKS_ERROR";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
@@ -293,6 +272,10 @@ export const DELETE_ALL_AGGREGATING_TASKS_SUCCESS =
 export const DELETE_ALL_AGGREGATING_TASKS_ERROR =
   "DELETE_ALL_AGGREGATING_TASKS_ERROR";
 
+export const LIST_TASKS_BEGIN = "LIST_TASKS_BEGIN";
+export const LIST_TASKS_ERROR = "LIST_TASKS_ERROR";
+export const LIST_TASKS_SUCCESS = "LIST_TASKS_SUCCESS";
+
 interface GetTaskInfoBeginAction {
   type: typeof GET_TASK_INFO_BEGIN;
 }
@@ -307,126 +290,50 @@ interface GetTaskInfoSuccessAction {
   payload: TaskInfo;
 }
 
-interface ListActiveTasksBeginAction {
-  type: typeof LIST_ACTIVE_TASKS_BEGIN;
+type TaskState =
+  | "active"
+  | "pending"
+  | "aggregating"
+  | "scheduled"
+  | "retry"
+  | "archived"
+  | "completed";
+
+interface ListTasksBeginAction {
+  type: typeof LIST_TASKS_BEGIN;
+  taskState: TaskState;
   queue: string;
 }
 
-interface ListActiveTasksSuccessAction {
-  type: typeof LIST_ACTIVE_TASKS_SUCCESS;
-  queue: string;
-  payload: ListTasksResponse;
-}
-
-interface ListActiveTasksErrorAction {
-  type: typeof LIST_ACTIVE_TASKS_ERROR;
+interface ListTasksErrorAction {
+  type: typeof LIST_TASKS_ERROR;
+  taskState: TaskState;
   queue: string;
   error: string; // error description
 }
 
-interface ListPendingTasksBeginAction {
-  type: typeof LIST_PENDING_TASKS_BEGIN;
-  queue: string;
-}
-
-interface ListPendingTasksSuccessAction {
-  type: typeof LIST_PENDING_TASKS_SUCCESS;
+interface ListTasksSuccessAction {
+  type: typeof LIST_TASKS_SUCCESS;
+  taskState: TaskState;
   queue: string;
   payload: ListTasksResponse;
 }
 
-interface ListPendingTasksErrorAction {
-  type: typeof LIST_PENDING_TASKS_ERROR;
-  queue: string;
-  error: string; // error description
-}
-
-interface ListScheduledTasksBeginAction {
-  type: typeof LIST_SCHEDULED_TASKS_BEGIN;
-  queue: string;
-}
-
-interface ListScheduledTasksSuccessAction {
-  type: typeof LIST_SCHEDULED_TASKS_SUCCESS;
-  queue: string;
-  payload: ListTasksResponse;
-}
-
-interface ListScheduledTasksErrorAction {
-  type: typeof LIST_SCHEDULED_TASKS_ERROR;
-  queue: string;
-  error: string; // error description
-}
-
-interface ListRetryTasksBeginAction {
-  type: typeof LIST_RETRY_TASKS_BEGIN;
-  queue: string;
-}
-
-interface ListRetryTasksSuccessAction {
-  type: typeof LIST_RETRY_TASKS_SUCCESS;
-  queue: string;
-  payload: ListTasksResponse;
-}
-
-interface ListRetryTasksErrorAction {
-  type: typeof LIST_RETRY_TASKS_ERROR;
-  queue: string;
-  error: string; // error description
-}
-
-interface ListArchivedTasksBeginAction {
-  type: typeof LIST_ARCHIVED_TASKS_BEGIN;
-  queue: string;
-}
-
-interface ListArchivedTasksSuccessAction {
-  type: typeof LIST_ARCHIVED_TASKS_SUCCESS;
-  queue: string;
-  payload: ListTasksResponse;
-}
-
-interface ListArchivedTasksErrorAction {
-  type: typeof LIST_ARCHIVED_TASKS_ERROR;
-  queue: string;
-  error: string; // error description
-}
-
-interface ListCompletedTasksBeginAction {
-  type: typeof LIST_COMPLETED_TASKS_BEGIN;
-  queue: string;
-}
-
-interface ListCompletedTasksSuccessAction {
-  type: typeof LIST_COMPLETED_TASKS_SUCCESS;
-  queue: string;
-  payload: ListTasksResponse;
-}
-
-interface ListCompletedTasksErrorAction {
-  type: typeof LIST_COMPLETED_TASKS_ERROR;
-  queue: string;
-  error: string; // error description
-}
-
-interface ListAggregatingTasksBeginAction {
-  type: typeof LIST_AGGREGATING_TASKS_BEGIN;
-  queue: string;
+export interface ListAggregatingTasksBeginAction extends ListTasksBeginAction {
+  taskState: "aggregating";
   group: string;
 }
 
-interface ListAggregatingTasksSuccessAction {
-  type: typeof LIST_AGGREGATING_TASKS_SUCCESS;
-  queue: string;
+export interface ListAggregatingTasksSuccessAction
+  extends ListTasksSuccessAction {
+  taskState: "aggregating";
   group: string;
   payload: ListAggregatingTasksResponse;
 }
 
-interface ListAggregatingTasksErrorAction {
-  type: typeof LIST_AGGREGATING_TASKS_ERROR;
-  queue: string;
+export interface ListAggregatingTasksErrorAction extends ListTasksErrorAction {
+  taskState: "aggregating";
   group: string;
-  error: string; // error description
 }
 
 interface CancelActiveTaskBeginAction {
@@ -1270,24 +1177,9 @@ export type TasksActionTypes =
   | GetTaskInfoBeginAction
   | GetTaskInfoErrorAction
   | GetTaskInfoSuccessAction
-  | ListActiveTasksBeginAction
-  | ListActiveTasksSuccessAction
-  | ListActiveTasksErrorAction
-  | ListPendingTasksBeginAction
-  | ListPendingTasksSuccessAction
-  | ListPendingTasksErrorAction
-  | ListScheduledTasksBeginAction
-  | ListScheduledTasksSuccessAction
-  | ListScheduledTasksErrorAction
-  | ListRetryTasksBeginAction
-  | ListRetryTasksSuccessAction
-  | ListRetryTasksErrorAction
-  | ListArchivedTasksBeginAction
-  | ListArchivedTasksSuccessAction
-  | ListArchivedTasksErrorAction
-  | ListCompletedTasksBeginAction
-  | ListCompletedTasksSuccessAction
-  | ListCompletedTasksErrorAction
+  | ListTasksBeginAction
+  | ListTasksErrorAction
+  | ListTasksSuccessAction
   | ListAggregatingTasksBeginAction
   | ListAggregatingTasksSuccessAction
   | ListAggregatingTasksErrorAction
@@ -1451,11 +1343,12 @@ export function listActiveTasksAsync(
   pageOpts?: PaginationOptions
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: LIST_ACTIVE_TASKS_BEGIN, queue: qname });
+    dispatch({ type: LIST_TASKS_BEGIN, taskState: "active", queue: qname });
     try {
       const response = await listActiveTasks(qname, pageOpts);
       dispatch({
-        type: LIST_ACTIVE_TASKS_SUCCESS,
+        type: LIST_TASKS_SUCCESS,
+        taskState: "active",
         queue: qname,
         payload: response,
       });
@@ -1465,7 +1358,8 @@ export function listActiveTasksAsync(
         toErrorStringWithHttpStatus(error)
       );
       dispatch({
-        type: LIST_ACTIVE_TASKS_ERROR,
+        type: LIST_TASKS_ERROR,
+        taskState: "active",
         queue: qname,
         error: toErrorString(error),
       });
@@ -1478,11 +1372,12 @@ export function listPendingTasksAsync(
   pageOpts?: PaginationOptions
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: LIST_PENDING_TASKS_BEGIN, queue: qname });
+    dispatch({ type: LIST_TASKS_BEGIN, taskState: "pending", queue: qname });
     try {
       const response = await listPendingTasks(qname, pageOpts);
       dispatch({
-        type: LIST_PENDING_TASKS_SUCCESS,
+        type: LIST_TASKS_SUCCESS,
+        taskState: "pending",
         queue: qname,
         payload: response,
       });
@@ -1492,7 +1387,8 @@ export function listPendingTasksAsync(
         toErrorStringWithHttpStatus(error)
       );
       dispatch({
-        type: LIST_PENDING_TASKS_ERROR,
+        type: LIST_TASKS_ERROR,
+        taskState: "pending",
         queue: qname,
         error: toErrorString(error),
       });
@@ -1505,11 +1401,12 @@ export function listScheduledTasksAsync(
   pageOpts?: PaginationOptions
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: LIST_SCHEDULED_TASKS_BEGIN, queue: qname });
+    dispatch({ type: LIST_TASKS_BEGIN, taskState: "scheduled", queue: qname });
     try {
       const response = await listScheduledTasks(qname, pageOpts);
       dispatch({
-        type: LIST_SCHEDULED_TASKS_SUCCESS,
+        type: LIST_TASKS_SUCCESS,
+        taskState: "scheduled",
         queue: qname,
         payload: response,
       });
@@ -1519,7 +1416,8 @@ export function listScheduledTasksAsync(
         toErrorStringWithHttpStatus(error)
       );
       dispatch({
-        type: LIST_SCHEDULED_TASKS_ERROR,
+        type: LIST_TASKS_ERROR,
+        taskState: "scheduled",
         queue: qname,
         error: toErrorString(error),
       });
@@ -1532,11 +1430,12 @@ export function listRetryTasksAsync(
   pageOpts?: PaginationOptions
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: LIST_RETRY_TASKS_BEGIN, queue: qname });
+    dispatch({ type: LIST_TASKS_BEGIN, taskState: "retry", queue: qname });
     try {
       const response = await listRetryTasks(qname, pageOpts);
       dispatch({
-        type: LIST_RETRY_TASKS_SUCCESS,
+        type: LIST_TASKS_SUCCESS,
+        taskState: "retry",
         queue: qname,
         payload: response,
       });
@@ -1546,7 +1445,8 @@ export function listRetryTasksAsync(
         toErrorStringWithHttpStatus(error)
       );
       dispatch({
-        type: LIST_RETRY_TASKS_ERROR,
+        type: LIST_TASKS_ERROR,
+        taskState: "retry",
         queue: qname,
         error: toErrorString(error),
       });
@@ -1559,11 +1459,12 @@ export function listArchivedTasksAsync(
   pageOpts?: PaginationOptions
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
-    dispatch({ type: LIST_ARCHIVED_TASKS_BEGIN, queue: qname });
+    dispatch({ type: LIST_TASKS_BEGIN, taskState: "archived", queue: qname });
     try {
       const response = await listArchivedTasks(qname, pageOpts);
       dispatch({
-        type: LIST_ARCHIVED_TASKS_SUCCESS,
+        type: LIST_TASKS_SUCCESS,
+        taskState: "archived",
         queue: qname,
         payload: response,
       });
@@ -1573,7 +1474,8 @@ export function listArchivedTasksAsync(
         toErrorStringWithHttpStatus(error)
       );
       dispatch({
-        type: LIST_ARCHIVED_TASKS_ERROR,
+        type: LIST_TASKS_ERROR,
+        taskState: "archived",
         queue: qname,
         error: toErrorString(error),
       });
@@ -1587,10 +1489,15 @@ export function listCompletedTasksAsync(
 ) {
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     try {
-      dispatch({ type: LIST_COMPLETED_TASKS_BEGIN, queue: qname });
+      dispatch({
+        type: LIST_TASKS_BEGIN,
+        taskState: "completed",
+        queue: qname,
+      });
       const response = await listCompletedTasks(qname, pageOpts);
       dispatch({
-        type: LIST_COMPLETED_TASKS_SUCCESS,
+        type: LIST_TASKS_SUCCESS,
+        taskState: "completed",
         queue: qname,
         payload: response,
       });
@@ -1600,7 +1507,8 @@ export function listCompletedTasksAsync(
         toErrorStringWithHttpStatus(error)
       );
       dispatch({
-        type: LIST_COMPLETED_TASKS_ERROR,
+        type: LIST_TASKS_ERROR,
+        taskState: "completed",
         queue: qname,
         error: toErrorString(error),
       });
@@ -1616,13 +1524,15 @@ export function listAggregatingTasksAsync(
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     try {
       dispatch({
-        type: LIST_AGGREGATING_TASKS_BEGIN,
+        type: LIST_TASKS_BEGIN,
+        taskState: "aggregating",
         queue: qname,
         group: gname,
       });
       const response = await listAggregatingTasks(qname, gname, pageOpts);
       dispatch({
-        type: LIST_AGGREGATING_TASKS_SUCCESS,
+        type: LIST_TASKS_SUCCESS,
+        taskState: "aggregating",
         queue: qname,
         group: gname,
         payload: response,
@@ -1633,7 +1543,8 @@ export function listAggregatingTasksAsync(
         toErrorStringWithHttpStatus(error)
       );
       dispatch({
-        type: LIST_AGGREGATING_TASKS_ERROR,
+        type: LIST_TASKS_ERROR,
+        taskState: "aggregating",
         queue: qname,
         group: gname,
         error: toErrorString(error),
