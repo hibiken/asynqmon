@@ -968,10 +968,7 @@ function queuesReducer(
         }
         return {
           ...queueInfo,
-          currentStats: {
-            ...queueInfo.currentStats,
-            groups: action.payload.groups.length,
-          },
+          currentStats: action.payload.stats,
         };
       });
       return { ...state, data: newData };

@@ -306,6 +306,11 @@ func newListAggregatingTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadFo
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		groups, err := inspector.Groups(qname)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		payload := make(map[string]interface{})
 		if len(tasks) == 0 {
 			// avoid nil for the tasks field in json output.
@@ -314,6 +319,7 @@ func newListAggregatingTasksHandlerFunc(inspector *asynq.Inspector, pf PayloadFo
 			payload["tasks"] = toAggregatingTasks(tasks, pf)
 		}
 		payload["stats"] = toQueueStateSnapshot(qinfo)
+		payload["groups"] = toGroupInfos(groups)
 		writeResponseJSON(w, payload)
 	}
 }
