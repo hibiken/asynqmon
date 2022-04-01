@@ -4,6 +4,10 @@ import {
   LIST_GROUPS_ERROR,
   LIST_GROUPS_SUCCESS,
 } from "../actions/groupsActions";
+import {
+  LIST_AGGREGATING_TASKS_SUCCESS,
+  TasksActionTypes,
+} from "../actions/tasksActions";
 import { GroupInfo } from "../api";
 
 interface GroupsState {
@@ -20,7 +24,7 @@ const initialState: GroupsState = {
 
 function groupsReducer(
   state = initialState,
-  action: GroupsActionTypes
+  action: GroupsActionTypes | TasksActionTypes
 ): GroupsState {
   switch (action.type) {
     case LIST_GROUPS_BEGIN:
@@ -34,6 +38,12 @@ function groupsReducer(
         ...state,
         loading: false,
         error: "",
+        data: action.payload.groups,
+      };
+
+    case LIST_AGGREGATING_TASKS_SUCCESS:
+      return {
+        ...state,
         data: action.payload.groups,
       };
 

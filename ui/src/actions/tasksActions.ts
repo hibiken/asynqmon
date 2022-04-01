@@ -59,6 +59,7 @@ import {
   deleteAggregatingTask,
   runAggregatingTask,
   archiveAggregatingTask,
+  ListAggregatingTasksResponse,
 } from "../api";
 import { Dispatch } from "redux";
 import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
@@ -418,7 +419,7 @@ interface ListAggregatingTasksSuccessAction {
   type: typeof LIST_AGGREGATING_TASKS_SUCCESS;
   queue: string;
   group: string;
-  payload: ListTasksResponse;
+  payload: ListAggregatingTasksResponse;
 }
 
 interface ListAggregatingTasksErrorAction {

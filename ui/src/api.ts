@@ -18,6 +18,12 @@ export interface ListTasksResponse {
   stats: Queue;
 }
 
+export interface ListAggregatingTasksResponse {
+  tasks: TaskInfo[];
+  stats: Queue;
+  groups: GroupInfo[];
+}
+
 export interface ListServersResponse {
   servers: ServerInfo[];
 }
@@ -67,6 +73,7 @@ export interface ListQueueStatsResponse {
 }
 
 export interface ListGroupsResponse {
+  stats: Queue;
   groups: GroupInfo[];
 }
 
@@ -539,7 +546,7 @@ export async function listAggregatingTasks(
   qname: string,
   gname: string,
   pageOpts?: PaginationOptions
-): Promise<ListTasksResponse> {
+): Promise<ListAggregatingTasksResponse> {
   let url = `${getBaseUrl()}/queues/${qname}/groups/${gname}/aggregating_tasks`;
   if (pageOpts) {
     url += `?${queryString.stringify(pageOpts)}`;
