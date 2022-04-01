@@ -39,6 +39,15 @@ import {
   DELETE_COMPLETED_TASK_SUCCESS,
   DELETE_ALL_COMPLETED_TASKS_SUCCESS,
   BATCH_DELETE_COMPLETED_TASKS_SUCCESS,
+  RUN_AGGREGATING_TASK_SUCCESS,
+  ARCHIVE_AGGREGATING_TASK_SUCCESS,
+  DELETE_AGGREGATING_TASK_SUCCESS,
+  BATCH_RUN_AGGREGATING_TASKS_SUCCESS,
+  BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS,
+  BATCH_DELETE_AGGREGATING_TASKS_SUCCESS,
+  RUN_ALL_AGGREGATING_TASKS_SUCCESS,
+  ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS,
+  DELETE_ALL_AGGREGATING_TASKS_SUCCESS,
 } from "../actions/tasksActions";
 
 interface SnackbarState {
@@ -98,6 +107,12 @@ function snackbarReducer(
         message: `Archived task is now pending`,
       };
 
+    case RUN_AGGREGATING_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        message: `Aggregating task is now pending`,
+      };
+
     case ARCHIVE_PENDING_TASK_SUCCESS:
       return {
         isOpen: true,
@@ -116,6 +131,12 @@ function snackbarReducer(
         message: `Retry task is now archived`,
       };
 
+    case ARCHIVE_AGGREGATING_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        message: `Aggregating task is now archived`,
+      };
+
     case DELETE_PENDING_TASK_SUCCESS:
       return {
         isOpen: true,
@@ -128,6 +149,12 @@ function snackbarReducer(
         message: `Scheduled task deleted`,
       };
 
+    case DELETE_AGGREGATING_TASK_SUCCESS:
+      return {
+        isOpen: true,
+        message: `Aggregating task deleted`,
+      };
+
     case BATCH_RUN_SCHEDULED_TASKS_SUCCESS: {
       const n = action.payload.pending_ids.length;
       return {
@@ -135,6 +162,34 @@ function snackbarReducer(
         message: `${n} scheduled ${
           n === 1 ? "task is" : "tasks are"
         } now pending`,
+      };
+    }
+
+    case BATCH_RUN_AGGREGATING_TASKS_SUCCESS: {
+      const n = action.payload.pending_ids.length;
+      return {
+        isOpen: true,
+        message: `${n} aggregating ${
+          n === 1 ? "task is" : "tasks are"
+        } now pending`,
+      };
+    }
+
+    case BATCH_ARCHIVE_AGGREGATING_TASKS_SUCCESS: {
+      const n = action.payload.archived_ids.length;
+      return {
+        isOpen: true,
+        message: `${n} aggregating ${
+          n === 1 ? "task is" : "tasks are"
+        } now archived`,
+      };
+    }
+
+    case BATCH_DELETE_AGGREGATING_TASKS_SUCCESS: {
+      const n = action.payload.deleted_ids.length;
+      return {
+        isOpen: true,
+        message: `${n} aggregating ${n === 1 ? "task" : "tasks"} deleted`,
       };
     }
 
@@ -184,6 +239,24 @@ function snackbarReducer(
       return {
         isOpen: true,
         message: "All pending tasks deleted",
+      };
+
+    case RUN_ALL_AGGREGATING_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: `All tasks in group ${action.group}  are now pending`,
+      };
+
+    case ARCHIVE_ALL_AGGREGATING_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: `All tasks in group ${action.group} are now archived`,
+      };
+
+    case DELETE_ALL_AGGREGATING_TASKS_SUCCESS:
+      return {
+        isOpen: true,
+        message: `All tasks in group ${action.group} deleted`,
       };
 
     case RUN_ALL_SCHEDULED_TASKS_SUCCESS:
