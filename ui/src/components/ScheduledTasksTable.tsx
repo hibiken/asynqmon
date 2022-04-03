@@ -74,17 +74,6 @@ const columns: TableColumn[] = [
   { key: "actions", label: "Actions", align: "center" },
 ];
 
-function ScheduledTasksTable(props: Props & ReduxProps) {
-  return (
-    <TasksTable
-      taskState="scheduled"
-      columns={columns}
-      renderRow={(rowProps: RowProps) => <Row {...rowProps} />}
-      {...props}
-    />
-  );
-}
-
 function Row(props: RowProps) {
   const { task } = props;
   const classes = useRowStyles();
@@ -184,6 +173,17 @@ function Row(props: RowProps) {
         </TableCell>
       )}
     </TableRow>
+  );
+}
+
+function ScheduledTasksTable(props: Props & ReduxProps) {
+  return (
+    <TasksTable
+      taskState="scheduled"
+      columns={columns}
+      renderRow={(rowProps: RowProps) => <Row {...rowProps} />}
+      {...props}
+    />
   );
 }
 

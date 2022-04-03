@@ -14,6 +14,7 @@ import IconButton from "@material-ui/core/IconButton";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ArchiveIcon from "@material-ui/icons/Archive";
+import CancelIcon from "@material-ui/icons/Cancel";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import TablePaginationActions, {
@@ -60,12 +61,15 @@ interface Props {
   batchDeleteTasks?: (qname: string, taskIds: string[]) => Promise<void>;
   batchRunTasks?: (qname: string, taskIds: string[]) => Promise<void>;
   batchArchiveTasks?: (qname: string, taskIds: string[]) => Promise<void>;
+  batchCancelTasks?: (qname: string, taskIds: string[]) => Promise<void>;
   deleteAllTasks?: (qname: string) => Promise<void>;
   runAllTasks?: (qname: string) => Promise<void>;
   archiveAllTasks?: (qname: string) => Promise<void>;
+  cancelAllTasks?: (qname: string) => Promise<void>;
   deleteTask?: (qname: string, taskId: string) => Promise<void>;
   runTask?: (qname: string, taskId: string) => Promise<void>;
   archiveTask?: (qname: string, taskId: string) => Promise<void>;
+  cancelTask?: (qname: string, taskId: string) => Promise<void>;
   taskRowsPerPageChange: (n: number) => void;
 
   renderRow: (rowProps: RowProps) => JSX.Element;
@@ -140,6 +144,13 @@ export default function TasksTable(props: Props) {
       disabled: props.allActionPending,
     });
   }
+  if (props.cancelAllTasks) {
+    allActions.push({
+      label: "Cancel All",
+      onClick: createAllTasksHandler(props.cancelAllTasks),
+      disabled: props.allActionPending,
+    });
+  }
 
   let batchActions = [];
   if (props.batchDeleteTasks) {
@@ -164,6 +175,14 @@ export default function TasksTable(props: Props) {
       icon: <PlayArrowIcon />,
       disabled: props.batchActionPending,
       onClick: createBatchTasksHandler(props.batchRunTasks),
+    });
+  }
+  if (props.batchCancelTasks) {
+    batchActions.push({
+      tooltip: "Cancel",
+      icon: <CancelIcon />,
+      disabled: props.batchActionPending,
+      onClick: createBatchTasksHandler(props.batchCancelTasks),
     });
   }
 
@@ -267,6 +286,9 @@ export default function TasksTable(props: Props) {
                 onArchiveClick: props.archiveTask
                   ? createTaskAction(props.archiveTask, task.id)
                   : undefined,
+                onCancelClick: props.cancelTask
+                  ? createTaskAction(props.cancelTask, task.id)
+                  : undefined,
                 onActionCellEnter: () => setActiveTaskId(task.id),
                 onActionCellLeave: () => setActiveTaskId(""),
                 showActions: activeTaskId === task.id,
@@ -318,7 +340,7 @@ export const useRowStyles = makeStyles((theme) => ({
     },
   },
   actionCell: {
-    width: "140px",
+    width: "140px", // TODO: This was 96px for pending/archived/completed row
   },
   actionButton: {
     marginLeft: 3,
@@ -344,6 +366,7 @@ export interface RowProps {
   onRunClick?: () => void;
   onDeleteClick?: () => void;
   onArchiveClick?: () => void;
+  onCancelClick?: () => void;
   allActionPending: boolean;
   showActions: boolean;
   onActionCellEnter: () => void;
