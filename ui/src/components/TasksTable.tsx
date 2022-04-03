@@ -105,17 +105,17 @@ export default function TasksTable(props: Props) {
     }
   };
 
-  function createAllTasksHandler(action: (qname: string) => Promise<void>) {
+  function createAllActionHandler(action: (qname: string) => Promise<void>) {
     return () => action(queue);
   }
 
-  function createBatchTasksHandler(
+  function createBatchActionHandler(
     action: (qname: string, taskIds: string[]) => Promise<void>
   ) {
     return () => action(queue, selectedIds).then(() => setSelectedIds([]));
   }
 
-  function createTaskAction(
+  function createSingleActionHandler(
     action: (qname: string, taskId: string) => Promise<void>,
     taskId: string
   ) {
@@ -126,28 +126,28 @@ export default function TasksTable(props: Props) {
   if (props.deleteAllTasks) {
     allActions.push({
       label: "Delete All",
-      onClick: createAllTasksHandler(props.deleteAllTasks),
+      onClick: createAllActionHandler(props.deleteAllTasks),
       disabled: props.allActionPending,
     });
   }
   if (props.archiveAllTasks) {
     allActions.push({
       label: "Archive All",
-      onClick: createAllTasksHandler(props.archiveAllTasks),
+      onClick: createAllActionHandler(props.archiveAllTasks),
       disabled: props.allActionPending,
     });
   }
   if (props.runAllTasks) {
     allActions.push({
       label: "Run All",
-      onClick: createAllTasksHandler(props.runAllTasks),
+      onClick: createAllActionHandler(props.runAllTasks),
       disabled: props.allActionPending,
     });
   }
   if (props.cancelAllTasks) {
     allActions.push({
       label: "Cancel All",
-      onClick: createAllTasksHandler(props.cancelAllTasks),
+      onClick: createAllActionHandler(props.cancelAllTasks),
       disabled: props.allActionPending,
     });
   }
@@ -158,7 +158,7 @@ export default function TasksTable(props: Props) {
       tooltip: "Delete",
       icon: <DeleteIcon />,
       disabled: props.batchActionPending,
-      onClick: createBatchTasksHandler(props.batchDeleteTasks),
+      onClick: createBatchActionHandler(props.batchDeleteTasks),
     });
   }
   if (props.batchArchiveTasks) {
@@ -166,7 +166,7 @@ export default function TasksTable(props: Props) {
       tooltip: "Archive",
       icon: <ArchiveIcon />,
       disabled: props.batchActionPending,
-      onClick: createBatchTasksHandler(props.batchArchiveTasks),
+      onClick: createBatchActionHandler(props.batchArchiveTasks),
     });
   }
   if (props.batchRunTasks) {
@@ -174,7 +174,7 @@ export default function TasksTable(props: Props) {
       tooltip: "Run",
       icon: <PlayArrowIcon />,
       disabled: props.batchActionPending,
-      onClick: createBatchTasksHandler(props.batchRunTasks),
+      onClick: createBatchActionHandler(props.batchRunTasks),
     });
   }
   if (props.batchCancelTasks) {
@@ -182,7 +182,7 @@ export default function TasksTable(props: Props) {
       tooltip: "Cancel",
       icon: <CancelIcon />,
       disabled: props.batchActionPending,
-      onClick: createBatchTasksHandler(props.batchCancelTasks),
+      onClick: createBatchActionHandler(props.batchCancelTasks),
     });
   }
 
@@ -205,7 +205,11 @@ export default function TasksTable(props: Props) {
     return (
       <Alert severity="info" className={classes.alert}>
         <AlertTitle>Info</AlertTitle>
-        No {props.taskState} tasks at this time.
+        {props.taskState === "aggregating" ? (
+          <div>Selected group is empty.</div>
+        ) : (
+          <div>No {props.taskState} tasks at this time.</div>
+        )}
       </Alert>
     );
   }
@@ -278,16 +282,16 @@ export default function TasksTable(props: Props) {
                   }
                 },
                 onRunClick: props.runTask
-                  ? createTaskAction(props.runTask, task.id)
+                  ? createSingleActionHandler(props.runTask, task.id)
                   : undefined,
                 onDeleteClick: props.deleteTask
-                  ? createTaskAction(props.deleteTask, task.id)
+                  ? createSingleActionHandler(props.deleteTask, task.id)
                   : undefined,
                 onArchiveClick: props.archiveTask
-                  ? createTaskAction(props.archiveTask, task.id)
+                  ? createSingleActionHandler(props.archiveTask, task.id)
                   : undefined,
                 onCancelClick: props.cancelTask
-                  ? createTaskAction(props.cancelTask, task.id)
+                  ? createSingleActionHandler(props.cancelTask, task.id)
                   : undefined,
                 onActionCellEnter: () => setActiveTaskId(task.id),
                 onActionCellLeave: () => setActiveTaskId(""),
@@ -340,7 +344,7 @@ export const useRowStyles = makeStyles((theme) => ({
     },
   },
   actionCell: {
-    width: "140px", // TODO: This was 96px for pending/archived/completed row
+    width: "140px",
   },
   actionButton: {
     marginLeft: 3,
