@@ -162,20 +162,16 @@ import {
 } from "../actions/tasksActions";
 import { TaskInfo } from "../api";
 
-export interface ActiveTaskExtended extends TaskInfo {
+export interface TaskInfoExtended extends TaskInfo {
   // Indicates that a request has been sent for this
   // task and awaiting for a response.
   requestPending: boolean;
 
   // Incidates that a cancelation signal has been
   // published for this task.
-  canceling: boolean;
-}
-
-export interface TaskInfoExtended extends TaskInfo {
-  // Indicates that a request has been sent for this
-  // task and awaiting for a response.
-  requestPending: boolean;
+  //
+  // Only applies to active tasks
+  canceling?: boolean;
 }
 
 interface TasksState {
@@ -184,7 +180,7 @@ interface TasksState {
     batchActionPending: boolean;
     allActionPending: boolean;
     error: string;
-    data: ActiveTaskExtended[];
+    data: TaskInfoExtended[];
   };
   pendingTasks: {
     loading: boolean;
