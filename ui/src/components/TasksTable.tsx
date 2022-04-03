@@ -205,7 +205,11 @@ export default function TasksTable(props: Props) {
     return (
       <Alert severity="info" className={classes.alert}>
         <AlertTitle>Info</AlertTitle>
-        No {props.taskState} tasks at this time.
+        {props.taskState === "aggregating" ? (
+          <div>Selected group is empty.</div>
+        ) : (
+          <div>No {props.taskState} tasks at this time.</div>
+        )}
       </Alert>
     );
   }
