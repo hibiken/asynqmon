@@ -145,7 +145,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function TasksTable(props: Props & ReduxProps) {
+function TasksTableContainer(props: Props & ReduxProps) {
   const { currentStats } = props;
   const classes = useStyles();
   const history = useHistory();
@@ -259,4 +259,4 @@ function TasksTable(props: Props & ReduxProps) {
   );
 }
 
-export default connector(TasksTable);
+export default connector(TasksTableContainer);
