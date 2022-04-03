@@ -3,7 +3,7 @@ import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
-import TasksTable from "../components/TasksTable";
+import TasksTableContainer from "../components/TasksTableContainer";
 import QueueInfoBanner from "../components/QueueInfoBanner";
 import QueueBreadCrumb from "../components/QueueBreadcrumb";
 import { useParams } from "react-router-dom";
@@ -70,7 +70,7 @@ function TasksView(props: ConnectedProps<typeof connector>) {
           <QueueInfoBanner qname={qname} />
         </Grid>
         <Grid item xs={12} className={classes.tasksTable}>
-          <TasksTable queue={qname} selected={selected} />
+          <TasksTableContainer queue={qname} selected={selected} />
         </Grid>
       </Grid>
     </Container>
