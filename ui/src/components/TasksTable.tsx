@@ -64,15 +64,15 @@ interface Props {
 
   // actions
   listTasks: (qname: string, pgn: PaginationOptions) => void;
-  batchDeleteTasks: (qname: string, taskIds: string[]) => Promise<void>;
-  batchRunTasks: (qname: string, taskIds: string[]) => Promise<void>;
-  batchArchiveTasks: (qname: string, taskIds: string[]) => Promise<void>;
-  deleteAllTasks: (qname: string) => Promise<void>;
-  runAllTasks: (qname: string) => Promise<void>;
-  archiveAllTasks: (qname: string) => Promise<void>;
-  deleteTask: (qname: string, taskId: string) => Promise<void>;
-  runTask: (qname: string, taskId: string) => Promise<void>;
-  archiveTask: (qname: string, taskId: string) => Promise<void>;
+  batchDeleteTasks?: (qname: string, taskIds: string[]) => Promise<void>;
+  batchRunTasks?: (qname: string, taskIds: string[]) => Promise<void>;
+  batchArchiveTasks?: (qname: string, taskIds: string[]) => Promise<void>;
+  deleteAllTasks?: (qname: string) => Promise<void>;
+  runAllTasks?: (qname: string) => Promise<void>;
+  archiveAllTasks?: (qname: string) => Promise<void>;
+  deleteTask?: (qname: string, taskId: string) => Promise<void>;
+  runTask?: (qname: string, taskId: string) => Promise<void>;
+  archiveTask?: (qname: string, taskId: string) => Promise<void>;
   taskRowsPerPageChange: (n: number) => void;
 }
 
@@ -106,29 +106,71 @@ export default function TasksTable(props: Props) {
     }
   };
 
-  const handleRunAllClick = () => {
-    props.runAllTasks(queue);
-  };
+  function createAllTasksHandler(action: (qname: string) => Promise<void>) {
+    return () => action(queue);
+  }
 
-  const handleDeleteAllClick = () => {
-    props.deleteAllTasks(queue);
-  };
+  function createBatchTasksHandler(
+    action: (qname: string, taskIds: string[]) => Promise<void>
+  ) {
+    return () => action(queue, selectedIds).then(() => setSelectedIds([]));
+  }
 
-  const handleArchiveAllClick = () => {
-    props.archiveAllTasks(queue);
-  };
+  function createTaskAction(
+    action: (qname: string, taskId: string) => Promise<void>,
+    taskId: string
+  ) {
+    return () => action(queue, taskId);
+  }
 
-  const handleBatchRunClick = () => {
-    props.batchRunTasks(queue, selectedIds).then(() => setSelectedIds([]));
-  };
+  let allActions = [];
+  if (props.deleteAllTasks) {
+    allActions.push({
+      label: "Delete All",
+      onClick: createAllTasksHandler(props.deleteAllTasks),
+      disabled: props.allActionPending,
+    });
+  }
+  if (props.archiveAllTasks) {
+    allActions.push({
+      label: "Archive All",
+      onClick: createAllTasksHandler(props.archiveAllTasks),
+      disabled: props.allActionPending,
+    });
+  }
+  if (props.runAllTasks) {
+    allActions.push({
+      label: "Run All",
+      onClick: createAllTasksHandler(props.runAllTasks),
+      disabled: props.allActionPending,
+    });
+  }
 
-  const handleBatchDeleteClick = () => {
-    props.batchDeleteTasks(queue, selectedIds).then(() => setSelectedIds([]));
-  };
-
-  const handleBatchArchiveClick = () => {
-    props.batchArchiveTasks(queue, selectedIds).then(() => setSelectedIds([]));
-  };
+  let batchActions = [];
+  if (props.batchDeleteTasks) {
+    batchActions.push({
+      tooltip: "Delete",
+      icon: <DeleteIcon />,
+      disabled: props.batchActionPending,
+      onClick: createBatchTasksHandler(props.batchDeleteTasks),
+    });
+  }
+  if (props.batchArchiveTasks) {
+    batchActions.push({
+      tooltip: "Archive",
+      icon: <ArchiveIcon />,
+      disabled: props.batchActionPending,
+      onClick: createBatchTasksHandler(props.batchArchiveTasks),
+    });
+  }
+  if (props.batchRunTasks) {
+    batchActions.push({
+      tooltip: "Run",
+      icon: <PlayArrowIcon />,
+      disabled: props.batchActionPending,
+      onClick: createBatchTasksHandler(props.batchRunTasks),
+    });
+  }
 
   const fetchData = useCallback(() => {
     const pageOpts = { page: page + 1, size: pageSize };
@@ -161,43 +203,8 @@ export default function TasksTable(props: Props) {
       {!window.READ_ONLY && (
         <TableActions
           showIconButtons={numSelected > 0}
-          iconButtonActions={[
-            {
-              tooltip: "Delete",
-              icon: <DeleteIcon />,
-              onClick: handleBatchDeleteClick,
-              disabled: props.batchActionPending,
-            },
-            {
-              tooltip: "Archive",
-              icon: <ArchiveIcon />,
-              onClick: handleBatchArchiveClick,
-              disabled: props.batchActionPending,
-            },
-            {
-              tooltip: "Run",
-              icon: <PlayArrowIcon />,
-              onClick: handleBatchRunClick,
-              disabled: props.batchActionPending,
-            },
-          ]}
-          menuItemActions={[
-            {
-              label: "Delete All",
-              onClick: handleDeleteAllClick,
-              disabled: props.allActionPending,
-            },
-            {
-              label: "Archive All",
-              onClick: handleArchiveAllClick,
-              disabled: props.allActionPending,
-            },
-            {
-              label: "Run All",
-              onClick: handleRunAllClick,
-              disabled: props.allActionPending,
-            },
-          ]}
+          iconButtonActions={batchActions}
+          menuItemActions={allActions}
         />
       )}
       <TableContainer component={Paper}>
@@ -256,15 +263,21 @@ export default function TasksTable(props: Props) {
                     setSelectedIds(selectedIds.filter((id) => id !== task.id));
                   }
                 }}
-                onRunClick={() => {
-                  props.runTask(queue, task.id);
-                }}
-                onDeleteClick={() => {
-                  props.deleteTask(queue, task.id);
-                }}
-                onArchiveClick={() => {
-                  props.archiveTask(queue, task.id);
-                }}
+                onRunClick={
+                  props.runTask
+                    ? createTaskAction(props.runTask, task.id)
+                    : undefined
+                }
+                onDeleteClick={
+                  props.deleteTask
+                    ? createTaskAction(props.deleteTask, task.id)
+                    : undefined
+                }
+                onArchiveClick={
+                  props.archiveTask
+                    ? createTaskAction(props.archiveTask, task.id)
+                    : undefined
+                }
                 onActionCellEnter={() => setActiveTaskId(task.id)}
                 onActionCellLeave={() => setActiveTaskId("")}
                 showActions={activeTaskId === task.id}
@@ -338,9 +351,9 @@ interface RowProps {
   task: TaskInfoExtended;
   isSelected: boolean;
   onSelectChange: (checked: boolean) => void;
-  onRunClick: () => void;
-  onDeleteClick: () => void;
-  onArchiveClick: () => void;
+  onRunClick?: () => void;
+  onDeleteClick?: () => void;
+  onArchiveClick?: () => void;
   allActionPending: boolean;
   showActions: boolean;
   onActionCellEnter: () => void;
