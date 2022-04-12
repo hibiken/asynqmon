@@ -15,6 +15,7 @@ Please make sure the version compatibility with the Asynq package you are using.
 
 | Asynq version  | WebUI (asynqmon) version |
 | -------------- | ------------------------ |
+| 0.23.x         | 0.7.x                    |
 | 0.22.x         | 0.6.x                    |
 | 0.20.x, 0.21.x | 0.5.x                    |
 | 0.19.x         | 0.4.x                    |
