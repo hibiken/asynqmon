@@ -20,4 +20,4 @@ docker:
 	docker run --rm \
 		--name asynqmon \
 		-p 8080:8080 \
-		asynqmon --redis-addr=host.docker.internal:6379
+		asynqmon --redis-addrs=host.docker.internal:6379
