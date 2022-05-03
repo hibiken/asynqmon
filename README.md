@@ -96,16 +96,18 @@ docker run hibiken/asynqmon --help
 
 Here's the available flags:
 
-_Note_: Use `--redis-url` to specify address, db-number, and password with one flag value; Alternatively, use `--redis-addr`, `--redis-db`, and `--redis-password` to specify each value.
+_Note_: Use `--redis-url` to specify address, db-number, and password with one flag value; Alternatively, use `--redis-addrs`, `--redis-db`, and `--redis-password` to specify each value.
 
 | Flag                              | Env                       | Description                                                         | Default          |
 | --------------------------------- | ------------------------- | ------------------------------------------------------------------- | ---------------- |
 | `--port`(int)                     | `PORT`                    | port number to use for web ui server                                | 8080             |
-| `---redis-url`(string)            | `REDIS_URL`               | URL to redis server                                                 | ""               |
-| `--redis-addr`(string)            | `REDIS_ADDR`              | address of redis server to connect to                               | "127.0.0.1:6379" |
+| `--redis-url`(string)           m | `REDIS_URL`                | URL to redis server                                                 | ""               |
+| `--redis-addr`(string)(Deprecated)| `REDIS_ADDR`              | address of redis server to connect to                               | "127.0.0.1:6379" |
+| `--redis-addrs`(string)           | `REDIS_ADDRS`             | comma separated list of host:port addresses                         | "127.0.0.1:6379" |
+| `--redis-master-name`(string)     | `REDIS_MASTER_NAME`       | redis master name for redis sentinel                  			  | ""               |
 | `--redis-db`(int)                 | `REDIS_DB`                | redis database number                                               | 0                |
 | `--redis-password`(string)        | `REDIS_PASSWORD`          | password to use when connecting to redis server                     | ""               |
-| `--redis-cluster-nodes`(string)   | `REDIS_CLUSTER_NODES`     | comma separated list of host:port addresses of cluster nodes        | ""               |
+| `--redis-cluster-nodes`(string)(Deprecated)  | `REDIS_CLUSTER_NODES`     | comma separated list of host:port addresses of cluster nodes        | ""               |
 | `--redis-tls`(string)             | `REDIS_TLS`               | server name for TLS validation used when connecting to redis server | ""               |
 | `--redis-insecure-tls`(bool)      | `REDIS_INSECURE_TLS`      | disable TLS certificate host checks                                 | false            |
 | `--enable-metrics-exporter`(bool) | `ENABLE_METRICS_EXPORTER` | enable prometheus metrics exporter to expose queue metrics          | false            |
@@ -128,7 +130,10 @@ The address can be specified via `--prometheus-addr`. This enables the metrics v
 
 ```bash
 # with a local binary; custom port and connect to redis server at localhost:6380
-./asynqmon --port=3000 --redis-addr=localhost:6380
+./asynqmon --port=3000 --redis-addrs=localhost:6380
+
+# for redis sentinel local binary
+./asynqmon --port=3000 --redis-addrs=localhost:26379 --redis-master-name=mymaster
 
 # with prometheus integration enabled
 ./asynqmon --enable-metrics-exporter --prometheus-addr=http://localhost:9090
@@ -137,14 +142,14 @@ The address can be specified via `--prometheus-addr`. This enables the metrics v
 docker run --rm \
     --name asynqmon \
     -p 3000:3000 \
-    hibiken/asynqmon --port=3000 --redis-addr=host.docker.internal:6380
+    hibiken/asynqmon --port=3000 --redis-addrs=host.docker.internal:6380
 
 # with Docker (connect to a Redis server running in the Docker container)
 docker run --rm \
     --name asynqmon \
     --network dev-network \
     -p 8080:8080 \
-    hibiken/asynqmon --redis-addr=dev-redis:6379
+    hibiken/asynqmon --redis-addrs=dev-redis:6379
 ```
 
 Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:

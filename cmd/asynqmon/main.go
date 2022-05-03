@@ -23,29 +23,32 @@ import (
 // Command-line flags
 var (
 	flagPort                  int
-	flagRedisAddr             string
+	flagRedisAddrs            string
 	flagRedisDB               int
 	flagRedisPassword         string
 	flagRedisTLS              string
 	flagRedisURL              string
 	flagRedisInsecureTLS      bool
-	flagRedisClusterNodes     string
+	flagRedisSentinels        string
 	flagMaxPayloadLength      int
 	flagMaxResultLength       int
 	flagEnableMetricsExporter bool
 	flagPrometheusServerAddr  string
 	flagReadOnly              bool
+	flagMasterName            string
 )
 
 func init() {
 	flag.IntVar(&flagPort, "port", getEnvOrDefaultInt("PORT", 8080), "port number to use for web ui server")
-	flag.StringVar(&flagRedisAddr, "redis-addr", getEnvDefaultString("REDIS_ADDR", "127.0.0.1:6379"), "address of redis server to connect to")
+	flag.StringVar(&flagRedisAddrs, "redis-addrs", getEnvDefaultString("REDIS_ADDRS", "127.0.0.1:6379"), "comma separated list of host:port addresses")
 	flag.IntVar(&flagRedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
+	flag.StringVar(&flagMasterName, "redis-master-name", getEnvDefaultString("REDIS_MASTER_NAME", ""), "redis master name for redis sentinel")
 	flag.StringVar(&flagRedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
 	flag.StringVar(&flagRedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS", ""), "server name for TLS validation used when connecting to redis server")
 	flag.StringVar(&flagRedisURL, "redis-url", getEnvDefaultString("REDIS_URL", ""), "URL to redis server")
 	flag.BoolVar(&flagRedisInsecureTLS, "redis-insecure-tls", getEnvOrDefaultBool("REDIS_INSECURE_TLS", false), "disable TLS certificate host checks")
-	flag.StringVar(&flagRedisClusterNodes, "redis-cluster-nodes", getEnvDefaultString("REDIS_CLUSTER_NODES", ""), "comma separated list of host:port addresses of cluster nodes")
+	flag.StringVar(&flagRedisSentinels, "redis-sentinels", getEnvDefaultString("REDIS_SENTINELS", ""), "comma separated list of host:port addresses of cluster nodes")
+
 	flag.IntVar(&flagMaxPayloadLength, "max-payload-length", getEnvOrDefaultInt("MAX_PAYLOAD_LENGTH", 200), "maximum number of utf8 characters printed in the payload cell in the Web UI")
 	flag.IntVar(&flagMaxResultLength, "max-result-length", getEnvOrDefaultInt("MAX_RESULT_LENGTH", 200), "maximum number of utf8 characters printed in the result cell in the Web UI")
 	flag.BoolVar(&flagEnableMetricsExporter, "enable-metrics-exporter", getEnvOrDefaultBool("ENABLE_METRICS_EXPORTER", false), "enable prometheus metrics exporter to expose queue metrics")
@@ -57,9 +60,8 @@ func init() {
 // IDEA: https://eli.thegreenplace.net/2020/testing-flag-parsing-in-go-programs/
 func getRedisOptionsFromFlags() (asynq.RedisConnOpt, error) {
 	var opts redis.UniversalOptions
-
-	if flagRedisClusterNodes != "" {
-		opts.Addrs = strings.Split(flagRedisClusterNodes, ",")
+	if flagRedisAddrs != "" {
+		opts.Addrs = strings.Split(flagRedisAddrs, ",")
 		opts.Password = flagRedisPassword
 	} else {
 		if flagRedisURL != "" {
@@ -70,11 +72,6 @@ func getRedisOptionsFromFlags() (asynq.RedisConnOpt, error) {
 			opts.Addrs = append(opts.Addrs, res.Addr)
 			opts.DB = res.DB
 			opts.Password = res.Password
-
-		} else {
-			opts.Addrs = []string{flagRedisAddr}
-			opts.DB = flagRedisDB
-			opts.Password = flagRedisPassword
 		}
 	}
 
@@ -87,14 +84,22 @@ func getRedisOptionsFromFlags() (asynq.RedisConnOpt, error) {
 		}
 		opts.TLSConfig.InsecureSkipVerify = true
 	}
-
-	if flagRedisClusterNodes != "" {
+	if flagMasterName != "" {
+		return asynq.RedisFailoverClientOpt{
+			SentinelAddrs: opts.Addrs,
+			MasterName:    flagMasterName,
+			Password:      opts.Password,
+			TLSConfig:     opts.TLSConfig,
+		}, nil
+	}
+	if len(flagRedisAddrs) > 1 {
 		return asynq.RedisClusterClientOpt{
 			Addrs:     opts.Addrs,
 			Password:  opts.Password,
 			TLSConfig: opts.TLSConfig,
 		}, nil
 	}
+
 	return asynq.RedisClientOpt{
 		Addr:      opts.Addrs[0],
 		DB:        opts.DB,
