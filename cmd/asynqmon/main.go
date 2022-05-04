@@ -83,23 +83,31 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	return &conf, buf.String(), nil
 }
 
-// TODO: Write test and refactor this code.
+// TODO: Refactor this code!
 func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 	var opts redis.UniversalOptions
+	sentinel := false
 
 	if cfg.RedisClusterNodes != "" {
 		opts.Addrs = strings.Split(cfg.RedisClusterNodes, ",")
 		opts.Password = cfg.RedisPassword
 	} else {
 		if cfg.RedisURL != "" {
-			res, err := redis.ParseURL(cfg.RedisURL)
+			res, err := asynq.ParseRedisURI(cfg.RedisURL)
 			if err != nil {
 				return nil, err
 			}
-			opts.Addrs = append(opts.Addrs, res.Addr)
-			opts.DB = res.DB
-			opts.Password = res.Password
-
+			switch v := res.(type) {
+			case asynq.RedisClientOpt:
+				opts.Addrs = append(opts.Addrs, v.Addr)
+				opts.DB = v.DB
+				opts.Password = v.Password
+			case asynq.RedisFailoverClientOpt:
+				opts.Addrs = append(opts.Addrs, v.SentinelAddrs...)
+				opts.SentinelPassword = v.SentinelPassword
+				opts.MasterName = v.MasterName
+				sentinel = true
+			}
 		} else {
 			opts.Addrs = []string{cfg.RedisAddr}
 			opts.DB = cfg.RedisDB
@@ -122,6 +130,14 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 			Addrs:     opts.Addrs,
 			Password:  opts.Password,
 			TLSConfig: opts.TLSConfig,
+		}, nil
+	}
+	if sentinel {
+		return asynq.RedisFailoverClientOpt{
+			MasterName:       opts.MasterName,
+			SentinelAddrs:    opts.Addrs,
+			SentinelPassword: opts.SentinelPassword,
+			TLSConfig:        opts.TLSConfig,
 		}, nil
 	}
 	return asynq.RedisClientOpt{
