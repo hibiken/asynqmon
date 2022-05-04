@@ -98,6 +98,17 @@ func TestMakeRedisConnOpt(t *testing.T) {
 			},
 		},
 		{
+			desc: "With redis-sentinel URL",
+			cfg: &Config{
+				RedisURL: "redis-sentinel://:secretpassword@localhost:5000,localhost:5001,localhost:5002?master=mymaster",
+			},
+			want: asynq.RedisFailoverClientOpt{
+				MasterName: "mymaster",
+				SentinelAddrs: []string{
+					"localhost:5000", "localhost:5001", "localhost:5002"},
+			},
+		},
+		{
 			desc: "With cluster nodes",
 			cfg: &Config{
 				RedisClusterNodes: "localhost:5000,localhost:5001,localhost:5002,localhost:5003,localhost:5004,localhost:5005",
