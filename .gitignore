@@ -24,8 +24,9 @@ package-json.lock
 *.out
 
 # binaries
-asynqmon
-api
+/cmd/asynqmon/asynqmon
+/asynqmon
+/api
 dist/
 
 # Editor configs
