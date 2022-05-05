@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/hibiken/asynq"
 	"github.com/hibiken/asynq/x/metrics"
 	"github.com/hibiken/asynqmon"
@@ -83,69 +82,52 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	return &conf, buf.String(), nil
 }
 
-// TODO: Refactor this code!
+func makeTLSConfig(cfg *Config) *tls.Config {
+	if cfg.RedisTLS == "" && !cfg.RedisInsecureTLS {
+		return nil
+	}
+	return &tls.Config{
+		ServerName:         cfg.RedisTLS,
+		InsecureSkipVerify: cfg.RedisInsecureTLS,
+	}
+}
+
 func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
-	var opts redis.UniversalOptions
-	sentinel := false
-
-	if cfg.RedisClusterNodes != "" {
-		opts.Addrs = strings.Split(cfg.RedisClusterNodes, ",")
-		opts.Password = cfg.RedisPassword
-	} else {
-		if cfg.RedisURL != "" {
-			res, err := asynq.ParseRedisURI(cfg.RedisURL)
-			if err != nil {
-				return nil, err
-			}
-			switch v := res.(type) {
-			case asynq.RedisClientOpt:
-				opts.Addrs = append(opts.Addrs, v.Addr)
-				opts.DB = v.DB
-				opts.Password = v.Password
-			case asynq.RedisFailoverClientOpt:
-				opts.Addrs = append(opts.Addrs, v.SentinelAddrs...)
-				opts.SentinelPassword = v.SentinelPassword
-				opts.MasterName = v.MasterName
-				sentinel = true
-			}
-		} else {
-			opts.Addrs = []string{cfg.RedisAddr}
-			opts.DB = cfg.RedisDB
-			opts.Password = cfg.RedisPassword
-		}
-	}
-
-	if cfg.RedisTLS != "" {
-		opts.TLSConfig = &tls.Config{ServerName: cfg.RedisTLS}
-	}
-	if cfg.RedisInsecureTLS {
-		if opts.TLSConfig == nil {
-			opts.TLSConfig = &tls.Config{}
-		}
-		opts.TLSConfig.InsecureSkipVerify = true
-	}
-
-	if cfg.RedisClusterNodes != "" {
+	// Connecting to redis-cluster
+	if len(cfg.RedisClusterNodes) > 0 {
 		return asynq.RedisClusterClientOpt{
-			Addrs:     opts.Addrs,
-			Password:  opts.Password,
-			TLSConfig: opts.TLSConfig,
+			Addrs:     strings.Split(cfg.RedisClusterNodes, ","),
+			Password:  cfg.RedisPassword,
+			TLSConfig: makeTLSConfig(cfg),
 		}, nil
 	}
-	if sentinel {
-		return asynq.RedisFailoverClientOpt{
-			MasterName:       opts.MasterName,
-			SentinelAddrs:    opts.Addrs,
-			SentinelPassword: opts.SentinelPassword,
-			TLSConfig:        opts.TLSConfig,
-		}, nil
+
+	// Connecting to redis-sentinels
+	if strings.HasPrefix(cfg.RedisURL, "redis-sentinel") {
+		res, err := asynq.ParseRedisURI(cfg.RedisURL)
+		if err != nil {
+			return nil, err
+		}
+		connOpt := res.(asynq.RedisFailoverClientOpt) // safe to type-assert
+		connOpt.TLSConfig = makeTLSConfig(cfg)
+		return connOpt, nil
 	}
-	return asynq.RedisClientOpt{
-		Addr:      opts.Addrs[0],
-		DB:        opts.DB,
-		Password:  opts.Password,
-		TLSConfig: opts.TLSConfig,
-	}, nil
+
+	// Connecting to single redis server
+	var connOpt asynq.RedisClientOpt
+	if len(cfg.RedisURL) > 0 {
+		res, err := asynq.ParseRedisURI(cfg.RedisURL)
+		if err != nil {
+			return nil, err
+		}
+		connOpt = res.(asynq.RedisClientOpt) // safe to type-assert
+	} else {
+		connOpt.Addr = cfg.RedisAddr
+		connOpt.DB = cfg.RedisDB
+		connOpt.Password = cfg.RedisPassword
+	}
+	connOpt.TLSConfig = makeTLSConfig(cfg)
+	return connOpt, nil
 }
 
 func main() {
