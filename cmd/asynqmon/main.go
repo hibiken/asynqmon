@@ -20,8 +20,7 @@ import (
 	"github.com/rs/cors"
 )
 
-// Config holds configurations for the running program
-// provided by the user via command line.
+// Config holds configurations for the program provided via the command line.
 type Config struct {
 	// Server port
 	Port int
@@ -126,7 +125,9 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 		connOpt.DB = cfg.RedisDB
 		connOpt.Password = cfg.RedisPassword
 	}
-	connOpt.TLSConfig = makeTLSConfig(cfg)
+	if connOpt.TLSConfig == nil {
+		connOpt.TLSConfig = makeTLSConfig(cfg)
+	}
 	return connOpt, nil
 }
 
