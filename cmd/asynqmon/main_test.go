@@ -106,7 +106,7 @@ func TestMakeRedisConnOpt(t *testing.T) {
 				MasterName: "mymaster",
 				SentinelAddrs: []string{
 					"localhost:5000", "localhost:5001", "localhost:5002"},
-				Password: "secretpassword",
+				Password: "secretpassword", // FIXME: Shouldn't this be SentinelPassword instead?
 			},
 		},
 		{
