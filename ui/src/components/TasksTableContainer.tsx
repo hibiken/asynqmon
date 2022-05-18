@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
@@ -18,6 +18,24 @@ import { queueDetailsPath, taskDetailsPath } from "../paths";
 import { QueueInfo } from "../reducers/queuesReducer";
 import { AppState } from "../store";
 import { isDarkTheme } from "../theme";
+import { Divider } from "@material-ui/core";
+import FilterListIcon from "@material-ui/icons/FilterList";
+import TasksFilterDialog from "./TasksFilterDialog";
+import {
+  listActiveTasks,
+  listArchivedTasks,
+  listCompletedTasks,
+  listPendingTasks,
+  listRetryTasks,
+  listScheduledTasks,
+  ListTasksResponse,
+  PaginationOptions,
+} from "../api";
+import {
+  cancelFilterTasks,
+  filterTasksAsync,
+  TasksFilter,
+} from "../actions/tasksActions";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -65,10 +83,18 @@ function mapStatetoProps(state: AppState, ownProps: Props) {
         failed: 0,
         timestamp: "n/a",
       };
-  return { currentStats };
+  const filterOp = state.tasks.filterOp;
+  const filterActive = filterOp != null;
+  const filterCount = filterOp?.done === true ? filterOp?.result?.length : null;
+  return { currentStats, filterActive, filterCount };
 }
 
-const connector = connect(mapStatetoProps);
+const mapDispatchToProps = {
+  filterTasksAsync,
+  cancelFilterTasks,
+};
+
+const connector = connect(mapStatetoProps, mapDispatchToProps);
 
 type ReduxProps = ConnectedProps<typeof connector>;
 
@@ -146,24 +172,92 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function TasksTableContainer(props: Props & ReduxProps) {
-  const { currentStats } = props;
+  const { currentStats, cancelFilterTasks } = props;
   const classes = useStyles();
   const history = useHistory();
   const chips = [
-    { key: "active", label: "Active", count: currentStats.active },
-    { key: "pending", label: "Pending", count: currentStats.pending },
+    {
+      key: "active",
+      label: "Active",
+      count: currentStats.active,
+      fetcher: listActiveTasks,
+    },
+    {
+      key: "pending",
+      label: "Pending",
+      count: currentStats.pending,
+      fetcher: listPendingTasks,
+    },
     {
       key: "aggregating",
       label: "Aggregating",
       count: currentStats.aggregating,
+      fetcher: null, // TODO Support aggregating table
     },
-    { key: "scheduled", label: "Scheduled", count: currentStats.scheduled },
-    { key: "retry", label: "Retry", count: currentStats.retry },
-    { key: "archived", label: "Archived", count: currentStats.archived },
-    { key: "completed", label: "Completed", count: currentStats.completed },
+    {
+      key: "scheduled",
+      label: "Scheduled",
+      count: currentStats.scheduled,
+      fetcher: listScheduledTasks,
+    },
+    {
+      key: "retry",
+      label: "Retry",
+      count: currentStats.retry,
+      fetcher: listRetryTasks,
+    },
+    {
+      key: "archived",
+      label: "Archived",
+      count: currentStats.archived,
+      fetcher: listArchivedTasks,
+    },
+    {
+      key: "completed",
+      label: "Completed",
+      count: currentStats.completed,
+      fetcher: listCompletedTasks,
+    },
   ];
 
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+
+  useEffect(() => {
+    // Clear filter when the user selects a different task status
+    cancelFilterTasks();
+    return () => {
+      // Clear filter when leaving the page
+      cancelFilterTasks();
+    };
+  }, [props.selected, cancelFilterTasks]);
+
+  const taskPageFetcher = (
+    fetcherApi: (
+      qname: string,
+      pageOpts?: PaginationOptions
+    ) => Promise<ListTasksResponse>
+  ) => {
+    const qname = props.queue;
+    return async (page?: number) => {
+      return fetcherApi(qname, {
+        page,
+        size: 10_000, // TODO Choose a value here intelligently?
+      });
+    };
+  };
+
+  const dispatchFilterAction = (filter: TasksFilter) => {
+    const fetcherApi = chips.find((c) => c.key === props.selected)?.fetcher;
+    if (fetcherApi == null) {
+      console.error(
+        "Failed to find fetcher API for selected task type:",
+        props.selected
+      );
+      return;
+    }
+    props.filterTasksAsync(filter, taskPageFetcher(fetcherApi));
+  };
 
   return (
     <Paper variant="outlined" className={classes.container}>
@@ -186,6 +280,25 @@ function TasksTableContainer(props: Props & ReduxProps) {
               onClick={() => history.push(queueDetailsPath(props.queue, c.key))}
             />
           ))}
+        </div>
+        <Divider orientation="vertical" variant="middle" flexItem />
+        <div>
+          {chips.find((c) => c.key === props.selected)?.fetcher && (
+            <Chip
+              icon={<FilterListIcon />}
+              label="Filter"
+              onClick={() => setFilterModalOpen(true)}
+              onDelete={
+                props.filterActive ? props.cancelFilterTasks : undefined
+              }
+              color={props.filterActive ? "primary" : "default"}
+            />
+          )}
+          <TasksFilterDialog
+            open={filterModalOpen}
+            onClose={() => setFilterModalOpen(false)}
+            onFilter={dispatchFilterAction}
+          />
         </div>
         <div className={classes.searchbar}>
           <div className={classes.search}>
@@ -219,13 +332,13 @@ function TasksTableContainer(props: Props & ReduxProps) {
       <TabPanel value="active" selected={props.selected}>
         <ActiveTasksTable
           queue={props.queue}
-          totalTaskCount={currentStats.active}
+          totalTaskCount={props.filterCount ?? currentStats.active}
         />
       </TabPanel>
       <TabPanel value="pending" selected={props.selected}>
         <PendingTasksTable
           queue={props.queue}
-          totalTaskCount={currentStats.pending}
+          totalTaskCount={props.filterCount ?? currentStats.pending}
         />
       </TabPanel>
       <TabPanel value="aggregating" selected={props.selected}>
@@ -234,25 +347,25 @@ function TasksTableContainer(props: Props & ReduxProps) {
       <TabPanel value="scheduled" selected={props.selected}>
         <ScheduledTasksTable
           queue={props.queue}
-          totalTaskCount={currentStats.scheduled}
+          totalTaskCount={props.filterCount ?? currentStats.scheduled}
         />
       </TabPanel>
       <TabPanel value="retry" selected={props.selected}>
         <RetryTasksTable
           queue={props.queue}
-          totalTaskCount={currentStats.retry}
+          totalTaskCount={props.filterCount ?? currentStats.retry}
         />
       </TabPanel>
       <TabPanel value="archived" selected={props.selected}>
         <ArchivedTasksTable
           queue={props.queue}
-          totalTaskCount={currentStats.archived}
+          totalTaskCount={props.filterCount ?? currentStats.archived}
         />
       </TabPanel>
       <TabPanel value="completed" selected={props.selected}>
         <CompletedTasksTable
           queue={props.queue}
-          totalTaskCount={currentStats.completed}
+          totalTaskCount={props.filterCount ?? currentStats.completed}
         />
       </TabPanel>
     </Paper>

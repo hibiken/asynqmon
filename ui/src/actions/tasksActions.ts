@@ -60,9 +60,11 @@ import {
   runAggregatingTask,
   archiveAggregatingTask,
   ListAggregatingTasksResponse,
+  Queue,
 } from "../api";
 import { Dispatch } from "redux";
 import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
+import { AppState } from "../store";
 
 // List of tasks related action types.
 export const GET_TASK_INFO_BEGIN = "GET_TASK_INFO_BEGIN";
@@ -89,6 +91,11 @@ export const LIST_COMPLETED_TASKS_ERROR = "LIST_COMPLETED_TASKS_ERROR";
 export const LIST_AGGREGATING_TASKS_BEGIN = "LIST_AGGREGATING_TASKS_BEGIN";
 export const LIST_AGGREGATING_TASKS_SUCCESS = "LIST_AGGREGATING_TASKS_SUCCESS";
 export const LIST_AGGREGATING_TASKS_ERROR = "LIST_AGGREGATING_TASKS_ERROR";
+export const FILTER_TASKS_BEGIN = "FILTER_TASKS_BEGIN";
+export const FILTER_TASKS_PROGRESS = "FILTER_TASKS_PROGRESS";
+export const FILTER_TASKS_SUCCESS = "FILTER_TASKS_SUCCESS";
+export const FILTER_TASKS_ERROR = "FILTER_TASKS_ERROR";
+export const FILTER_TASKS_CANCEL = "FILTER_TASKS_CANCEL";
 export const CANCEL_ACTIVE_TASK_BEGIN = "CANCEL_ACTIVE_TASK_BEGIN";
 export const CANCEL_ACTIVE_TASK_SUCCESS = "CANCEL_ACTIVE_TASK_SUCCESS";
 export const CANCEL_ACTIVE_TASK_ERROR = "CANCEL_ACTIVE_TASK_ERROR";
@@ -427,6 +434,30 @@ interface ListAggregatingTasksErrorAction {
   queue: string;
   group: string;
   error: string; // error description
+}
+
+interface FilterTasksBeginAction {
+  type: typeof FILTER_TASKS_BEGIN;
+}
+
+interface FilterTasksProgressAction {
+  type: typeof FILTER_TASKS_PROGRESS;
+  processedTasks: number;
+  filterResults: TaskInfo[];
+  newStats: Queue;
+}
+
+interface FilterTasksSuccessAction {
+  type: typeof FILTER_TASKS_SUCCESS;
+}
+
+interface FilterTasksErrorAction {
+  type: typeof FILTER_TASKS_ERROR;
+  error: string;
+}
+
+interface FilterTasksCancelAction {
+  type: typeof FILTER_TASKS_CANCEL;
 }
 
 interface CancelActiveTaskBeginAction {
@@ -1291,6 +1322,11 @@ export type TasksActionTypes =
   | ListAggregatingTasksBeginAction
   | ListAggregatingTasksSuccessAction
   | ListAggregatingTasksErrorAction
+  | FilterTasksBeginAction
+  | FilterTasksProgressAction
+  | FilterTasksSuccessAction
+  | FilterTasksErrorAction
+  | FilterTasksCancelAction
   | CancelActiveTaskBeginAction
   | CancelActiveTaskSuccessAction
   | CancelActiveTaskErrorAction
@@ -1446,14 +1482,42 @@ export function getTaskInfoAsync(qname: string, id: string) {
   };
 }
 
+function getFilterResults(
+  state: AppState,
+  qname: string,
+  pageOpts?: PaginationOptions
+): ListTasksResponse | null {
+  const filterOp = state.tasks.filterOp;
+  if (filterOp == null || !filterOp.done) return null;
+  const curQueueStats = state.queues.data.find((it) => it.name === qname);
+  if (curQueueStats == null) return null;
+
+  const size = pageOpts?.size ?? 20;
+  const page = pageOpts?.page ?? 1;
+
+  const start = (page - 1) * size;
+  const end = start + size;
+  const results = filterOp.result.slice(start, end);
+
+  return {
+    tasks: results,
+    stats: curQueueStats.currentStats,
+  };
+}
+
 export function listActiveTasksAsync(
   qname: string,
   pageOpts?: PaginationOptions
 ) {
-  return async (dispatch: Dispatch<TasksActionTypes>) => {
+  return async (
+    dispatch: Dispatch<TasksActionTypes>,
+    getState: () => AppState
+  ) => {
     dispatch({ type: LIST_ACTIVE_TASKS_BEGIN, queue: qname });
     try {
-      const response = await listActiveTasks(qname, pageOpts);
+      const response =
+        getFilterResults(getState(), qname, pageOpts) ??
+        (await listActiveTasks(qname, pageOpts));
       dispatch({
         type: LIST_ACTIVE_TASKS_SUCCESS,
         queue: qname,
@@ -1477,10 +1541,15 @@ export function listPendingTasksAsync(
   qname: string,
   pageOpts?: PaginationOptions
 ) {
-  return async (dispatch: Dispatch<TasksActionTypes>) => {
+  return async (
+    dispatch: Dispatch<TasksActionTypes>,
+    getState: () => AppState
+  ) => {
     dispatch({ type: LIST_PENDING_TASKS_BEGIN, queue: qname });
     try {
-      const response = await listPendingTasks(qname, pageOpts);
+      const response =
+        getFilterResults(getState(), qname, pageOpts) ??
+        (await listPendingTasks(qname, pageOpts));
       dispatch({
         type: LIST_PENDING_TASKS_SUCCESS,
         queue: qname,
@@ -1504,10 +1573,15 @@ export function listScheduledTasksAsync(
   qname: string,
   pageOpts?: PaginationOptions
 ) {
-  return async (dispatch: Dispatch<TasksActionTypes>) => {
+  return async (
+    dispatch: Dispatch<TasksActionTypes>,
+    getState: () => AppState
+  ) => {
     dispatch({ type: LIST_SCHEDULED_TASKS_BEGIN, queue: qname });
     try {
-      const response = await listScheduledTasks(qname, pageOpts);
+      const response =
+        getFilterResults(getState(), qname, pageOpts) ??
+        (await listScheduledTasks(qname, pageOpts));
       dispatch({
         type: LIST_SCHEDULED_TASKS_SUCCESS,
         queue: qname,
@@ -1531,10 +1605,15 @@ export function listRetryTasksAsync(
   qname: string,
   pageOpts?: PaginationOptions
 ) {
-  return async (dispatch: Dispatch<TasksActionTypes>) => {
+  return async (
+    dispatch: Dispatch<TasksActionTypes>,
+    getState: () => AppState
+  ) => {
     dispatch({ type: LIST_RETRY_TASKS_BEGIN, queue: qname });
     try {
-      const response = await listRetryTasks(qname, pageOpts);
+      const response =
+        getFilterResults(getState(), qname, pageOpts) ??
+        (await listRetryTasks(qname, pageOpts));
       dispatch({
         type: LIST_RETRY_TASKS_SUCCESS,
         queue: qname,
@@ -1558,10 +1637,15 @@ export function listArchivedTasksAsync(
   qname: string,
   pageOpts?: PaginationOptions
 ) {
-  return async (dispatch: Dispatch<TasksActionTypes>) => {
+  return async (
+    dispatch: Dispatch<TasksActionTypes>,
+    getState: () => AppState
+  ) => {
     dispatch({ type: LIST_ARCHIVED_TASKS_BEGIN, queue: qname });
     try {
-      const response = await listArchivedTasks(qname, pageOpts);
+      const response =
+        getFilterResults(getState(), qname, pageOpts) ??
+        (await listArchivedTasks(qname, pageOpts));
       dispatch({
         type: LIST_ARCHIVED_TASKS_SUCCESS,
         queue: qname,
@@ -1585,10 +1669,15 @@ export function listCompletedTasksAsync(
   qname: string,
   pageOpts?: PaginationOptions
 ) {
-  return async (dispatch: Dispatch<TasksActionTypes>) => {
+  return async (
+    dispatch: Dispatch<TasksActionTypes>,
+    getState: () => AppState
+  ) => {
     try {
       dispatch({ type: LIST_COMPLETED_TASKS_BEGIN, queue: qname });
-      const response = await listCompletedTasks(qname, pageOpts);
+      const response =
+        getFilterResults(getState(), qname, pageOpts) ??
+        (await listCompletedTasks(qname, pageOpts));
       dispatch({
         type: LIST_COMPLETED_TASKS_SUCCESS,
         queue: qname,
@@ -1613,6 +1702,7 @@ export function listAggregatingTasksAsync(
   gname: string,
   pageOpts?: PaginationOptions
 ) {
+  // TODO Add filter support
   return async (dispatch: Dispatch<TasksActionTypes>) => {
     try {
       dispatch({
@@ -1639,6 +1729,160 @@ export function listAggregatingTasksAsync(
         error: toErrorString(error),
       });
     }
+  };
+}
+
+export interface TasksFilter {
+  payloadQuery?: string;
+  resultQuery?: string;
+  payloadRegex?: RegExp;
+  resultRegex?: RegExp;
+  customJs?: string;
+  resultLimit?: number;
+}
+
+function parseIfJson(str: string) {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    return str;
+  }
+}
+
+function evalCustomJsFilter(js: string, task: TaskInfo): any {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const {
+    id,
+    queue,
+    type,
+    state,
+    start_time,
+    max_retry,
+    retried,
+    last_failed_at,
+    error_message,
+    next_process_at,
+    timeout_seconds,
+    deadline,
+    group,
+    completed_at,
+    ttl_seconds,
+    is_orphaned,
+  } = task;
+  // Parse payload and result into JSON for convenience
+  const payload = parseIfJson(task.payload);
+  const result = parseIfJson(task.result);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
+  return eval(js); // eslint-disable-line no-eval
+}
+
+function filterTask(filter: TasksFilter, task: TaskInfo): boolean {
+  if (
+    filter.payloadQuery != null &&
+    !task.payload.includes(filter.payloadQuery)
+  ) {
+    return false;
+  }
+  if (filter.resultQuery != null && !task.result.includes(filter.resultQuery)) {
+    return false;
+  }
+  if (
+    filter.payloadRegex != null &&
+    task.payload.match(filter.payloadRegex) == null
+  ) {
+    return false;
+  }
+  if (
+    filter.resultRegex != null &&
+    task.result.match(filter.resultRegex) == null
+  ) {
+    return false;
+  }
+  if (filter.customJs != null) {
+    let customJsResult;
+    try {
+      customJsResult = evalCustomJsFilter(filter.customJs, task);
+    } catch (e) {
+      console.error(
+        "Custom JS filter error:",
+        e,
+        "task:",
+        task,
+        "skipping task."
+      );
+      return false;
+    }
+    // Custom JS can return anything so sanitize output into a boolean
+    return !!customJsResult;
+  } else {
+    return true;
+  }
+}
+
+export function filterTasksAsync(
+  filter: TasksFilter,
+  fetchTasks: (
+    page?: number // page number (1 being the first page)
+  ) => Promise<ListTasksResponse>
+) {
+  return async (
+    dispatch: Dispatch<TasksActionTypes>,
+    getState: () => AppState
+  ) => {
+    dispatch({ type: FILTER_TASKS_BEGIN });
+
+    let page = 1;
+    let processed = 0;
+    let finished = false;
+    do {
+      // Check if operation was cancelled, if so, return
+      if (getState().tasks.filterOp == null) return;
+
+      // Fetch next page
+      let response;
+      try {
+        response = await fetchTasks(page);
+      } catch (error) {
+        dispatch({
+          type: FILTER_TASKS_ERROR,
+          error: toErrorString(error),
+        });
+        return;
+      }
+      page++;
+
+      // Process page
+      const filterResults: TaskInfo[] = [];
+      for (const task of response.tasks) {
+        if (filterTask(filter, task)) {
+          filterResults.push(task);
+          processed++;
+          if (filter.resultLimit != null && processed >= filter.resultLimit) {
+            finished = true;
+            break;
+          }
+        }
+      }
+
+      // Update state
+      dispatch({
+        type: FILTER_TASKS_PROGRESS,
+        processedTasks: response.tasks.length,
+        newStats: response.stats,
+        filterResults,
+      });
+      if (response.tasks.length === 0) finished = true;
+    } while (!finished);
+
+    dispatch({
+      type: FILTER_TASKS_SUCCESS,
+    });
+  };
+}
+
+export function cancelFilterTasks() {
+  return {
+    type: FILTER_TASKS_CANCEL,
   };
 }
 

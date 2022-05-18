@@ -32,6 +32,12 @@ export type AppState = ReturnType<typeof rootReducer>;
 const store = configureStore({
   reducer: rootReducer,
   preloadedState,
+  middleware: (getDefaultMiddleware) =>
+    // Disable debug middleware for tasks.filterOp as it may contain large state
+    getDefaultMiddleware({
+      immutableCheck: { ignoredPaths: ["tasks.filterOp"] },
+      serializableCheck: { ignoredPaths: ["tasks.filterOp"] },
+    }),
 });
 
 export default store;
