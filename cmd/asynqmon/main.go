@@ -38,6 +38,7 @@ type Config struct {
 	ReadOnly         bool
 	MaxPayloadLength int
 	MaxResultLength  int
+	RootPath         string
 
 	// Prometheus related configs
 	EnableMetricsExporter bool
@@ -72,6 +73,7 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	flags.BoolVar(&conf.EnableMetricsExporter, "enable-metrics-exporter", getEnvOrDefaultBool("ENABLE_METRICS_EXPORTER", false), "enable prometheus metrics exporter to expose queue metrics")
 	flags.StringVar(&conf.PrometheusServerAddr, "prometheus-addr", getEnvDefaultString("PROMETHEUS_ADDR", ""), "address of prometheus server to query time series")
 	flags.BoolVar(&conf.ReadOnly, "read-only", getEnvOrDefaultBool("READ_ONLY", false), "restrict to read-only mode")
+	flags.StringVar(&conf.RootPath, "root-path", "/", "path for homepage of asynqmon")
 
 	err = flags.Parse(args)
 	if err != nil {
@@ -153,6 +155,7 @@ func main() {
 		ResultFormatter:   asynqmon.ResultFormatterFunc(resultFormatterFunc(cfg)),
 		PrometheusAddress: cfg.PrometheusServerAddr,
 		ReadOnly:          cfg.ReadOnly,
+		RootPath:          cfg.RootPath,
 	})
 	defer h.Close()
 
