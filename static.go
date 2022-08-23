@@ -98,6 +98,14 @@ func (h *uiAssetsHandler) serveFile(w http.ResponseWriter, path string) (code in
 		}
 		return http.StatusInternalServerError, err
 	}
+	// Setting the MIME type for .js files manually to application/javascript as
+	// http.DetectContentType is using https://mimesniff.spec.whatwg.org/ which
+	// will not recognize application/javascript for security reasons.
+	if strings.HasSuffix(path, ".js") {
+		w.Header().Add("Content-Type", "application/javascript")
+	} else {
+		w.Header().Add("Content-Type", http.DetectContentType(bytes))
+	}
 
 	if _, err := w.Write(bytes); err != nil {
 		return http.StatusInternalServerError, err
