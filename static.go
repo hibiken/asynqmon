@@ -102,7 +102,7 @@ func (h *uiAssetsHandler) serveFile(w http.ResponseWriter, path string) (code in
 	// http.DetectContentType is using https://mimesniff.spec.whatwg.org/ which
 	// will not recognize application/javascript for security reasons.
 	if strings.HasSuffix(path, ".js") {
-		w.Header().Add("Content-Type", "application/javascript")
+		w.Header().Add("Content-Type", "application/javascript; charset=utf-8")
 	} else {
 		w.Header().Add("Content-Type", http.DetectContentType(bytes))
 	}
