@@ -119,7 +119,7 @@ To connect to a **single redis server**, use either `--redis-url` or (`--redis-a
 Example:
 
 ```sh
-$ ./asynqmon --redis-url=redis://:mypassword@]localhost:6380/2
+$ ./asynqmon --redis-url=redis://:mypassword@localhost:6380/2
 
 $ ./asynqmon --redis-addr=localhost:6380 --redis-db=2 --redis-password=mypassword
 ```
