@@ -109,8 +109,7 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 		}
 		connOpt := res.(asynq.RedisFailoverClientOpt) // safe to type-assert
 		connOpt.TLSConfig = makeTLSConfig(cfg)
-		connOpt.SentinelPassword = connOpt.Password // password from asynq.ParseRedisURI should be used for sentinel
-		connOpt.Password = cfg.RedisPassword        // override parsed password with value from config
+		connOpt.Password = cfg.RedisPassword // override parsed password with value from config
 		return connOpt, nil
 	}
 
