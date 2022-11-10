@@ -1,5 +1,5 @@
 #
-# First stage: 
+# First stage:
 # Building a frontend.
 #
 
@@ -19,7 +19,7 @@ COPY ui .
 RUN yarn install && yarn build
 
 #
-# Second stage: 
+# Second stage:
 # Building a backend.
 #
 
@@ -39,13 +39,13 @@ COPY . .
 COPY --from=frontend ["/static/build", "ui/build"]
 
 # Set necessary environmet variables needed for the image and build the server.
-ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+ENV CGO_ENABLED=0 GOOS=linux GOARCH=arm64
 
 # Run go build (with ldflags to reduce binary size).
 RUN go build -ldflags="-s -w" -o asynqmon ./cmd/asynqmon
 
 #
-# Third stage: 
+# Third stage:
 # Creating and running a new scratch container with the backend binary.
 #
 
