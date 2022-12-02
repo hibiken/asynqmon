@@ -253,6 +253,35 @@ func main() {
 }
 ```
 
+Example with [labstack/echo](https://github.com/labstack/echo)):
+
+
+```go
+package main
+
+import (
+	"github.com/labstack/echo/v4"
+	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
+)
+
+func main() {
+        e := echo.New()
+
+	mon := asynqmon.New(asynqmon.Options{
+		RootPath: "/monitoring/tasks",
+		RedisConnOpt: asynq.RedisClientOpt{
+			Addr: ":6379",
+			Password: "",
+			DB: 0,
+		},
+	})
+	e.Any("/monitoring/tasks/*", echo.WrapHandler(mon))
+	e.Start(":8080")
+}
+```
+
+
 ## License
 
 Copyright (c) 2019-present [Ken Hibino](https://github.com/hibiken) and [Contributors](https://github.com/hibiken/asynqmon/graphs/contributors). `Asynqmon` is free and open-source software licensed under the [MIT License](https://github.com/hibiken/asynq/blob/master/LICENSE). Official logo was created by [Vic Shóstak](https://github.com/koddr) and distributed under [Creative Commons](https://creativecommons.org/publicdomain/zero/1.0/) license (CC0 1.0 Universal).
