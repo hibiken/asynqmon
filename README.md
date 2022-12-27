@@ -193,7 +193,7 @@ Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
 
 Asynqmon is also a library which can be imported into an existing web application.
 
-Example with [net/http](https://pkg.go.dev/net/http):
+### [net/http](https://pkg.go.dev/net/http)
 
 ```go
 package main
@@ -212,7 +212,7 @@ func main() {
 		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
 	})
 
-    // Note: We need the tailing slash when using net/http.ServeMux.
+	// Note: We need the tailing slash when using net/http.ServeMux.
 	http.Handle(h.RootPath()+"/", h)
 
 	// Go to http://localhost:8080/monitoring to see asynqmon homepage.
@@ -220,7 +220,7 @@ func main() {
 }
 ```
 
-Example with [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux):
+### [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux)
 
 ```go
 package main
@@ -253,8 +253,7 @@ func main() {
 }
 ```
 
-Example with [labstack/echo](https://github.com/labstack/echo)):
-
+### [labstack/echo](https://github.com/labstack/echo)
 
 ```go
 package main
@@ -280,7 +279,6 @@ func main() {
 	e.Start(":8080")
 }
 ```
-
 
 ## License
 
