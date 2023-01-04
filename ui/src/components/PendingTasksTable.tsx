@@ -118,7 +118,7 @@ function Row(props: RowProps) {
         </SyntaxHighlighter>
       </TableCell>
       <TableCell align="right">{task.retried}</TableCell>
-      <TableCell align="right">{task.max_retry}</TableCell>
+      <TableCell align="right">{task.max_retry == -1 ? "unlimited" : task.max_retry}</TableCell>
       {!window.READ_ONLY && (
         <TableCell
           align="center"

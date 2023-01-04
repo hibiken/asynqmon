@@ -160,7 +160,7 @@ function TaskDetailsView(props: Props) {
                     Retry:{" "}
                   </Typography>
                   <Typography className={classes.infoValueCell}>
-                    {taskInfo?.retried}/{taskInfo?.max_retry}
+                    {taskInfo?.retried}/{taskInfo?.max_retry == -1 ? "unlimited" : taskInfo?.max_retry}
                   </Typography>
                 </div>
                 <div className={classes.infoRow}>
