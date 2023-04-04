@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/Shopify/asynq"
 	"github.com/gorilla/mux"
-	"github.com/hibiken/asynq"
 )
 
 type listGroupsResponse struct {

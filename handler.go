@@ -3,13 +3,13 @@ package asynqmon
 import (
 	"embed"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"net/http"
 	"strings"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 
-	"github.com/hibiken/asynq"
+	"github.com/Shopify/asynq"
 )
 
 // Options is used to configure HTTPHandler.

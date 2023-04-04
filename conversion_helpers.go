@@ -5,7 +5,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/hibiken/asynq"
+	"github.com/Shopify/asynq"
 )
 
 // ****************************************************************************

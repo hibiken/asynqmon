@@ -3,12 +3,11 @@ package asynqmon
 import (
 	"context"
 	"encoding/json"
+	"github.com/go-redis/redis/v8"
 	"net/http"
 	"strings"
 
-	"github.com/go-redis/redis/v8"
-
-	"github.com/hibiken/asynq"
+	"github.com/Shopify/asynq"
 )
 
 // ****************************************************************************

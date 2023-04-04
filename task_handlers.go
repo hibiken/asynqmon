@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/hibiken/asynq"
+	"github.com/Shopify/asynq"
 )
 
 // ****************************************************************************
