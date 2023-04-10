@@ -29,7 +29,7 @@ type uiAssetsHandler struct {
 // serve the file specified by the URL path.
 func (h *uiAssetsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Get the absolute path to prevent directory traversal.
-	path := filepath.filepath.ToSlash(filepath.Clean(r.URL.Path))
+	path := filepath.ToSlash(filepath.Clean(r.URL.Path))
 
 	// Get the path relative to the root path.
 	if !strings.HasPrefix(path, h.rootPath) {
