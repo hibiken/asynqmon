@@ -45,7 +45,7 @@ func (h *uiAssetsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *uiAssetsHandler) indexFilePath() string {
-	return filepath.Join(h.staticDirPath, h.indexFileName)
+	return filepath.ToSlash(filepath.Join(h.staticDirPath, h.indexFileName))
 }
 
 func (h *uiAssetsHandler) renderIndexFile(w http.ResponseWriter) error {
@@ -81,7 +81,7 @@ func (h *uiAssetsHandler) serveFile(w http.ResponseWriter, path string) (code in
 		}
 		return http.StatusOK, nil
 	}
-	path = filepath.Join(h.staticDirPath, path)
+	path = filepath.ToSlash(filepath.Join(h.staticDirPath, path))
 	bytes, err := h.contents.ReadFile(path)
 	if err != nil {
 		// If path is error (e.g. file not exist, path is a directory), serve index file.
