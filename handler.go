@@ -9,7 +9,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 
-	"github.com/hibiken/asynq"
+	"github.com/qqunity/asynq"
 )
 
 // Options is used to configure HTTPHandler.

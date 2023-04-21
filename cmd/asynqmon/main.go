@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hibiken/asynq"
-	"github.com/hibiken/asynq/x/metrics"
-	"github.com/hibiken/asynqmon"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/qqunity/asynq"
+	"github.com/qqunity/asynq/x/metrics"
+	"github.com/qqunity/asynqmon"
 	"github.com/rs/cors"
 )
 
@@ -28,6 +28,7 @@ type Config struct {
 	// Redis connection options
 	RedisAddr         string
 	RedisDB           int
+	RedisUsername     string
 	RedisPassword     string
 	RedisTLS          string
 	RedisURL          string
@@ -42,6 +43,9 @@ type Config struct {
 	// Prometheus related configs
 	EnableMetricsExporter bool
 	PrometheusServerAddr  string
+
+	// GlobalRedisPrefix is the prefix to use for all redis keys.
+	GlobalRedisPrefix string
 
 	// Args are the positional (non-flag) command line arguments
 	Args []string
@@ -63,6 +67,7 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	flags.StringVar(&conf.RedisAddr, "redis-addr", getEnvDefaultString("REDIS_ADDR", "127.0.0.1:6379"), "address of redis server to connect to")
 	flags.IntVar(&conf.RedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
 	flags.StringVar(&conf.RedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
+	flags.StringVar(&conf.RedisUsername, "redis-username", getEnvDefaultString("REDIS_USERNAME", ""), "username to use when connecting to redis server")
 	flags.StringVar(&conf.RedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS", ""), "server name for TLS validation used when connecting to redis server")
 	flags.StringVar(&conf.RedisURL, "redis-url", getEnvDefaultString("REDIS_URL", ""), "URL to redis server")
 	flags.BoolVar(&conf.RedisInsecureTLS, "redis-insecure-tls", getEnvOrDefaultBool("REDIS_INSECURE_TLS", false), "disable TLS certificate host checks")
@@ -72,6 +77,7 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	flags.BoolVar(&conf.EnableMetricsExporter, "enable-metrics-exporter", getEnvOrDefaultBool("ENABLE_METRICS_EXPORTER", false), "enable prometheus metrics exporter to expose queue metrics")
 	flags.StringVar(&conf.PrometheusServerAddr, "prometheus-addr", getEnvDefaultString("PROMETHEUS_ADDR", ""), "address of prometheus server to query time series")
 	flags.BoolVar(&conf.ReadOnly, "read-only", getEnvOrDefaultBool("READ_ONLY", false), "restrict to read-only mode")
+	flags.StringVar(&conf.GlobalRedisPrefix, "global-prefix", getEnvDefaultString("GLOBAL_PREFIX", ""), "global prefix to use for all redis keys")
 
 	err = flags.Parse(args)
 	if err != nil {
@@ -97,6 +103,7 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 		return asynq.RedisClusterClientOpt{
 			Addrs:     strings.Split(cfg.RedisClusterNodes, ","),
 			Password:  cfg.RedisPassword,
+			Username:  cfg.RedisUsername,
 			TLSConfig: makeTLSConfig(cfg),
 		}, nil
 	}
@@ -124,6 +131,7 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 		connOpt.Addr = cfg.RedisAddr
 		connOpt.DB = cfg.RedisDB
 		connOpt.Password = cfg.RedisPassword
+		connOpt.Username = cfg.RedisUsername
 	}
 	if connOpt.TLSConfig == nil {
 		connOpt.TLSConfig = makeTLSConfig(cfg)
@@ -140,6 +148,10 @@ func main() {
 		fmt.Printf("error: %v\n", err)
 		fmt.Println(output)
 		os.Exit(1)
+	}
+
+	if cfg.GlobalRedisPrefix != "" {
+		asynq.SetGlobalPrefix(cfg.GlobalRedisPrefix)
 	}
 
 	redisConnOpt, err := makeRedisConnOpt(cfg)

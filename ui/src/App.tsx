@@ -260,7 +260,7 @@ function App(props: ConnectedProps<typeof connector>) {
                     button
                     component="a"
                     className={classes.listItem}
-                    href="https://github.com/hibiken/asynqmon/issues"
+                    href="https://github.com/qqunity/asynqmon/issues"
                     target="_blank"
                   >
                     <ListItemIcon>

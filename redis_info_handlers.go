@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 
-	"github.com/hibiken/asynq"
+	"github.com/qqunity/asynq"
 )
 
 // ****************************************************************************
