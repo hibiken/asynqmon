@@ -48,7 +48,7 @@ type Config struct {
 }
 
 // parseFlags parses the command-line arguments provided to the program.
-// Typically os.Args[0] is provided as 'progname' and os.args[1:] as 'args'.
+// Typically, os.Args[0] is provided as 'progname' and os.args[1:] as 'args'.
 // Returns the Config in case parsing succeeded, or an error. In any case, the
 // output of the flag.Parse is returned in output.
 //

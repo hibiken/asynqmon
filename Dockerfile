@@ -3,7 +3,7 @@
 # Building a frontend.
 #
 
-FROM alpine:3.13 AS frontend
+FROM alpine:3.17 AS frontend
 
 # Move to a working directory (/static).
 WORKDIR /static
