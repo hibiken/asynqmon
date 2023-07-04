@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
-	"path/filepath"
+	"path"
 	"strings"
 )
 
@@ -28,12 +28,7 @@ type uiAssetsHandler struct {
 // If path '/' is requested, it will serve the index file, otherwise it will
 // serve the file specified by the URL path.
 func (h *uiAssetsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Get the absolute path to prevent directory traversal.
-	path, err := filepath.Abs(r.URL.Path)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	path := r.URL.Path
 
 	// Get the path relative to the root path.
 	if !strings.HasPrefix(path, h.rootPath) {
@@ -49,7 +44,7 @@ func (h *uiAssetsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *uiAssetsHandler) indexFilePath() string {
-	return filepath.Join(h.staticDirPath, h.indexFileName)
+	return path.Join(h.staticDirPath, h.indexFileName)
 }
 
 func (h *uiAssetsHandler) renderIndexFile(w http.ResponseWriter) error {
@@ -78,15 +73,15 @@ func (h *uiAssetsHandler) renderIndexFile(w http.ResponseWriter) error {
 // and serves if a file is found.
 // If a requested file is not found in the filesystem, it serves the index file to
 // make sure when user refreshes the page in SPA things still work.
-func (h *uiAssetsHandler) serveFile(w http.ResponseWriter, path string) (code int, err error) {
-	if path == "/" || path == "" {
+func (h *uiAssetsHandler) serveFile(w http.ResponseWriter, p string) (code int, err error) {
+	if p == "/" || p == "" {
 		if err := h.renderIndexFile(w); err != nil {
 			return http.StatusInternalServerError, err
 		}
 		return http.StatusOK, nil
 	}
-	path = filepath.Join(h.staticDirPath, path)
-	bytes, err := h.contents.ReadFile(path)
+	p = path.Join(h.staticDirPath, p)
+	bytes, err := h.contents.ReadFile(p)
 	if err != nil {
 		// If path is error (e.g. file not exist, path is a directory), serve index file.
 		var pathErr *fs.PathError
