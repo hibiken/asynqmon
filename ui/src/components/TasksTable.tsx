@@ -26,6 +26,18 @@ import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
 import { PaginationOptions } from "../api";
 import { TaskState } from "../types/taskState";
+import TasksFilterProgressDialog from "./TasksFilterProgressDialog";
+import { AppState } from "../store";
+import { connect, ConnectedProps } from "react-redux";
+
+function mapStateToProps(state: AppState) {
+  return {
+    filterEnabled: state.tasks.filterOp?.done ?? false,
+  };
+}
+
+const connector = connect(mapStateToProps);
+type ReduxProps = ConnectedProps<typeof connector>;
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -43,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+interface Props extends ReduxProps {
   queue: string; // name of the queue.
   totalTaskCount: number; // totoal number of tasks in the given state.
   taskState: TaskState;
@@ -75,12 +87,15 @@ interface Props {
   renderRow: (rowProps: RowProps) => JSX.Element;
 }
 
-export default function TasksTable(props: Props) {
+function TasksTable(props: Props) {
   const { pollInterval, listTasks, queue, pageSize } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
+  const [lastFilterEnabled, setLastFilterEnabled] = useState(
+    props.filterEnabled
+  );
 
   const handlePageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -123,33 +138,36 @@ export default function TasksTable(props: Props) {
   }
 
   let allActions = [];
-  if (props.deleteAllTasks) {
-    allActions.push({
-      label: "Delete All",
-      onClick: createAllActionHandler(props.deleteAllTasks),
-      disabled: props.allActionPending,
-    });
-  }
-  if (props.archiveAllTasks) {
-    allActions.push({
-      label: "Archive All",
-      onClick: createAllActionHandler(props.archiveAllTasks),
-      disabled: props.allActionPending,
-    });
-  }
-  if (props.runAllTasks) {
-    allActions.push({
-      label: "Run All",
-      onClick: createAllActionHandler(props.runAllTasks),
-      disabled: props.allActionPending,
-    });
-  }
-  if (props.cancelAllTasks) {
-    allActions.push({
-      label: "Cancel All",
-      onClick: createAllActionHandler(props.cancelAllTasks),
-      disabled: props.allActionPending,
-    });
+  if (!props.filterEnabled) {
+    // Protect against using all actions while filter enabled
+    if (props.deleteAllTasks) {
+      allActions.push({
+        label: "Delete All",
+        onClick: createAllActionHandler(props.deleteAllTasks),
+        disabled: props.allActionPending,
+      });
+    }
+    if (props.archiveAllTasks) {
+      allActions.push({
+        label: "Archive All",
+        onClick: createAllActionHandler(props.archiveAllTasks),
+        disabled: props.allActionPending,
+      });
+    }
+    if (props.runAllTasks) {
+      allActions.push({
+        label: "Run All",
+        onClick: createAllActionHandler(props.runAllTasks),
+        disabled: props.allActionPending,
+      });
+    }
+    if (props.cancelAllTasks) {
+      allActions.push({
+        label: "Cancel All",
+        onClick: createAllActionHandler(props.cancelAllTasks),
+        disabled: props.allActionPending,
+      });
+    }
   }
 
   let batchActions = [];
@@ -192,6 +210,12 @@ export default function TasksTable(props: Props) {
   }, [page, pageSize, queue, listTasks]);
 
   usePolling(fetchData, pollInterval);
+
+  if (props.filterEnabled !== lastFilterEnabled) {
+    setLastFilterEnabled(props.filterEnabled);
+    setPage(0);
+    fetchData();
+  }
 
   if (props.error.length > 0) {
     return (
@@ -320,6 +344,7 @@ export default function TasksTable(props: Props) {
           </TableFooter>
         </Table>
       </TableContainer>
+      <TasksFilterProgressDialog totalTasks={props.totalTaskCount} />
     </div>
   );
 }
@@ -376,3 +401,5 @@ export interface RowProps {
   onActionCellEnter: () => void;
   onActionCellLeave: () => void;
 }
+
+export default connector(TasksTable);
