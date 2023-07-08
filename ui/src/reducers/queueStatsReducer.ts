@@ -77,8 +77,8 @@ function isSameDate(ts1: string, ts2: string): boolean {
   const date1 = new Date(ts1);
   const date2 = new Date(ts2);
   return (
-    date1.getUTCDate() === date2.getUTCDate() &&
-    date1.getUTCMonth() === date2.getUTCMonth() &&
-    date1.getUTCFullYear() === date2.getUTCFullYear()
+    date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear()
   );
 }
