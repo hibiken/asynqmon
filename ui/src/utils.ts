@@ -85,9 +85,9 @@ export function timeAgoUnix(unixtime: number): string {
   return stringifyDuration(duration) + " ago";
 }
 
-export function getCurrentUTCDate(): string {
+export function getCurrentDate(): string {
   const today = new Date();
-  const dd = today.getUTCDate().toString().padStart(2, "0");
+  const dd = today.getDate().toString().padStart(2, "0");
   const mm = (today.getMonth() + 1).toString().padStart(2, "0");
   const yyyy = today.getFullYear();
   return `${yyyy}-${mm}-${dd}`;

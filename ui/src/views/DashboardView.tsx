@@ -186,7 +186,7 @@ function DashboardView(props: Props) {
                   title={
                     <div>
                       <div className={classes.tooltipSection}>
-                        Total number of tasks processed in a given day (UTC)
+                        Total number of tasks processed in a given day
                       </div>
                       <div className={classes.tooltipSection}>
                         <strong>Succeeded</strong>: number of tasks successfully
