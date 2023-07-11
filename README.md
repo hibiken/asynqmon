@@ -253,6 +253,61 @@ func main() {
 }
 ```
 
+Example with Basic Auth Middleware in [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux):
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
+)
+
+func main() {
+	h := asynqmon.New(asynqmon.Options{
+		RootPath: "/monitoring", // RootPath specifies the root for asynqmon app
+		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
+	})
+
+	r := mux.NewRouter()
+	r.PathPrefix(h.RootPath()).Handler(basicAuthMiddleware(u, p, h))
+
+	srv := &http.Server{
+		Handler: r,
+		Addr:    ":8080",
+	}
+
+	// Go to http://localhost:8080/monitoring to see asynqmon homepage.
+	log.Fatal(srv.ListenAndServe())
+}
+
+func basicAuthMiddleware(u, p string, next http.Handler) http.Handler {
+	var unauthorized = func(w http.ResponseWriter) {
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
+		if !ok {
+			unauthorized(w)
+			return
+		}
+
+		if !(u == username && p == password) {
+			unauthorized(w)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+```
+
 Example with [labstack/echo](https://github.com/labstack/echo)):
 
 
