@@ -130,7 +130,7 @@ function Row(props: RowProps) {
       <TableCell>{durationBefore(task.next_process_at)}</TableCell>
       <TableCell>{task.error_message}</TableCell>
       <TableCell align="right">{task.retried}</TableCell>
-      <TableCell align="right">{task.max_retry}</TableCell>
+      <TableCell align="right">{task.max_retry == -1 ? "unlimited" : task.max_retry}</TableCell>
       {!window.READ_ONLY && (
         <TableCell
           align="center"
