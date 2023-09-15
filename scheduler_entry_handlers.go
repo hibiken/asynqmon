@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/qqunity/asynq"
+	"github.com/platacard/asynq"
 )
 
 // ****************************************************************************

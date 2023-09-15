@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/qqunity/asynq"
+	"github.com/platacard/asynq"
 )
 
 type listGroupsResponse struct {

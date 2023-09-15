@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/qqunity/asynq"
+	"github.com/platacard/asynq"
 )
 
 // ****************************************************************************

@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/platacard/asynq"
+	"github.com/platacard/asynq/x/metrics"
+	"github.com/platacard/asynqmon"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/qqunity/asynq"
-	"github.com/qqunity/asynq/x/metrics"
-	"github.com/qqunity/asynqmon"
 	"github.com/rs/cors"
 )
 
@@ -52,7 +52,7 @@ type Config struct {
 }
 
 // parseFlags parses the command-line arguments provided to the program.
-// Typically os.Args[0] is provided as 'progname' and os.args[1:] as 'args'.
+// Typically, os.Args[0] is provided as 'progname' and os.args[1:] as 'args'.
 // Returns the Config in case parsing succeeded, or an error. In any case, the
 // output of the flag.Parse is returned in output.
 //
