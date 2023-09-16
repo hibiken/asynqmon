@@ -98,8 +98,18 @@ func makeTLSConfig(cfg *Config) *tls.Config {
 }
 
 func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
+	cleanUpClusterNodes := func(clusterNodes string) string {
+		clusterNodes = strings.ReplaceAll(clusterNodes, "]", "")
+		clusterNodes = strings.ReplaceAll(clusterNodes, "[", "")
+		clusterNodes = strings.ReplaceAll(clusterNodes, "\"", "")
+		clusterNodes = strings.ReplaceAll(clusterNodes, " ", "")
+		clusterNodes = strings.ReplaceAll(clusterNodes, "\n", "")
+		return clusterNodes
+	}
+
 	// Connecting to redis-cluster
 	if len(cfg.RedisClusterNodes) > 0 {
+		cfg.RedisClusterNodes = cleanUpClusterNodes(cfg.RedisClusterNodes)
 		return asynq.RedisClusterClientOpt{
 			Addrs:     strings.Split(cfg.RedisClusterNodes, ","),
 			Password:  cfg.RedisPassword,

@@ -119,6 +119,17 @@ func TestMakeRedisConnOpt(t *testing.T) {
 					"localhost:5000", "localhost:5001", "localhost:5002", "localhost:5003", "localhost:5004", "localhost:5005"},
 			},
 		},
+		{
+			desc: "With cluster nodes array",
+			cfg: &Config{
+				RedisClusterNodes: `["localhost:5000", "localhost:5001", "localhost:5002", 
+"localhost:5003", "localhost:5004", "localhost:5005"]`,
+			},
+			want: asynq.RedisClusterClientOpt{
+				Addrs: []string{
+					"localhost:5000", "localhost:5001", "localhost:5002", "localhost:5003", "localhost:5004", "localhost:5005"},
+			},
+		},
 	}
 
 	for _, tc := range tests {
