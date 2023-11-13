@@ -3,13 +3,15 @@
 # Building a frontend.
 #
 
-FROM alpine:3.13 AS frontend
+FROM alpine:3.17 AS frontend
 
 # Move to a working directory (/static).
 WORKDIR /static
 
+# https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+ENV NODE_OPTIONS=--openssl-legacy-provider
 # Install npm (with latest nodejs) and yarn (globally, in silent mode).
-RUN apk add --no-cache npm && \
+RUN apk add --update nodejs npm && \
     npm i -g -s --unsafe-perm yarn
 
 # Copy only ./ui folder to the working directory.
@@ -23,7 +25,7 @@ RUN yarn install && yarn build
 # Building a backend.
 #
 
-FROM golang:1.16-alpine AS backend
+FROM golang:1.18-alpine AS backend
 
 # Move to a working directory (/build).
 WORKDIR /build

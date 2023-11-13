@@ -6,13 +6,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
-
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 )
 
-// Options is used to configure HTTPHandler.
+// Options are used to configure HTTPHandler.
 type Options struct {
 	// URL path the handler is responsible for.
 	// The path is used for the homepage of asynqmon, and every other page is rooted in this subtree.
