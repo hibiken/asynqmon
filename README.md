@@ -41,10 +41,10 @@ To pull the Docker image:
 
 ```bash
 # Pull the latest image
-docker pull hibiken/asynqmon
+docker pull platacard/asynqmon
 
 # Or specify the image by tag
-docker pull hibiken/asynqmon[:tag]
+docker pull platacard/asynqmon[:tag]
 ```
 
 ### Building from source
@@ -79,7 +79,7 @@ To use the defaults, simply run and open http://localhost:8080.
 docker run --rm \
     --name asynqmon \
     -p 8080:8080 \
-    hibiken/asynqmon
+    platacard/asynqmon
 ```
 
 By default, Asynqmon web server listens on port `8080` and connects to a Redis server running on `127.0.0.1:6379`.
@@ -91,7 +91,7 @@ To see all available flags, run:
 ./asynqmon --help
 
 # with a docker image
-docker run hibiken/asynqmon --help
+docker run platacard/asynqmon --help
 ```
 
 Here's the available flags:
@@ -165,14 +165,14 @@ The address can be specified via `--prometheus-addr`. This enables the metrics v
 docker run --rm \
     --name asynqmon \
     -p 3000:3000 \
-    hibiken/asynqmon --port=3000 --redis-addr=host.docker.internal:6380
+    platacard/asynqmon --port=3000 --redis-addr=host.docker.internal:6380
 
 # with Docker (connect to a Redis server running in the Docker container)
 docker run --rm \
     --name asynqmon \
     --network dev-network \
     -p 8080:8080 \
-    hibiken/asynqmon --redis-addr=dev-redis:6379
+    platacard/asynqmon --redis-addr=dev-redis:6379
 ```
 
 Next, go to [localhost:8080](http://localhost:8080) and see Asynqmon dashboard:
@@ -284,4 +284,4 @@ func main() {
 
 ## License
 
-Copyright (c) 2019-present [Ken Hibino](https://github.com/qqunity) and [Contributors](https://github.com/platacard/asynqmon/graphs/contributors). `Asynqmon` is free and open-source software licensed under the [MIT License](https://github.com/platacard/asynq/blob/master/LICENSE). Official logo was created by [Vic Shóstak](https://github.com/koddr) and distributed under [Creative Commons](https://creativecommons.org/publicdomain/zero/1.0/) license (CC0 1.0 Universal).
+Copyright (c) 2019-present [Ken Hibino](https://github.com/hibiken) and [Contributors](https://github.com/platacard/asynqmon/graphs/contributors). `Asynqmon` is free and open-source software licensed under the [MIT License](https://github.com/platacard/asynq/blob/master/LICENSE). Official logo was created by [Vic Shóstak](https://github.com/koddr) and distributed under [Creative Commons](https://creativecommons.org/publicdomain/zero/1.0/) license (CC0 1.0 Universal).

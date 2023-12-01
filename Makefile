@@ -1,4 +1,4 @@
-.PHONY: api assets build docker
+.PHONY: api assets build docker build-image push-image
 
 NODE_PATH ?= $(PWD)/ui/node_modules
 assets:
@@ -21,3 +21,9 @@ docker:
 		--name asynqmon \
 		-p 8080:8080 \
 		asynqmon --redis-addr=host.docker.internal:6379
+
+build-image:
+	docker build -t docker.io/platacard/asynqmon:$(or $(TAG),latest) .
+
+push-image: build-image
+	docker push docker.io/platacard/asynqmon:$(or $(TAG),latest)
