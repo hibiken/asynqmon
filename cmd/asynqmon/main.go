@@ -111,8 +111,18 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 	// Connecting to redis-cluster
 	if len(cfg.RedisClusterNodes) > 0 {
 		cfg.RedisClusterNodes = cleanUpClusterNodes(cfg.RedisClusterNodes)
+
+		addrs := strings.Split(cfg.RedisClusterNodes, ",")
+
+		// Add default port if not present.
+		for i := range addrs {
+			if !strings.Contains(addrs[i], ":") {
+				addrs[i] = addrs[i] + ":6379"
+			}
+		}
+
 		return asynq.RedisClusterClientOpt{
-			Addrs:     strings.Split(cfg.RedisClusterNodes, ","),
+			Addrs:     addrs,
 			Password:  cfg.RedisPassword,
 			Username:  cfg.RedisUsername,
 			TLSConfig: makeTLSConfig(cfg),
