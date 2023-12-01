@@ -3,7 +3,7 @@
 # Building a frontend.
 #
 
-FROM alpine:3.17 AS frontend
+FROM alpine:3.18 AS frontend
 
 # Move to a working directory (/static).
 WORKDIR /static
@@ -25,7 +25,7 @@ RUN yarn install && yarn build
 # Building a backend.
 #
 
-FROM golang:1.18-alpine AS backend
+FROM golang:1.21-alpine AS backend
 
 # Move to a working directory (/build).
 WORKDIR /build
@@ -44,7 +44,11 @@ COPY --from=frontend ["/static/build", "ui/build"]
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 
 # Run go build (with ldflags to reduce binary size).
-RUN go build -ldflags="-s -w" -o asynqmon ./cmd/asynqmon
+RUN go build \
+    -trimpath \
+    -ldflags="-s -w" \
+    -o asynqmon \
+    ./cmd/asynqmon
 
 #
 # Third stage: 
