@@ -25,7 +25,7 @@ RUN yarn install && yarn build
 # Building a backend.
 #
 
-FROM golang:1.21-alpine AS backend
+FROM --platform=linux/amd64 golang:1.21-alpine AS backend
 
 # Move to a working directory (/build).
 WORKDIR /build

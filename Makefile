@@ -23,7 +23,11 @@ docker:
 		asynqmon --redis-addr=host.docker.internal:6379
 
 build-image:
-	docker build -t docker.io/platacard/asynqmon:$(or $(TAG),latest) .
+	docker build \
+		-t docker.io/platacard/asynqmon:$(or $(TAG),latest) .
 
-push-image: build-image
-	docker push docker.io/platacard/asynqmon:$(or $(TAG),latest)
+push-image:
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		--push \
+		-t docker.io/platacard/asynqmon:$(or $(TAG),latest) .
