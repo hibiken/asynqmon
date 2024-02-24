@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"log"
@@ -30,6 +31,9 @@ type Config struct {
 	RedisDB           int
 	RedisPassword     string
 	RedisTLS          string
+	RedisCaCert       string
+	RedisClientCert   string
+	RedisClientKey    string
 	RedisURL          string
 	RedisInsecureTLS  bool
 	RedisClusterNodes string
@@ -64,6 +68,9 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	flags.IntVar(&conf.RedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
 	flags.StringVar(&conf.RedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
 	flags.StringVar(&conf.RedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS", ""), "server name for TLS validation used when connecting to redis server")
+	flags.StringVar(&conf.RedisCaCert, "redis-ca-cert", getEnvDefaultString("REDIS_CA_CERT", ""), "path to CA certificate file used when connecting to redis server")
+	flags.StringVar(&conf.RedisClientCert, "redis-client-cert", getEnvDefaultString("REDIS_CLIENT_CERT", ""), "path to client certificate file used when connecting to redis server")
+	flags.StringVar(&conf.RedisClientKey, "redis-client-key", getEnvDefaultString("REDIS_CLIENT_KEY", ""), "path to client key file used when connecting to redis server")
 	flags.StringVar(&conf.RedisURL, "redis-url", getEnvDefaultString("REDIS_URL", ""), "URL to redis server")
 	flags.BoolVar(&conf.RedisInsecureTLS, "redis-insecure-tls", getEnvOrDefaultBool("REDIS_INSECURE_TLS", false), "disable TLS certificate host checks")
 	flags.StringVar(&conf.RedisClusterNodes, "redis-cluster-nodes", getEnvDefaultString("REDIS_CLUSTER_NODES", ""), "comma separated list of host:port addresses of cluster nodes")
@@ -128,6 +135,32 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 	if connOpt.TLSConfig == nil {
 		connOpt.TLSConfig = makeTLSConfig(cfg)
 	}
+
+	if cfg.RedisClientCert == "" && cfg.RedisCaCert == "" {
+		return connOpt, nil
+	}
+
+	if connOpt.TLSConfig == nil {
+		connOpt.TLSConfig = &tls.Config{}
+	}
+
+	if cfg.RedisClientCert != "" {
+		cert, err := tls.LoadX509KeyPair(cfg.RedisClientCert, cfg.RedisClientKey)
+		if err != nil {
+			return nil, fmt.Errorf("get certificate error RedisClientCert:%s RedisClientKey:%s error:%s", cfg.RedisClientCert, cfg.RedisClientKey, err)
+		}
+		connOpt.TLSConfig.Certificates = []tls.Certificate{cert}
+	}
+	if cfg.RedisCaCert != "" {
+		caCert, err := os.ReadFile(cfg.RedisCaCert)
+		if err != nil {
+			return nil, fmt.Errorf("read ca cert error RedisCaCert:%s error:%s", cfg.RedisCaCert, err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		connOpt.TLSConfig.RootCAs = caCertPool
+	}
+
 	return connOpt, nil
 }
 
