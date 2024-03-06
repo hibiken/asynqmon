@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"log"
@@ -30,6 +31,9 @@ type Config struct {
 	RedisDB           int
 	RedisPassword     string
 	RedisTLS          string
+	RedisCaCert       string
+	RedisClientCert   string
+	RedisClientKey    string
 	RedisURL          string
 	RedisInsecureTLS  bool
 	RedisClusterNodes string
@@ -64,6 +68,9 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	flags.IntVar(&conf.RedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
 	flags.StringVar(&conf.RedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
 	flags.StringVar(&conf.RedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS", ""), "server name for TLS validation used when connecting to redis server")
+	flags.StringVar(&conf.RedisCaCert, "redis-ca-cert", getEnvDefaultString("REDIS_CA_CERT", ""), "path to CA certificate file used when connecting to redis server")
+	flags.StringVar(&conf.RedisClientCert, "redis-client-cert", getEnvDefaultString("REDIS_CLIENT_CERT", ""), "path to client certificate file used when connecting to redis server")
+	flags.StringVar(&conf.RedisClientKey, "redis-client-key", getEnvDefaultString("REDIS_CLIENT_KEY", ""), "path to client key file used when connecting to redis server")
 	flags.StringVar(&conf.RedisURL, "redis-url", getEnvDefaultString("REDIS_URL", ""), "URL to redis server")
 	flags.BoolVar(&conf.RedisInsecureTLS, "redis-insecure-tls", getEnvOrDefaultBool("REDIS_INSECURE_TLS", false), "disable TLS certificate host checks")
 	flags.StringVar(&conf.RedisClusterNodes, "redis-cluster-nodes", getEnvDefaultString("REDIS_CLUSTER_NODES", ""), "comma separated list of host:port addresses of cluster nodes")
@@ -81,23 +88,48 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	return &conf, buf.String(), nil
 }
 
-func makeTLSConfig(cfg *Config) *tls.Config {
-	if cfg.RedisTLS == "" && !cfg.RedisInsecureTLS {
-		return nil
+func makeTLSConfig(cfg *Config) (*tls.Config, error) {
+	if cfg.RedisTLS == "" && !cfg.RedisInsecureTLS && cfg.RedisClientCert == "" && cfg.RedisClientKey == "" && cfg.RedisCaCert == "" {
+		return nil, nil
 	}
-	return &tls.Config{
+
+	tlsConfig := &tls.Config{
 		ServerName:         cfg.RedisTLS,
 		InsecureSkipVerify: cfg.RedisInsecureTLS,
 	}
+
+	if cfg.RedisClientCert != "" {
+		cert, err := tls.LoadX509KeyPair(cfg.RedisClientCert, cfg.RedisClientKey)
+		if err != nil {
+			return nil, fmt.Errorf("get certificate error RedisClientCert:%s RedisClientKey:%s error:%s", cfg.RedisClientCert, cfg.RedisClientKey, err)
+		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+
+	if cfg.RedisCaCert != "" {
+		caCert, err := os.ReadFile(cfg.RedisCaCert)
+		if err != nil {
+			return nil, fmt.Errorf("read ca cert error RedisCaCert:%s error:%s", cfg.RedisCaCert, err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig.RootCAs = caCertPool
+	}
+
+	return tlsConfig, nil
 }
 
 func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 	// Connecting to redis-cluster
 	if len(cfg.RedisClusterNodes) > 0 {
+		tlsConfig, err := makeTLSConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
 		return asynq.RedisClusterClientOpt{
 			Addrs:     strings.Split(cfg.RedisClusterNodes, ","),
 			Password:  cfg.RedisPassword,
-			TLSConfig: makeTLSConfig(cfg),
+			TLSConfig: tlsConfig,
 		}, nil
 	}
 
@@ -108,7 +140,11 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 			return nil, err
 		}
 		connOpt := res.(asynq.RedisFailoverClientOpt) // safe to type-assert
-		connOpt.TLSConfig = makeTLSConfig(cfg)
+		tlsConfig, err := makeTLSConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		connOpt.TLSConfig = tlsConfig
 		return connOpt, nil
 	}
 
@@ -126,8 +162,13 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 		connOpt.Password = cfg.RedisPassword
 	}
 	if connOpt.TLSConfig == nil {
-		connOpt.TLSConfig = makeTLSConfig(cfg)
+		tlsConfig, err := makeTLSConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		connOpt.TLSConfig = tlsConfig
 	}
+
 	return connOpt, nil
 }
 

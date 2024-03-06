@@ -29,6 +29,9 @@ package-json.lock
 /api
 dist/
 
+# testdata
+/cmd/asynqmon/testdata/
+
 # Editor configs
 .idea/
 .vscode/
