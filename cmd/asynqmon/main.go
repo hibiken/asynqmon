@@ -88,23 +88,48 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	return &conf, buf.String(), nil
 }
 
-func makeTLSConfig(cfg *Config) *tls.Config {
-	if cfg.RedisTLS == "" && !cfg.RedisInsecureTLS {
-		return nil
+func makeTLSConfig(cfg *Config) (*tls.Config, error) {
+	if cfg.RedisTLS == "" && !cfg.RedisInsecureTLS && cfg.RedisClientCert == "" && cfg.RedisClientKey == "" && cfg.RedisCaCert == "" {
+		return nil, nil
 	}
-	return &tls.Config{
+
+	tlsConfig := &tls.Config{
 		ServerName:         cfg.RedisTLS,
 		InsecureSkipVerify: cfg.RedisInsecureTLS,
 	}
+
+	if cfg.RedisClientCert != "" {
+		cert, err := tls.LoadX509KeyPair(cfg.RedisClientCert, cfg.RedisClientKey)
+		if err != nil {
+			return nil, fmt.Errorf("get certificate error RedisClientCert:%s RedisClientKey:%s error:%s", cfg.RedisClientCert, cfg.RedisClientKey, err)
+		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+
+	if cfg.RedisCaCert != "" {
+		caCert, err := os.ReadFile(cfg.RedisCaCert)
+		if err != nil {
+			return nil, fmt.Errorf("read ca cert error RedisCaCert:%s error:%s", cfg.RedisCaCert, err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig.RootCAs = caCertPool
+	}
+
+	return tlsConfig, nil
 }
 
 func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 	// Connecting to redis-cluster
 	if len(cfg.RedisClusterNodes) > 0 {
+		tlsConfig, err := makeTLSConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
 		return asynq.RedisClusterClientOpt{
 			Addrs:     strings.Split(cfg.RedisClusterNodes, ","),
 			Password:  cfg.RedisPassword,
-			TLSConfig: makeTLSConfig(cfg),
+			TLSConfig: tlsConfig,
 		}, nil
 	}
 
@@ -115,7 +140,11 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 			return nil, err
 		}
 		connOpt := res.(asynq.RedisFailoverClientOpt) // safe to type-assert
-		connOpt.TLSConfig = makeTLSConfig(cfg)
+		tlsConfig, err := makeTLSConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		connOpt.TLSConfig = tlsConfig
 		return connOpt, nil
 	}
 
@@ -133,32 +162,11 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 		connOpt.Password = cfg.RedisPassword
 	}
 	if connOpt.TLSConfig == nil {
-		connOpt.TLSConfig = makeTLSConfig(cfg)
-	}
-
-	if cfg.RedisClientCert == "" && cfg.RedisCaCert == "" {
-		return connOpt, nil
-	}
-
-	if connOpt.TLSConfig == nil {
-		connOpt.TLSConfig = &tls.Config{}
-	}
-
-	if cfg.RedisClientCert != "" {
-		cert, err := tls.LoadX509KeyPair(cfg.RedisClientCert, cfg.RedisClientKey)
+		tlsConfig, err := makeTLSConfig(cfg)
 		if err != nil {
-			return nil, fmt.Errorf("get certificate error RedisClientCert:%s RedisClientKey:%s error:%s", cfg.RedisClientCert, cfg.RedisClientKey, err)
+			return nil, err
 		}
-		connOpt.TLSConfig.Certificates = []tls.Certificate{cert}
-	}
-	if cfg.RedisCaCert != "" {
-		caCert, err := os.ReadFile(cfg.RedisCaCert)
-		if err != nil {
-			return nil, fmt.Errorf("read ca cert error RedisCaCert:%s error:%s", cfg.RedisCaCert, err)
-		}
-		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-		connOpt.TLSConfig.RootCAs = caCertPool
+		connOpt.TLSConfig = tlsConfig
 	}
 
 	return connOpt, nil
