@@ -29,6 +29,7 @@ type Config struct {
 	RedisAddr         string
 	RedisDB           int
 	RedisPassword     string
+	RedisUsername     string
 	RedisTLS          string
 	RedisURL          string
 	RedisInsecureTLS  bool
@@ -63,6 +64,7 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	flags.StringVar(&conf.RedisAddr, "redis-addr", getEnvDefaultString("REDIS_ADDR", "127.0.0.1:6379"), "address of redis server to connect to")
 	flags.IntVar(&conf.RedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
 	flags.StringVar(&conf.RedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
+	flags.StringVar(&conf.RedisUsername, "redis-username", getEnvDefaultString("REDIS_USERNAME", ""), "user name to use when connecting to redis server")
 	flags.StringVar(&conf.RedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS", ""), "server name for TLS validation used when connecting to redis server")
 	flags.StringVar(&conf.RedisURL, "redis-url", getEnvDefaultString("REDIS_URL", ""), "URL to redis server")
 	flags.BoolVar(&conf.RedisInsecureTLS, "redis-insecure-tls", getEnvOrDefaultBool("REDIS_INSECURE_TLS", false), "disable TLS certificate host checks")
@@ -96,6 +98,7 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 	if len(cfg.RedisClusterNodes) > 0 {
 		return asynq.RedisClusterClientOpt{
 			Addrs:     strings.Split(cfg.RedisClusterNodes, ","),
+			Username:  cfg.RedisUsername,
 			Password:  cfg.RedisPassword,
 			TLSConfig: makeTLSConfig(cfg),
 		}, nil
@@ -123,6 +126,7 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 	} else {
 		connOpt.Addr = cfg.RedisAddr
 		connOpt.DB = cfg.RedisDB
+		connOpt.Username = cfg.RedisUsername
 		connOpt.Password = cfg.RedisPassword
 	}
 	if connOpt.TLSConfig == nil {
