@@ -212,7 +212,7 @@ func main() {
 		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
 	})
 
-    // Note: We need the tailing slash when using net/http.ServeMux.
+	// Note: We need the tailing slash when using net/http.ServeMux.
 	http.Handle(h.RootPath()+"/", h)
 
 	// Go to http://localhost:8080/monitoring to see asynqmon homepage.
@@ -253,7 +253,7 @@ func main() {
 }
 ```
 
-Example with [labstack/echo](https://github.com/labstack/echo)):
+Example with [labstack/echo](https://github.com/labstack/echo):
 
 
 ```go
@@ -266,7 +266,7 @@ import (
 )
 
 func main() {
-        e := echo.New()
+	e := echo.New()
 
 	mon := asynqmon.New(asynqmon.Options{
 		RootPath: "/monitoring/tasks",
@@ -279,6 +279,38 @@ func main() {
 	e.Any("/monitoring/tasks/*", echo.WrapHandler(mon))
 	e.Start(":8080")
 }
+```
+
+
+Example with [gin-gonic/gin](https://github.com/gin-gonic/gin):
+
+
+```go
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
+	"log"
+)
+
+func main() {
+
+	h := asynqmon.New(asynqmon.Options{
+		RootPath:     "/monitoring",
+		RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
+	})
+
+	r := gin.Default()
+
+	r.Any(h.RootPath()+"/*any", gin.WrapH(h))
+
+	if err := r.Run(":8080"); err != nil {
+		log.Fatal("Server failed to start:", err)
+	}
+}
+
 ```
 
 
