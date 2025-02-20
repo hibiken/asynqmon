@@ -2,8 +2,8 @@
 
 NODE_PATH ?= $(PWD)/ui/node_modules
 assets:
-	@if [ ! -d "$(NODE_PATH)"  ]; then cd ./ui && yarn install --modules-folder $(NODE_PATH); fi
-	cd ./ui && yarn build --modules-folder $(NODE_PATH)
+	@if [ ! -d "$(NODE_PATH)"  ]; then cd ./ui && NODE_OPTIONS=--openssl-legacy-provider yarn install --modules-folder $(NODE_PATH); fi
+	cd ./ui && NODE_OPTIONS=--openssl-legacy-provider yarn build --modules-folder $(NODE_PATH)
 
 # This target skips the overhead of building UI assets.
 # Intended to be used during development.
