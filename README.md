@@ -22,6 +22,12 @@ Please make sure the version compatibility with the Asynq package you are using.
 | 0.18.x         | 0.2.x, 0.3.x             |
 | 0.16.x, 0.17.x | 0.1.x                    |
 
+## Deploy to Kubernetes
+ Make sure you updated the secret in deploy/deployment.yaml before running apply
+```bash
+kubectl apply -f deploy/kubernetes.yaml
+```
+
 ## Install the binary
 
 There're a few options to install the binary:

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"log"
@@ -31,6 +32,9 @@ type Config struct {
 	RedisPassword     string
 	RedisTLS          string
 	RedisURL          string
+	RedisCA           string
+	RedisCert         string
+	RedisKey          string
 	RedisInsecureTLS  bool
 	RedisClusterNodes string
 
@@ -64,6 +68,9 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 	flags.IntVar(&conf.RedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
 	flags.StringVar(&conf.RedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
 	flags.StringVar(&conf.RedisTLS, "redis-tls", getEnvDefaultString("REDIS_TLS", ""), "server name for TLS validation used when connecting to redis server")
+	flags.StringVar(&conf.RedisCA, "redis-ca", getEnvDefaultString("REDIS_CA", ""), "path to CA certificate file used when connecting to redis server")
+	flags.StringVar(&conf.RedisCert, "redis-cert", getEnvDefaultString("REDIS_CERT", ""), "path to client certificate file used when connecting to redis server")
+	flags.StringVar(&conf.RedisKey, "redis-key", getEnvDefaultString("REDIS_KEY", ""), "path to client key file used when connecting to redis server")
 	flags.StringVar(&conf.RedisURL, "redis-url", getEnvDefaultString("REDIS_URL", ""), "URL to redis server")
 	flags.BoolVar(&conf.RedisInsecureTLS, "redis-insecure-tls", getEnvOrDefaultBool("REDIS_INSECURE_TLS", false), "disable TLS certificate host checks")
 	flags.StringVar(&conf.RedisClusterNodes, "redis-cluster-nodes", getEnvDefaultString("REDIS_CLUSTER_NODES", ""), "comma separated list of host:port addresses of cluster nodes")
@@ -85,9 +92,26 @@ func makeTLSConfig(cfg *Config) *tls.Config {
 	if cfg.RedisTLS == "" && !cfg.RedisInsecureTLS {
 		return nil
 	}
+	ca, err := os.ReadFile(cfg.RedisCA)
+	if err != nil {
+		log.Printf("failed to read redis ca tls certificate: %v", err)
+		return nil
+	}
+	caCertPool := x509.NewCertPool()
+	if !caCertPool.AppendCertsFromPEM(ca) {
+		log.Printf("failed to append redis ca tls certificate: %v", err)
+		return nil
+	}
+	clientCert, err := tls.LoadX509KeyPair(cfg.RedisCert, cfg.RedisKey)
+	if err != nil {
+		log.Printf("failed to load redis tls clientCert pair: %v", err)
+		return nil
+	}
 	return &tls.Config{
 		ServerName:         cfg.RedisTLS,
 		InsecureSkipVerify: cfg.RedisInsecureTLS,
+		RootCAs:            caCertPool,
+		Certificates:       []tls.Certificate{clientCert},
 	}
 }
 
