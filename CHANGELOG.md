@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New API endpoint `POST /api/queues/{qname}/publish` for publishing events to Asynq
+
 ## [0.7.0] - 2022-04-11
 
 Version 0.7 added support for [Task Aggregation](https://github.com/hibiken/asynq/wiki/Task-aggregation) feature

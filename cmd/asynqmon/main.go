@@ -158,6 +158,7 @@ func main() {
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
+		AllowedHeaders: []string{"Content-Type"},
 	})
 	mux := http.NewServeMux()
 	mux.Handle("/", c.Handler(h))

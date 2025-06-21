@@ -282,6 +282,43 @@ func main() {
 ```
 
 
+## API
+
+If you are using asynqmon as a Go library, you can access the HTTP API directly from your application.
+
+### Publish Events
+
+You can publish events to a queue by sending a POST request to the `/api/queues/{qname}/publish` endpoint.
+
+**Request**
+```http
+POST /api/queues/{qname}/publish
+Content-Type: application/json
+
+{
+  "payload": {
+    "key1": "value1",
+    "key2": 123,
+    ...
+  },
+  "event": "event_name"
+}
+```
+
+**Response**
+```json
+{
+  "task_id": "task_id_generated_by_asynq"
+}
+```
+
+This endpoint requires:
+- `qname`: The name of the queue to publish the event to
+- `event`: The name of the event (will be used as the task type)
+- `payload`: A map of key-value pairs to be passed as the task payload
+
+The response will contain the ID of the created task.
+
 ## License
 
 Copyright (c) 2019-present [Ken Hibino](https://github.com/hibiken) and [Contributors](https://github.com/hibiken/asynqmon/graphs/contributors). `Asynqmon` is free and open-source software licensed under the [MIT License](https://github.com/hibiken/asynq/blob/master/LICENSE). Official logo was created by [Vic Shóstak](https://github.com/koddr) and distributed under [Creative Commons](https://creativecommons.org/publicdomain/zero/1.0/) license (CC0 1.0 Universal).
