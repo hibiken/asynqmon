@@ -12,26 +12,26 @@ import (
 )
 
 func TestPublishEventHandler(t *testing.T) {
-	// Usa opções de conexão em memória para o cliente Asynq
+	// Use in-memory connection options for the Asynq client
 	redisOpt := asynq.RedisClientOpt{
 		Addr: "localhost:6379",
-		DB:   1, // Usa um banco de dados separado para testes
+		DB:   1, // Use a separate database for tests
 	}
 
-	// Cria um cliente Asynq
+	// Create an Asynq client
 	client := asynq.NewClient(redisOpt)
 
-	// Cria um handler para teste
+	// Create a handler for testing
 	handler := newPublishEventHandlerFunc(client)
 
-	// Cria um router para adicionar os parâmetros de URL
+	// Create a router to add URL parameters
 	r := mux.NewRouter()
 	r.HandleFunc("/queues/{qname}/publish", handler).Methods("POST")
 
-	// Monta o payload da requisição
+	// Prepare the request payload
 	payload := map[string]interface{}{
 		"user_id": 123,
-		"action": "signup",
+		"action":  "signup",
 	}
 	reqBody := PublishRequest{
 		Payload: payload,
@@ -39,33 +39,33 @@ func TestPublishEventHandler(t *testing.T) {
 	}
 	body, err := json.Marshal(reqBody)
 	if err != nil {
-		t.Fatalf("Falha ao serializar corpo da requisição: %v", err)
+		t.Fatalf("Failed to serialize request body: %v", err)
 	}
 
-	// Cria uma requisição HTTP com o corpo
+	// Create an HTTP request with the body
 	req, err := http.NewRequest("POST", "/queues/default/publish", bytes.NewReader(body))
 	if err != nil {
-		t.Fatalf("Falha ao criar requisição: %v", err)
+		t.Fatalf("Failed to create request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Cria um recorder para capturar a resposta
+	// Create a recorder to capture the response
 	rr := httptest.NewRecorder()
 
-	// Faz a requisição ao handler
+	// Make the request to the handler
 	r.ServeHTTP(rr, req)
 
-	// Verifica o status de resposta
+	// Verify the response status
 	if rr.Code != http.StatusCreated {
-		t.Errorf("Handler retornou código inesperado: esperado %v, obtido %v", http.StatusCreated, rr.Code)
+		t.Errorf("Handler returned unexpected code: expected %v, got %v", http.StatusCreated, rr.Code)
 	}
 
-	// Verifica se a resposta tem um ID de task
+	// Verify the response has a task ID
 	var response PublishResponse
 	if err := json.Unmarshal(rr.Body.Bytes(), &response); err != nil {
-		t.Fatalf("Falha ao decodificar resposta: %v", err)
+		t.Fatalf("Failed to decode response: %v", err)
 	}
 	if response.TaskID == "" {
-		t.Errorf("TaskID na resposta está vazio")
+		t.Errorf("TaskID in response is empty")
 	}
 }

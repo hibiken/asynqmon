@@ -301,7 +301,7 @@ Content-Type: application/json
     "key2": 123,
     ...
   },
-  "event": "nome_do_evento"
+  "event": "event_name"
 }
 ```
 

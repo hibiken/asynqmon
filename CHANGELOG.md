@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New API endpoint `POST /api/queues/{qname}/publish` para publicação de eventos no Asynq
+- New API endpoint `POST /api/queues/{qname}/publish` for publishing events to Asynq
 
 ## [0.7.0] - 2022-04-11
 

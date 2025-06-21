@@ -209,7 +209,7 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 
 	// Time series metrics endpoints.
 	api.HandleFunc("/metrics", newGetMetricsHandlerFunc(http.DefaultClient, opts.PrometheusAddress)).Methods("GET")
-	
+
 	// Event publishing endpoint.
 	api.HandleFunc("/queues/{qname}/publish", newPublishEventHandlerFunc(client)).Methods("POST")
 

@@ -56,8 +56,8 @@ interface EventPublisherProps {
 }
 
 const defaultPayload = {
-  "chave1": "valor1",
-  "chave2": 123,
+  "key1": "value1",
+  "key2": 123,
 };
 
 export default function EventPublisher({ qname }: EventPublisherProps) {
@@ -78,43 +78,43 @@ export default function EventPublisher({ qname }: EventPublisherProps) {
     setSuccess(null);
 
     try {
-      // Validar JSON do payload
+      // Validate JSON payload
       const payload = JSON.parse(payloadStr);
       
       if (!event || event.trim() === '') {
-        setError('O nome do evento é obrigatório');
+        setError('Event name is required');
         return;
       }
 
-      // Enviar para API
+      // Send to API
       const response = await publishEvent(qname, { payload, event });
       
-      setSuccess(`Evento "${event}" publicado com sucesso! ID da task: ${response.task_id}`);
-      enqueueSnackbar(`Evento "${event}" publicado com sucesso!`, { variant: 'success' });
+      setSuccess(`Event "${event}" published successfully! Task ID: ${response.task_id}`);
+      enqueueSnackbar(`Event "${event}" published successfully!`, { variant: 'success' });
     } catch (err) {
-      console.error('Erro ao publicar evento:', err);
+      console.error('Error publishing event:', err);
       if (err instanceof SyntaxError) {
-        setError('JSON inválido no payload');
+        setError('Invalid JSON in payload');
       } else if (err.response) {
-        setError(`Erro ao publicar: ${err.response.data || err.message}`);
+        setError(`Publishing error: ${err.response.data || err.message}`);
       } else {
-        setError(`Erro: ${err.message}`);
+        setError(`Error: ${err.message}`);
       }
-      enqueueSnackbar('Erro ao publicar evento', { variant: 'error' });
+      enqueueSnackbar('Error publishing event', { variant: 'error' });
     }
   };
 
   return (
     <Card className={classes.root}>
       <CardHeader 
-        title="Publicar Evento" 
-        subheader="Envie eventos para a fila de processamento"
+        title="Publish Event" 
+        subheader="Send events to the processing queue"
         action={
           <IconButton
             className={expanded ? classes.expandOpen : classes.expand}
             onClick={handleExpandClick}
             aria-expanded={expanded}
-            aria-label="mostrar/ocultar"
+            aria-label="show/hide"
           >
             <ExpandMoreIcon />
           </IconButton>
@@ -160,11 +160,11 @@ export default function EventPublisher({ qname }: EventPublisherProps) {
           )}
           <TextField
             className={classes.eventField}
-            label="Nome do Evento"
+            label="Event Name"
             variant="outlined"
             value={event}
             onChange={(e) => setEvent(e.target.value)}
-            placeholder="Exemplo: email:send"
+            placeholder="Example: email:send"
             InputProps={{
               endAdornment: (
                 <SendIcon color="action" />
@@ -192,7 +192,7 @@ export default function EventPublisher({ qname }: EventPublisherProps) {
             onClick={handleSubmit}
             startIcon={<PlayArrowIcon />}
           >
-            Publicar
+            Publish
           </Button>
         </CardActions>
       </Collapse>
