@@ -91,15 +91,26 @@ export default function EventPublisher({ qname }: EventPublisherProps) {
       
       setSuccess(`Event "${event}" published successfully! Task ID: ${response.task_id}`);
       enqueueSnackbar(`Event "${event}" published successfully!`, { variant: 'success' });
-    } catch (err) {
-      console.error('Error publishing event:', err);
-      if (err instanceof SyntaxError) {
+    } catch (error: unknown) {
+      console.error('Error publishing event:', error);
+      
+      if (error instanceof SyntaxError) {
         setError('Invalid JSON in payload');
-      } else if (err.response) {
-        setError(`Publishing error: ${err.response.data || err.message}`);
+      } else if (error instanceof Error) {
+        // Handle standard Error objects
+        setError(`Error: ${error.message}`);
+      } else if (typeof error === 'object' && error !== null && 'response' in error) {
+        // Handle axios error responses
+        const axiosError = error as { response?: { data?: string } };
+        const errorMsg = typeof axiosError.response?.data === 'string' 
+          ? axiosError.response.data 
+          : 'Unknown error occurred';
+        setError(`Publishing error: ${errorMsg}`);
       } else {
-        setError(`Error: ${err.message}`);
+        // Fallback for any other type of error
+        setError('An unexpected error occurred');
       }
+      
       enqueueSnackbar('Error publishing event', { variant: 'error' });
     }
   };
