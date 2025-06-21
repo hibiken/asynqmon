@@ -6,6 +6,7 @@ import Grid from "@material-ui/core/Grid";
 import TasksTableContainer from "../components/TasksTableContainer";
 import QueueInfoBanner from "../components/QueueInfoBanner";
 import QueueBreadCrumb from "../components/QueueBreadcrumb";
+import EventPublisher from "../components/EventPublisher";
 import { useParams } from "react-router-dom";
 import { listQueuesAsync } from "../actions/queuesActions";
 import { AppState } from "../store";
@@ -68,6 +69,9 @@ function TasksView(props: ConnectedProps<typeof connector>) {
         </Grid>
         <Grid item xs={12} className={classes.banner}>
           <QueueInfoBanner qname={qname} />
+        </Grid>
+        <Grid item xs={12}>
+          <EventPublisher qname={qname} />
         </Grid>
         <Grid item xs={12} className={classes.tasksTable}>
           <TasksTableContainer queue={qname} selected={selected} />

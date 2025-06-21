@@ -3,6 +3,7 @@ import { connect, ConnectedProps } from "react-redux";
 import clsx from "clsx";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { makeStyles, Theme, ThemeProvider } from "@material-ui/core/styles";
+import { SnackbarProvider } from 'notistack';
 import AppBar from "@material-ui/core/AppBar";
 import Drawer from "@material-ui/core/Drawer";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -157,7 +158,11 @@ function App(props: ConnectedProps<typeof connector>) {
   const paths = getPaths();
   return (
     <ThemeProvider theme={theme}>
-      <Router>
+      <SnackbarProvider maxSnack={3} anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+      }}>
+        <Router>
         <div className={classes.root}>
           <AppBar
             position="absolute"
@@ -307,6 +312,7 @@ function App(props: ConnectedProps<typeof connector>) {
           </div>
         </div>
       </Router>
+      </SnackbarProvider>
     </ThemeProvider>
   );
 }

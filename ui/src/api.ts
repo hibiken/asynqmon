@@ -1083,3 +1083,18 @@ export async function getMetrics(
   });
   return resp.data;
 }
+
+export interface PublishEventRequest {
+  payload: Record<string, any>;
+  event: string;
+}
+
+export interface PublishEventResponse {
+  task_id: string;
+}
+
+export function publishEvent(queue: string, data: PublishEventRequest) {
+  return axios
+    .post<PublishEventResponse>(`${getBaseUrl()}/queues/${queue}/publish`, data)
+    .then((response) => response.data);
+}
