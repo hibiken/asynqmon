@@ -104,6 +104,7 @@ _Note_: Use `--redis-url` to specify address, db-number, and password with one f
 | `---redis-url`(string)            | `REDIS_URL`               | URL to redis or sentinel server. See [godoc](https://pkg.go.dev/github.com/hibiken/asynq#ParseRedisURI) for supported format | ""               |
 | `--redis-addr`(string)            | `REDIS_ADDR`              | address of redis server to connect to                                                                                        | "127.0.0.1:6379" |
 | `--redis-db`(int)                 | `REDIS_DB`                | redis database number                                                                                                        | 0                |
+| `--redis-username`(string)        | `REDIS_USERNAME`          | username to use when connecting to redis server                                                                              | ""               |
 | `--redis-password`(string)        | `REDIS_PASSWORD`          | password to use when connecting to redis server                                                                              | ""               |
 | `--redis-cluster-nodes`(string)   | `REDIS_CLUSTER_NODES`     | comma separated list of host:port addresses of cluster nodes                                                                 | ""               |
 | `--redis-tls`(string)             | `REDIS_TLS`               | server name for TLS validation used when connecting to redis server                                                          | ""               |
