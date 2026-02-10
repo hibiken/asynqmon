@@ -3,6 +3,11 @@ import {
   SnackbarActionTypes,
 } from "../actions/snackbarActions";
 import {
+  RUN_SCHEDULER_ENTRY_SUCCESS,
+  RUN_SCHEDULER_ENTRY_ERROR,
+  SchedulerEntriesActionTypes,
+} from "../actions/schedulerEntriesActions";
+import {
   BATCH_CANCEL_ACTIVE_TASKS_SUCCESS,
   BATCH_DELETE_ARCHIVED_TASKS_SUCCESS,
   BATCH_DELETE_RETRY_TASKS_SUCCESS,
@@ -62,7 +67,7 @@ const initialState: SnackbarState = {
 
 function snackbarReducer(
   state = initialState,
-  action: TasksActionTypes | SnackbarActionTypes
+  action: TasksActionTypes | SnackbarActionTypes | SchedulerEntriesActionTypes
 ): SnackbarState {
   switch (action.type) {
     case CLOSE_SNACKBAR:
@@ -93,6 +98,18 @@ function snackbarReducer(
       return {
         isOpen: true,
         message: `Scheduled task is now pending`,
+      };
+
+    case RUN_SCHEDULER_ENTRY_SUCCESS:
+      return {
+        isOpen: true,
+        message: "Scheduler entry task enqueued successfully",
+      };
+
+    case RUN_SCHEDULER_ENTRY_ERROR:
+      return {
+        isOpen: true,
+        message: `Failed to run scheduler entry: ${action.error}`,
       };
 
     case RUN_RETRY_TASK_SUCCESS:

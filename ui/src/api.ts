@@ -1051,6 +1051,13 @@ export async function listSchedulerEnqueueEvents(
   return resp.data;
 }
 
+export async function runSchedulerEntry(entryId: string): Promise<void> {
+  await axios({
+    method: "post",
+    url: `${getBaseUrl()}/scheduler_entries/${entryId}:run`,
+  });
+}
+
 export async function getRedisInfo(): Promise<RedisInfoResponse> {
   const resp = await axios({
     method: "get",

@@ -12,6 +12,7 @@ import Modal from "@material-ui/core/Modal";
 import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import HistoryIcon from "@material-ui/icons/History";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import { SortDirection, SortableTableColumn } from "../types/table";
@@ -127,6 +128,7 @@ function sortEntries(
 
 interface Props {
   entries: SchedulerEntry[];
+  onRunEntry?: (entryId: string) => Promise<void>;
 }
 
 export default function SchedulerEntriesTable(props: Props) {
@@ -230,6 +232,7 @@ export default function SchedulerEntriesTable(props: Props) {
                 entry={entry}
                 isLastRow={idx === props.entries.length - 1}
                 onShowHistoryClick={() => setActiveEntryId(entry.id)}
+                onRunClick={props.onRunEntry}
               />
             ))}
           </TableBody>
@@ -255,6 +258,7 @@ interface RowProps {
   entry: SchedulerEntry;
   isLastRow: boolean;
   onShowHistoryClick: () => void;
+  onRunClick?: (entryId: string) => Promise<void>;
 }
 
 const useRowStyles = makeStyles((theme) => ({
@@ -303,6 +307,17 @@ function Row(props: RowProps) {
         {entry.prev_enqueue_at ? timeAgo(entry.prev_enqueue_at) : "N/A"}
       </TableCell>
       <TableCell>
+        {props.onRunClick && (
+          <Tooltip title="Run now">
+            <IconButton
+              aria-label="run now"
+              size="small"
+              onClick={() => props.onRunClick!(entry.id)}
+            >
+              <PlayArrowIcon />
+            </IconButton>
+          </Tooltip>
+        )}
         <Tooltip title="See History">
           <IconButton
             aria-label="expand row"

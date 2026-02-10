@@ -65,6 +65,7 @@ func New(opts Options) *HTTPHandler {
 		panic(fmt.Sprintf("asnyqmon.New: unsupported RedisConnOpt type %T", opts.RedisConnOpt))
 	}
 	i := asynq.NewInspector(opts.RedisConnOpt)
+	client := asynq.NewClient(opts.RedisConnOpt)
 
 	// Make sure that RootPath starts with a slash if provided.
 	if opts.RootPath != "" && !strings.HasPrefix(opts.RootPath, "/") {
@@ -74,8 +75,8 @@ func New(opts Options) *HTTPHandler {
 	opts.RootPath = strings.TrimSuffix(opts.RootPath, "/")
 
 	return &HTTPHandler{
-		router:   muxRouter(opts, rc, i),
-		closers:  []func() error{rc.Close, i.Close},
+		router:   muxRouter(opts, rc, i, client),
+		closers:  []func() error{rc.Close, i.Close, client.Close},
 		rootPath: opts.RootPath,
 	}
 }
@@ -99,7 +100,7 @@ func (h *HTTPHandler) RootPath() string {
 //go:embed ui/build/*
 var staticContents embed.FS
 
-func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspector) *mux.Router {
+func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspector, client *asynq.Client) *mux.Router {
 	router := mux.NewRouter().PathPrefix(opts.RootPath).Subrouter()
 
 	var payloadFmt PayloadFormatter = DefaultPayloadFormatter
@@ -195,6 +196,7 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 	// Scheduler Entry endpoints.
 	api.HandleFunc("/scheduler_entries", newListSchedulerEntriesHandlerFunc(inspector, payloadFmt)).Methods("GET")
 	api.HandleFunc("/scheduler_entries/{entry_id}/enqueue_events", newListSchedulerEnqueueEventsHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/scheduler_entries/{entry_id}:run", newRunSchedulerEntryHandlerFunc(inspector, client)).Methods("POST")
 
 	// Redis info endpoint.
 	switch c := rc.(type) {

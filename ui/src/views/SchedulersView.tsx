@@ -9,7 +9,10 @@ import Typography from "@material-ui/core/Typography";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import { AppState } from "../store";
-import { listSchedulerEntriesAsync } from "../actions/schedulerEntriesActions";
+import {
+  listSchedulerEntriesAsync,
+  runSchedulerEntryAsync,
+} from "../actions/schedulerEntriesActions";
 import { usePolling } from "../hooks";
 
 const useStyles = makeStyles((theme) => ({
@@ -38,7 +41,10 @@ function mapStateToProps(state: AppState) {
   };
 }
 
-const connector = connect(mapStateToProps, { listSchedulerEntriesAsync });
+const connector = connect(mapStateToProps, {
+  listSchedulerEntriesAsync,
+  runSchedulerEntryAsync,
+});
 
 type Props = ConnectedProps<typeof connector>;
 
@@ -57,7 +63,12 @@ function SchedulersView(props: Props) {
               <Typography variant="h6" className={classes.heading}>
                 Scheduler Entries
               </Typography>
-              <SchedulerEntriesTable entries={props.entries} />
+              <SchedulerEntriesTable
+                entries={props.entries}
+                onRunEntry={
+                  !window.READ_ONLY ? props.runSchedulerEntryAsync : undefined
+                }
+              />
             </Paper>
           </Grid>
         ) : (

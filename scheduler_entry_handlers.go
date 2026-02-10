@@ -58,3 +58,35 @@ func newListSchedulerEnqueueEventsHandlerFunc(inspector *asynq.Inspector) http.H
 		}
 	}
 }
+
+func newRunSchedulerEntryHandlerFunc(inspector *asynq.Inspector, client *asynq.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		entryID := mux.Vars(r)["entry_id"]
+		if entryID == "" {
+			http.Error(w, "entry_id is required", http.StatusBadRequest)
+			return
+		}
+		entries, err := inspector.SchedulerEntries()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var target *asynq.SchedulerEntry
+		for _, e := range entries {
+			if e.ID == entryID {
+				target = e
+				break
+			}
+		}
+		if target == nil {
+			http.Error(w, "scheduler entry not found", http.StatusNotFound)
+			return
+		}
+		task := asynq.NewTask(target.Task.Type(), target.Task.Payload())
+		if _, err := client.Enqueue(task, target.Opts...); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
