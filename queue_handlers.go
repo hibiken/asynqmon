@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/mux"
 
@@ -15,21 +16,69 @@ import (
 //   - http.Handler(s) for queue related endpoints
 // ****************************************************************************
 
-func newListQueuesHandlerFunc(inspector *asynq.Inspector) http.HandlerFunc {
+const queueInfoBatchSize = 10
+
+type queueInfoFetcher interface {
+	Queues() ([]string, error)
+	GetQueueInfo(string) (*asynq.QueueInfo, error)
+}
+
+func fetchQueueStateSnapshotsInBatches(inspector queueInfoFetcher, qnames []string, batchSize int) ([]*queueStateSnapshot, error) {
+	if batchSize <= 0 {
+		batchSize = 1
+	}
+
+	snapshots := make([]*queueStateSnapshot, len(qnames))
+	for start := 0; start < len(qnames); start += batchSize {
+		end := start + batchSize
+		if end > len(qnames) {
+			end = len(qnames)
+		}
+
+		var (
+			wg       sync.WaitGroup
+			mu       sync.Mutex
+			batchErr error
+		)
+
+		for i := start; i < end; i++ {
+			wg.Add(1)
+			go func(index int, qname string) {
+				defer wg.Done()
+
+				qinfo, err := inspector.GetQueueInfo(qname)
+				if err != nil {
+					mu.Lock()
+					if batchErr == nil {
+						batchErr = err
+					}
+					mu.Unlock()
+					return
+				}
+				snapshots[index] = toQueueStateSnapshot(qinfo)
+			}(i, qnames[i])
+		}
+
+		wg.Wait()
+		if batchErr != nil {
+			return nil, batchErr
+		}
+	}
+
+	return snapshots, nil
+}
+
+func newListQueuesHandlerFunc(inspector queueInfoFetcher) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		qnames, err := inspector.Queues()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		snapshots := make([]*queueStateSnapshot, len(qnames))
-		for i, qname := range qnames {
-			qinfo, err := inspector.GetQueueInfo(qname)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			snapshots[i] = toQueueStateSnapshot(qinfo)
+		snapshots, err := fetchQueueStateSnapshotsInBatches(inspector, qnames, queueInfoBatchSize)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		payload := map[string]interface{}{"queues": snapshots}
 		json.NewEncoder(w).Encode(payload)
