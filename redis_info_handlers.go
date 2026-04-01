@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-redis/redis/v8"
-
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 )
 
 // ****************************************************************************

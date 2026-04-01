@@ -119,7 +119,7 @@ To connect to a **single redis server**, use either `--redis-url` or (`--redis-a
 Example:
 
 ```sh
-$ ./asynqmon --redis-url=redis://:mypassword@]localhost:6380/2
+$ ./asynqmon --redis-url=redis://:mypassword@localhost:6380/2
 
 $ ./asynqmon --redis-addr=localhost:6380 --redis-db=2 --redis-password=mypassword
 ```
@@ -252,6 +252,35 @@ func main() {
 	log.Fatal(srv.ListenAndServe())
 }
 ```
+
+Example with [labstack/echo](https://github.com/labstack/echo)):
+
+
+```go
+package main
+
+import (
+	"github.com/labstack/echo/v4"
+	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
+)
+
+func main() {
+        e := echo.New()
+
+	mon := asynqmon.New(asynqmon.Options{
+		RootPath: "/monitoring/tasks",
+		RedisConnOpt: asynq.RedisClientOpt{
+			Addr: ":6379",
+			Password: "",
+			DB: 0,
+		},
+	})
+	e.Any("/monitoring/tasks/*", echo.WrapHandler(mon))
+	e.Start(":8080")
+}
+```
+
 
 ## License
 
