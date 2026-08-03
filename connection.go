@@ -212,7 +212,7 @@ func connectionMiddleware(reg *connectionRegistry) mux.MiddlewareFunc {
 				return
 			}
 			if reg.Len() == 0 {
-				http.Error(w, "no redis connections configured; add one via /api/connections", http.StatusServiceUnavailable)
+				http.Error(w, "no redis connections configured; set ASYNQMON_REDIS_CONNECTIONS", http.StatusServiceUnavailable)
 				return
 			}
 			name := r.Header.Get(connectionHeader)

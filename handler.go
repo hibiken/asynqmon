@@ -20,16 +20,13 @@ type Options struct {
 
 	// RedisConnOpt specifies the connection to a redis-server or redis-cluster.
 	//
-	// Required when RedisConnections is empty and ConfigPath does not already list connections.
+	// Required when RedisConnections is empty.
 	RedisConnOpt asynq.RedisConnOpt
 
 	// RedisConnections is an optional list of named Redis endpoints.
 	// When set, these are loaded into the connection registry at startup.
+	// Typical source: ASYNQMON_REDIS_CONNECTIONS env var / --redis-connections flag.
 	RedisConnections []RedisConnection
-
-	// ConfigPath is the YAML file used to persist connections created via the UI.
-	// When the file already contains connections, they are loaded on startup.
-	ConfigPath string
 
 	// PayloadFormatter is used to convert payload bytes to string shown in the UI.
 	//
@@ -73,18 +70,6 @@ func New(opts Options) *HTTPHandler {
 
 	reg := newConnectionRegistry()
 
-	if opts.ConfigPath != "" {
-		persisted, err := loadConnectionsFile(opts.ConfigPath)
-		if err != nil {
-			panic(fmt.Sprintf("asynqmon.New: load config: %v", err))
-		}
-		for _, c := range persisted {
-			if err := reg.Add(c.Name, c.Addr, nil); err != nil {
-				panic(fmt.Sprintf("asynqmon.New: add connection %q: %v", c.Name, err))
-			}
-		}
-	}
-
 	for _, c := range opts.RedisConnections {
 		opt := c.ConnOpt
 		if err := reg.Add(c.Name, c.Addr, opt); err != nil {
@@ -92,14 +77,14 @@ func New(opts Options) *HTTPHandler {
 		}
 	}
 
-	if reg.Len() == 0 && opts.RedisConnOpt != nil && opts.ConfigPath == "" {
+	if reg.Len() == 0 && opts.RedisConnOpt != nil {
 		if err := reg.Add("default", addrFromConnOpt(opts.RedisConnOpt), opts.RedisConnOpt); err != nil {
 			panic(fmt.Sprintf("asynqmon.New: add default connection: %v", err))
 		}
 	}
 
-	if reg.Len() == 0 && opts.ConfigPath == "" {
-		panic("asynqmon.New: RedisConnOpt, RedisConnections, or ConfigPath is required")
+	if reg.Len() == 0 {
+		panic("asynqmon.New: RedisConnOpt or RedisConnections is required")
 	}
 
 	return &HTTPHandler{
@@ -139,10 +124,8 @@ func muxRouter(opts Options, reg *connectionRegistry) *mux.Router {
 	api := router.PathPrefix("/api").Subrouter()
 	api.Use(connectionMiddleware(reg))
 
-	// Connection management (no selected-connection header required).
+	// Connection listing (no selected-connection header required).
 	api.HandleFunc("/connections", newListConnectionsHandlerFunc(reg)).Methods("GET")
-	api.HandleFunc("/connections", newCreateConnectionHandlerFunc(reg, opts.ConfigPath)).Methods("POST")
-	api.HandleFunc("/connections/{name}", newDeleteConnectionHandlerFunc(reg, opts.ConfigPath)).Methods("DELETE")
 
 	// Queue endpoints.
 	api.HandleFunc("/queues", adaptInspector(newListQueuesHandlerFunc)).Methods("GET")

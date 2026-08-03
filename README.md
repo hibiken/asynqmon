@@ -101,6 +101,7 @@ _Note_: Use `--redis-url` to specify address, db-number, and password with one f
 | Flag                              | Env                       | Description                                                                                                                  | Default          |
 | --------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | `--port`(int)                     | `PORT`                    | port number to use for web ui server                                                                                         | 8080             |
+| `--redis-connections`(string)     | `ASYNQMON_REDIS_CONNECTIONS` | named redis connections as a map: JSON `{"a":"host:6379"}` or pairs `a=host:6379,b=host:6380`                            | ""               |
 | `---redis-url`(string)            | `REDIS_URL`               | URL to redis or sentinel server. See [godoc](https://pkg.go.dev/github.com/hibiken/asynq#ParseRedisURI) for supported format | ""               |
 | `--redis-addr`(string)            | `REDIS_ADDR`              | address of redis server to connect to                                                                                        | "127.0.0.1:6379" |
 | `--redis-db`(int)                 | `REDIS_DB`                | redis database number                                                                                                        | 0                |
@@ -139,6 +140,30 @@ Example:
 ```sh
 $ ./asynqmon --redis-cluster-nodes=localhost:7000,localhost:7001,localhost:7002,localhost:7003,localhost:7004,localhost:7006
 ```
+
+### Multiple Redis connections
+
+To monitor several Redis instances from one asynqmon, set `ASYNQMON_REDIS_CONNECTIONS` to a **map** of connection name → address.
+
+JSON map (closest to a real map in `.env`):
+
+```sh
+ASYNQMON_REDIS_CONNECTIONS={"redis-a":"redis-a:6379","redis-b":"redis-b:6379"}
+```
+
+Or comma-separated `name=addr` pairs:
+
+```sh
+ASYNQMON_REDIS_CONNECTIONS=redis-a=redis-a:6379,redis-b=redis-b:6379
+```
+
+Same value works as a flag:
+
+```sh
+$ ./asynqmon --redis-connections='redis-a=127.0.0.1:6379,redis-b=127.0.0.1:6380'
+```
+
+Copy `.env.example` to `.env` for local docker-compose.
 
 ### Integration with Prometheus
 

@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
 )
 
 func TestParseFlags(t *testing.T) {
@@ -23,7 +24,7 @@ func TestParseFlags(t *testing.T) {
 
 				// Default values
 				Port:                  8080,
-				ConfigPath:            "",
+				RedisConnections:      "",
 				RedisPassword:         "",
 				RedisTLS:              "",
 				RedisURL:              "",
@@ -132,6 +133,50 @@ func TestMakeRedisConnOpt(t *testing.T) {
 			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreUnexported(tls.Config{})); diff != "" {
 				t.Errorf("diff found: want=%v, got=%v; (-want,+got)\n%s",
 					tc.want, got, diff)
+			}
+		})
+	}
+}
+
+func TestParseRedisConnections(t *testing.T) {
+	tests := []struct {
+		raw     string
+		want    []asynqmon.RedisConnection
+		wantErr bool
+	}{
+		{raw: "", want: nil},
+		{
+			raw: `{"redis-b":"redis-b:6379","redis-a":"redis-a:6379"}`,
+			want: []asynqmon.RedisConnection{
+				{Name: "redis-a", Addr: "redis-a:6379"},
+				{Name: "redis-b", Addr: "redis-b:6379"},
+			},
+		},
+		{
+			raw: "redis-a=redis-a:6379,redis-b=redis-b:6379",
+			want: []asynqmon.RedisConnection{
+				{Name: "redis-a", Addr: "redis-a:6379"},
+				{Name: "redis-b", Addr: "redis-b:6379"},
+			},
+		},
+		{raw: "not-a-pair", wantErr: true},
+		{raw: `{"redis-a":""}`, wantErr: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.raw, func(t *testing.T) {
+			got, err := parseRedisConnections(tc.raw)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected error, got %#v", got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("(-want,+got)\n%s", diff)
 			}
 		})
 	}
