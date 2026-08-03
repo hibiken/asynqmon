@@ -163,7 +163,12 @@ Same value works as a flag:
 $ ./asynqmon --redis-connections='redis-a=127.0.0.1:6379,redis-b=127.0.0.1:6380'
 ```
 
-Copy `.env.example` to `.env` for local docker-compose.
+Example `.env`:
+
+```sh
+ASYNQMON_REDIS_CONNECTIONS=redis-a=redis-a:6379,redis-b=redis-b:6379
+PORT=8080
+```
 
 ### Integration with Prometheus
 
