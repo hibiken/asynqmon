@@ -8,17 +8,24 @@ import parseFlagsUnderWindow from "./parseFlags";
 import * as serviceWorker from "./serviceWorker";
 import { saveState } from "./localStorage";
 import { SettingsState } from "./reducers/settingsReducer";
+import { ConnectionsState } from "./reducers/connectionsReducer";
 
 parseFlagsUnderWindow();
 
 let currentSettings: SettingsState | undefined = undefined;
+let currentConnections: ConnectionsState | undefined = undefined;
 store.subscribe(() => {
   const prevSettings = currentSettings;
-  currentSettings = store.getState().settings;
+  const prevConnections = currentConnections;
+  const state = store.getState();
+  currentSettings = state.settings;
+  currentConnections = state.connections;
 
-  // Write to local-storage only when settings have changed.
-  if (prevSettings !== currentSettings) {
-    saveState(store.getState());
+  if (
+    prevSettings !== currentSettings ||
+    prevConnections !== currentConnections
+  ) {
+    saveState(state);
   }
 });
 

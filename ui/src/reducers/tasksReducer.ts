@@ -160,6 +160,10 @@ import {
   ARCHIVE_AGGREGATING_TASK_SUCCESS,
   DELETE_AGGREGATING_TASK_SUCCESS,
 } from "../actions/tasksActions";
+import {
+  CONNECTION_SWITCHED,
+  ConnectionsActionTypes,
+} from "../actions/connectionsActions";
 import { TaskInfo } from "../api";
 
 export interface TaskInfoExtended extends TaskInfo {
@@ -291,9 +295,12 @@ const initialState: TasksState = {
 
 function tasksReducer(
   state = initialState,
-  action: TasksActionTypes
+  action: TasksActionTypes | ConnectionsActionTypes
 ): TasksState {
   switch (action.type) {
+    case CONNECTION_SWITCHED:
+      return initialState;
+
     case GET_TASK_INFO_BEGIN:
       return {
         ...state,

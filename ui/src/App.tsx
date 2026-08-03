@@ -30,6 +30,7 @@ import { isDarkTheme, useTheme } from "./theme";
 import { closeSnackbar } from "./actions/snackbarActions";
 import { toggleDrawer } from "./actions/settingsActions";
 import ListItemLink from "./components/ListItemLink";
+import ConnectionSelector from "./components/ConnectionSelector";
 import SchedulersView from "./views/SchedulersView";
 import DashboardView from "./views/DashboardView";
 import TasksView from "./views/TasksView";
@@ -179,6 +180,7 @@ function App(props: ConnectedProps<typeof connector>) {
               ) : (
                 <Logo width={200} height={48} />
               )}
+              <ConnectionSelector />
             </Toolbar>
           </AppBar>
           <div className={classes.mainContainer}>

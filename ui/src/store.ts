@@ -9,6 +9,7 @@ import snackbarReducer from "./reducers/snackbarReducer";
 import queueStatsReducer from "./reducers/queueStatsReducer";
 import redisInfoReducer from "./reducers/redisInfoReducer";
 import metricsReducer from "./reducers/metricsReducer";
+import connectionsReducer from "./reducers/connectionsReducer";
 import { loadState } from "./localStorage";
 
 const rootReducer = combineReducers({
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
   queueStats: queueStatsReducer,
   redis: redisInfoReducer,
   metrics: metricsReducer,
+  connections: connectionsReducer,
 });
 
 const preloadedState = loadState();

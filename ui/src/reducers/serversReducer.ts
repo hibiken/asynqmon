@@ -4,6 +4,10 @@ import {
   LIST_SERVERS_SUCCESS,
   ServersActionTypes,
 } from "../actions/serversActions";
+import {
+  CONNECTION_SWITCHED,
+  ConnectionsActionTypes,
+} from "../actions/connectionsActions";
 import { ServerInfo } from "../api";
 
 interface ServersState {
@@ -20,9 +24,12 @@ const initialState: ServersState = {
 
 export default function serversReducer(
   state = initialState,
-  action: ServersActionTypes
+  action: ServersActionTypes | ConnectionsActionTypes
 ): ServersState {
   switch (action.type) {
+    case CONNECTION_SWITCHED:
+      return { ...initialState, loading: true };
+
     case LIST_SERVERS_BEGIN:
       return {
         ...state,

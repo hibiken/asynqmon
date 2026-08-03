@@ -4,6 +4,10 @@ import {
   GET_REDIS_INFO_SUCCESS,
   RedisInfoActionTypes,
 } from "../actions/redisInfoActions";
+import {
+  CONNECTION_SWITCHED,
+  ConnectionsActionTypes,
+} from "../actions/connectionsActions";
 import { QueueLocation, RedisInfo } from "../api";
 
 interface RedisInfoState {
@@ -30,9 +34,12 @@ const initialState: RedisInfoState = {
 
 export default function redisInfoReducer(
   state = initialState,
-  action: RedisInfoActionTypes
+  action: RedisInfoActionTypes | ConnectionsActionTypes
 ): RedisInfoState {
   switch (action.type) {
+    case CONNECTION_SWITCHED:
+      return { ...initialState, loading: true };
+
     case GET_REDIS_INFO_BEGIN:
       return {
         ...state,

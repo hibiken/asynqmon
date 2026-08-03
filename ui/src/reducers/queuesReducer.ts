@@ -3,6 +3,10 @@ import {
   LIST_GROUPS_SUCCESS,
 } from "../actions/groupsActions";
 import {
+  CONNECTION_SWITCHED,
+  ConnectionsActionTypes,
+} from "../actions/connectionsActions";
+import {
   LIST_QUEUES_SUCCESS,
   LIST_QUEUES_BEGIN,
   QueuesActionTypes,
@@ -86,9 +90,16 @@ const initialState: QueuesState = { data: [], loading: false, error: "" };
 
 function queuesReducer(
   state = initialState,
-  action: QueuesActionTypes | TasksActionTypes | GroupsActionTypes
+  action:
+    | QueuesActionTypes
+    | TasksActionTypes
+    | GroupsActionTypes
+    | ConnectionsActionTypes
 ): QueuesState {
   switch (action.type) {
+    case CONNECTION_SWITCHED:
+      return { ...initialState, loading: true };
+
     case LIST_QUEUES_BEGIN:
       return { ...state, loading: true };
 

@@ -64,6 +64,7 @@ function mapStateToProps(state: AppState) {
     data: state.metrics.data,
     pollInterval: state.settings.pollInterval,
     queues: state.queues.data.map((q) => q.name),
+    selectedConnection: state.connections.selected,
   };
 }
 
@@ -87,7 +88,13 @@ function MetricsView(props: Props) {
   const durationStr = query.get(DURATION_URL_PARAM_KEY);
   const duration = durationStr ? parseFloat(durationStr) : 60 * 60; // default to 1h
 
-  const { pollInterval, getMetricsAsync, listQueuesAsync, data } = props;
+  const {
+    pollInterval,
+    getMetricsAsync,
+    listQueuesAsync,
+    data,
+    selectedConnection,
+  } = props;
 
   const [endTimeSec, setEndTimeSec] = React.useState(endTime);
   const [durationSec, setDurationSec] = React.useState(duration);
@@ -147,11 +154,18 @@ function MetricsView(props: Props) {
 
   React.useEffect(() => {
     listQueuesAsync();
-  }, [listQueuesAsync]);
+  }, [listQueuesAsync, selectedConnection]);
 
   React.useEffect(() => {
     getMetricsAsync(endTimeSec, durationSec, selectedQueues);
-  }, [pollInterval, getMetricsAsync, durationSec, endTimeSec, selectedQueues]);
+  }, [
+    pollInterval,
+    getMetricsAsync,
+    durationSec,
+    endTimeSec,
+    selectedQueues,
+    selectedConnection,
+  ]);
 
   return (
     <Container maxWidth="lg" className={classes.container}>

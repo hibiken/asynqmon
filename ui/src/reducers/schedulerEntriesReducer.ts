@@ -8,6 +8,10 @@ import {
   LIST_SCHEDULER_ENTRIES_SUCCESS,
   SchedulerEntriesActionTypes,
 } from "../actions/schedulerEntriesActions";
+import {
+  CONNECTION_SWITCHED,
+  ConnectionsActionTypes,
+} from "../actions/connectionsActions";
 import { SchedulerEnqueueEvent, SchedulerEntry } from "../api";
 
 interface SchedulerEntriesState {
@@ -35,9 +39,12 @@ const initialState: SchedulerEntriesState = {
 
 function schedulerEntriesReducer(
   state = initialState,
-  action: SchedulerEntriesActionTypes
+  action: SchedulerEntriesActionTypes | ConnectionsActionTypes
 ): SchedulerEntriesState {
   switch (action.type) {
+    case CONNECTION_SWITCHED:
+      return { ...initialState, loading: true };
+
     case LIST_SCHEDULER_ENTRIES_BEGIN:
       return {
         ...state,
