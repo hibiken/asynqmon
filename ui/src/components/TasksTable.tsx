@@ -150,28 +150,28 @@ export default function TasksTable(props: Props) {
       disabled: exportAllPending,
     });
   }
-  if (props.deleteAllTasks) {
+  if (!window.READ_ONLY && props.deleteAllTasks) {
     allActions.push({
       label: "Delete All",
       onClick: createAllActionHandler(props.deleteAllTasks),
       disabled: props.allActionPending,
     });
   }
-  if (props.archiveAllTasks) {
+  if (!window.READ_ONLY && props.archiveAllTasks) {
     allActions.push({
       label: "Archive All",
       onClick: createAllActionHandler(props.archiveAllTasks),
       disabled: props.allActionPending,
     });
   }
-  if (props.runAllTasks) {
+  if (!window.READ_ONLY && props.runAllTasks) {
     allActions.push({
       label: "Run All",
       onClick: createAllActionHandler(props.runAllTasks),
       disabled: props.allActionPending,
     });
   }
-  if (props.cancelAllTasks) {
+  if (!window.READ_ONLY && props.cancelAllTasks) {
     allActions.push({
       label: "Cancel All",
       onClick: createAllActionHandler(props.cancelAllTasks),
@@ -187,7 +187,7 @@ export default function TasksTable(props: Props) {
       onClick: handleDownloadSelected,
     },
   ];
-  if (props.batchDeleteTasks) {
+  if (!window.READ_ONLY && props.batchDeleteTasks) {
     batchActions.push({
       tooltip: "Delete",
       icon: <DeleteIcon />,
@@ -195,7 +195,7 @@ export default function TasksTable(props: Props) {
       onClick: createBatchActionHandler(props.batchDeleteTasks),
     });
   }
-  if (props.batchArchiveTasks) {
+  if (!window.READ_ONLY && props.batchArchiveTasks) {
     batchActions.push({
       tooltip: "Archive",
       icon: <ArchiveIcon />,
@@ -203,7 +203,7 @@ export default function TasksTable(props: Props) {
       onClick: createBatchActionHandler(props.batchArchiveTasks),
     });
   }
-  if (props.batchRunTasks) {
+  if (!window.READ_ONLY && props.batchRunTasks) {
     batchActions.push({
       tooltip: "Run",
       icon: <PlayArrowIcon />,
@@ -211,7 +211,7 @@ export default function TasksTable(props: Props) {
       onClick: createBatchActionHandler(props.batchRunTasks),
     });
   }
-  if (props.batchCancelTasks) {
+  if (!window.READ_ONLY && props.batchCancelTasks) {
     batchActions.push({
       tooltip: "Cancel",
       icon: <CancelIcon />,
@@ -252,13 +252,11 @@ export default function TasksTable(props: Props) {
   const numSelected = selectedIds.length;
   return (
     <div>
-      {!window.READ_ONLY && (
-        <TableActions
-          showIconButtons={numSelected > 0}
-          iconButtonActions={batchActions}
-          menuItemActions={allActions}
-        />
-      )}
+      <TableActions
+        showIconButtons={numSelected > 0}
+        iconButtonActions={batchActions}
+        menuItemActions={allActions}
+      />
       <TableContainer component={Paper}>
         <Table
           stickyHeader={true}
@@ -268,23 +266,21 @@ export default function TasksTable(props: Props) {
         >
           <TableHead>
             <TableRow>
-              {!window.READ_ONLY && (
-                <TableCell
-                  padding="checkbox"
-                  classes={{ stickyHeader: classes.stickyHeaderCell }}
-                >
-                  <IconButton>
-                    <Checkbox
-                      indeterminate={numSelected > 0 && numSelected < rowCount}
-                      checked={rowCount > 0 && numSelected === rowCount}
-                      onChange={handleSelectAllClick}
-                      inputProps={{
-                        "aria-label": "select all tasks shown in the table",
-                      }}
-                    />
-                  </IconButton>
-                </TableCell>
-              )}
+              <TableCell
+                padding="checkbox"
+                classes={{ stickyHeader: classes.stickyHeaderCell }}
+              >
+                <IconButton>
+                  <Checkbox
+                    indeterminate={numSelected > 0 && numSelected < rowCount}
+                    checked={rowCount > 0 && numSelected === rowCount}
+                    onChange={handleSelectAllClick}
+                    inputProps={{
+                      "aria-label": "select all tasks shown in the table",
+                    }}
+                  />
+                </IconButton>
+              </TableCell>
               {props.columns
                 .filter((col) => {
                   // Filter out actions column in readonly mode.

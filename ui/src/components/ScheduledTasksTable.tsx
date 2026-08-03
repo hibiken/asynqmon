@@ -85,18 +85,16 @@ function Row(props: RowProps) {
       selected={props.isSelected}
       onClick={() => history.push(taskDetailsPath(task.queue, task.id))}
     >
-      {!window.READ_ONLY && (
-        <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-          <IconButton>
-            <Checkbox
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                props.onSelectChange(event.target.checked)
-              }
-              checked={props.isSelected}
-            />
-          </IconButton>
-        </TableCell>
-      )}
+      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+        <IconButton>
+          <Checkbox
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              props.onSelectChange(event.target.checked)
+            }
+            checked={props.isSelected}
+          />
+        </IconButton>
+      </TableCell>
       <TableCell component="th" scope="row" className={classes.idCell}>
         <div className={classes.IdGroup}>
           {uuidPrefix(task.id)}

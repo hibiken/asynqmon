@@ -1,12 +1,12 @@
 {
   "files": {
-    "main.js": "/[[.RootPath]]/static/js/main.fc5cae10.js",
+    "main.js": "/[[.RootPath]]/static/js/main.b8f1b1b4.js",
     "static/media/logo-color.svg": "/[[.RootPath]]/static/media/logo-color.c2b0c1f393a71462ee60d37c36104ae6.svg",
     "static/media/logo-white.svg": "/[[.RootPath]]/static/media/logo-white.3fa2ac5555c613ec4b23a244f14113de.svg",
     "index.html": "/[[.RootPath]]/index.html",
-    "main.fc5cae10.js.map": "/[[.RootPath]]/static/js/main.fc5cae10.js.map"
+    "main.b8f1b1b4.js.map": "/[[.RootPath]]/static/js/main.b8f1b1b4.js.map"
   },
   "entrypoints": [
-    "static/js/main.fc5cae10.js"
+    "static/js/main.b8f1b1b4.js"
   ]
 }
