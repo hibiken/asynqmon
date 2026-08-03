@@ -542,6 +542,27 @@ export async function listCompletedTasks(
   return resp.data;
 }
 
+export async function exportAllTasksCSV(
+  qname: string,
+  state: string
+): Promise<void> {
+  const resp = await axios({
+    method: "get",
+    url: `${getBaseUrl()}/queues/${qname}/tasks:export`,
+    params: { state },
+    responseType: "blob",
+  });
+  const blob = new Blob([resp.data], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", `${qname}-${state}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export async function listAggregatingTasks(
   qname: string,
   gname: string,
