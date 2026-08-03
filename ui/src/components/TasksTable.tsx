@@ -250,22 +250,15 @@ export default function TasksTable(props: Props) {
 
   const rowCount = props.tasks.length;
   const numSelected = selectedIds.length;
-  const readOnly = window.READ_ONLY;
   return (
     <div>
-      <TableActions
-        showIconButtons={numSelected > 0}
-        iconButtonActions={
-          readOnly
-            ? batchActions.filter((a) => a.tooltip === "Download CSV")
-            : batchActions
-        }
-        menuItemActions={
-          readOnly
-            ? allActions.filter((a) => a.label === "Download All")
-            : allActions
-        }
-      />
+      {!window.READ_ONLY && (
+        <TableActions
+          showIconButtons={numSelected > 0}
+          iconButtonActions={batchActions}
+          menuItemActions={allActions}
+        />
+      )}
       <TableContainer component={Paper}>
         <Table
           stickyHeader={true}
@@ -275,25 +268,27 @@ export default function TasksTable(props: Props) {
         >
           <TableHead>
             <TableRow>
-              <TableCell
-                padding="checkbox"
-                classes={{ stickyHeader: classes.stickyHeaderCell }}
-              >
-                <IconButton>
-                  <Checkbox
-                    indeterminate={numSelected > 0 && numSelected < rowCount}
-                    checked={rowCount > 0 && numSelected === rowCount}
-                    onChange={handleSelectAllClick}
-                    inputProps={{
-                      "aria-label": "select all tasks shown in the table",
-                    }}
-                  />
-                </IconButton>
-              </TableCell>
+              {!window.READ_ONLY && (
+                <TableCell
+                  padding="checkbox"
+                  classes={{ stickyHeader: classes.stickyHeaderCell }}
+                >
+                  <IconButton>
+                    <Checkbox
+                      indeterminate={numSelected > 0 && numSelected < rowCount}
+                      checked={rowCount > 0 && numSelected === rowCount}
+                      onChange={handleSelectAllClick}
+                      inputProps={{
+                        "aria-label": "select all tasks shown in the table",
+                      }}
+                    />
+                  </IconButton>
+                </TableCell>
+              )}
               {props.columns
                 .filter((col) => {
                   // Filter out actions column in readonly mode.
-                  return !readOnly || col.key !== "actions";
+                  return !window.READ_ONLY || col.key !== "actions";
                 })
                 .map((col) => (
                   <TableCell
