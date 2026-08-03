@@ -1,7 +1,5 @@
 import {
   ConnectionsActionTypes,
-  CREATE_CONNECTION_SUCCESS,
-  DELETE_CONNECTION_SUCCESS,
   LIST_CONNECTIONS_BEGIN,
   LIST_CONNECTIONS_ERROR,
   LIST_CONNECTIONS_SUCCESS,
@@ -54,25 +52,6 @@ function connectionsReducer(
 
     case SELECT_CONNECTION:
       return { ...state, selected: action.name };
-
-    case CREATE_CONNECTION_SUCCESS:
-      return {
-        ...state,
-        connections: [...state.connections, action.connection],
-        selected: action.connection.name,
-        error: "",
-      };
-
-    case DELETE_CONNECTION_SUCCESS: {
-      const connections = state.connections.filter(
-        (c) => c.name !== action.name
-      );
-      const selected =
-        state.selected === action.name
-          ? connections[0]?.name || ""
-          : state.selected;
-      return { ...state, connections, selected };
-    }
 
     default:
       return state;

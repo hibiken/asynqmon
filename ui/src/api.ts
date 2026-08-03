@@ -1123,25 +1123,6 @@ export async function listConnections(): Promise<ListConnectionsResponse> {
   return resp.data;
 }
 
-export async function createConnection(
-  name: string,
-  addr: string
-): Promise<RedisConnection> {
-  const resp = await axios({
-    method: "post",
-    url: `${getBaseUrl()}/connections`,
-    data: { name, addr },
-  });
-  return resp.data;
-}
-
-export async function deleteConnection(name: string): Promise<void> {
-  await axios({
-    method: "delete",
-    url: `${getBaseUrl()}/connections/${encodeURIComponent(name)}`,
-  });
-}
-
 interface MetricsEndpointParams {
   endtime: number;
   duration: number;
