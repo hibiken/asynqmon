@@ -3,13 +3,11 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -27,10 +25,11 @@ type Config struct {
 	// Server port
 	Port int
 
-	// RedisConnections is a map of name→addr encoded as a string.
+	// RedisConnections is a map of name→connection encoded as a string.
 	// Accepted formats:
-	//   JSON:   {"redis-a":"redis-a:6379","redis-b":"redis-b:6379"}
-	//   pairs:  redis-a=redis-a:6379,redis-b=redis-b:6379
+	//   JSON strings:  {"redis-a":"host:6379","redis-b":"redis://:pass@host:6380/0"}
+	//   JSON objects:  {"redis-a":{"addr":"host:6379","password":"secret","db":0}}
+	//   pairs:         redis-a=host:6379,redis-b=redis://:pass@host:6380/0
 	RedisConnections string
 
 	// Redis connection options
@@ -68,7 +67,7 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 
 	var conf Config
 	flags.IntVar(&conf.Port, "port", getEnvOrDefaultInt("PORT", 8080), "port number to use for web ui server")
-	flags.StringVar(&conf.RedisConnections, "redis-connections", getEnvDefaultString("ASYNQMON_REDIS_CONNECTIONS", ""), "named redis connections as JSON map or name=addr pairs (e.g. redis-a=host:6379,redis-b=host:6380)")
+	flags.StringVar(&conf.RedisConnections, "redis-connections", getEnvDefaultString("ASYNQMON_REDIS_CONNECTIONS", ""), "named redis connections as JSON map (string or {addr,password,db}) or name=addr/url pairs")
 	flags.StringVar(&conf.RedisAddr, "redis-addr", getEnvDefaultString("REDIS_ADDR", "127.0.0.1:6379"), "address of redis server to connect to")
 	flags.IntVar(&conf.RedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
 	flags.StringVar(&conf.RedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
@@ -140,60 +139,6 @@ func makeRedisConnOpt(cfg *Config) (asynq.RedisConnOpt, error) {
 	return connOpt, nil
 }
 
-// parseRedisConnections turns a map-like string into named Redis endpoints.
-// It accepts either a JSON object or comma-separated name=addr pairs.
-func parseRedisConnections(raw string) ([]asynqmon.RedisConnection, error) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" {
-		return nil, nil
-	}
-
-	if strings.HasPrefix(raw, "{") {
-		var m map[string]string
-		if err := json.Unmarshal([]byte(raw), &m); err != nil {
-			return nil, fmt.Errorf("parse JSON map: %w", err)
-		}
-		names := make([]string, 0, len(m))
-		for name := range m {
-			names = append(names, name)
-		}
-		sort.Strings(names)
-		out := make([]asynqmon.RedisConnection, 0, len(names))
-		for _, name := range names {
-			name = strings.TrimSpace(name)
-			addr := strings.TrimSpace(m[name])
-			if name == "" || addr == "" {
-				return nil, fmt.Errorf("connection entries need non-empty name and addr")
-			}
-			out = append(out, asynqmon.RedisConnection{Name: name, Addr: addr})
-		}
-		return out, nil
-	}
-
-	parts := strings.Split(raw, ",")
-	out := make([]asynqmon.RedisConnection, 0, len(parts))
-	for _, part := range parts {
-		part = strings.TrimSpace(part)
-		if part == "" {
-			continue
-		}
-		name, addr, ok := strings.Cut(part, "=")
-		if !ok {
-			return nil, fmt.Errorf("expected name=addr, got %q", part)
-		}
-		name = strings.TrimSpace(name)
-		addr = strings.TrimSpace(addr)
-		if name == "" || addr == "" {
-			return nil, fmt.Errorf("connection entries need non-empty name and addr (got %q)", part)
-		}
-		out = append(out, asynqmon.RedisConnection{Name: name, Addr: addr})
-	}
-	if len(out) == 0 {
-		return nil, fmt.Errorf("no connections found")
-	}
-	return out, nil
-}
-
 func main() {
 	cfg, output, err := parseFlags(os.Args[0], os.Args[1:])
 	if err == flag.ErrHelp {
@@ -210,10 +155,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	namedConns, err := parseRedisConnections(cfg.RedisConnections)
+	namedCfg, err := asynqmon.ParseRedisConnectionsConfig(cfg.RedisConnections)
 	if err != nil {
 		log.Fatalf("invalid --redis-connections / ASYNQMON_REDIS_CONNECTIONS: %v", err)
 	}
+	namedConns := namedCfg.Connections()
 
 	h := asynqmon.New(asynqmon.Options{
 		RedisConnOpt:      redisConnOpt,

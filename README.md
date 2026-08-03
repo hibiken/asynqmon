@@ -101,7 +101,7 @@ _Note_: Use `--redis-url` to specify address, db-number, and password with one f
 | Flag                              | Env                       | Description                                                                                                                  | Default          |
 | --------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | `--port`(int)                     | `PORT`                    | port number to use for web ui server                                                                                         | 8080             |
-| `--redis-connections`(string)     | `ASYNQMON_REDIS_CONNECTIONS` | named redis connections as a map: JSON `{"a":"host:6379"}` or pairs `a=host:6379,b=host:6380`                            | ""               |
+| `--redis-connections`(string)     | `ASYNQMON_REDIS_CONNECTIONS` | named redis map: JSON `{"a":{"addr":"host:6379","password":"x"}}` or pairs / redis URLs                                  | ""               |
 | `---redis-url`(string)            | `REDIS_URL`               | URL to redis or sentinel server. See [godoc](https://pkg.go.dev/github.com/hibiken/asynq#ParseRedisURI) for supported format | ""               |
 | `--redis-addr`(string)            | `REDIS_ADDR`              | address of redis server to connect to                                                                                        | "127.0.0.1:6379" |
 | `--redis-db`(int)                 | `REDIS_DB`                | redis database number                                                                                                        | 0                |
@@ -143,32 +143,46 @@ $ ./asynqmon --redis-cluster-nodes=localhost:7000,localhost:7001,localhost:7002,
 
 ### Multiple Redis connections
 
-To monitor several Redis instances from one asynqmon, set `ASYNQMON_REDIS_CONNECTIONS` to a **map** of connection name → address.
+To monitor several Redis instances from one asynqmon, set `ASYNQMON_REDIS_CONNECTIONS` to a **map** of connection name → connection details.
 
-JSON map (closest to a real map in `.env`):
+JSON with password / db (recommended when auth is needed):
+
+```sh
+ASYNQMON_REDIS_CONNECTIONS={"redis-a":{"addr":"redis-a:6379","password":"secret","db":0},"redis-b":{"addr":"redis-b:6379","password":"other"}}
+```
+
+JSON with plain addresses (no auth):
 
 ```sh
 ASYNQMON_REDIS_CONNECTIONS={"redis-a":"redis-a:6379","redis-b":"redis-b:6379"}
 ```
 
-Or comma-separated `name=addr` pairs:
+Redis URL values also work (password goes in the URI):
 
 ```sh
-ASYNQMON_REDIS_CONNECTIONS=redis-a=redis-a:6379,redis-b=redis-b:6379
+ASYNQMON_REDIS_CONNECTIONS={"prod":"redis://:secret@redis-a:6379/0","staging":"redis://redis-b:6379/0"}
+```
+
+Or comma-separated `name=addr|url` pairs:
+
+```sh
+ASYNQMON_REDIS_CONNECTIONS=redis-a=redis-a:6379,redis-b=redis://:secret@redis-b:6379/0
 ```
 
 Same value works as a flag:
 
 ```sh
-$ ./asynqmon --redis-connections='redis-a=127.0.0.1:6379,redis-b=127.0.0.1:6380'
+$ ./asynqmon --redis-connections='redis-a=127.0.0.1:6379,redis-b=redis://:pass@127.0.0.1:6380/0'
 ```
 
 Example `.env`:
 
 ```sh
-ASYNQMON_REDIS_CONNECTIONS=redis-a=redis-a:6379,redis-b=redis-b:6379
+ASYNQMON_REDIS_CONNECTIONS={"redis-a":{"addr":"redis-a:6379","password":"secret"},"redis-b":{"addr":"redis-b:6379","password":"secret"}}
 PORT=8080
 ```
+
+Passwords are never exposed in the Web UI connection list.
 
 ### Integration with Prometheus
 

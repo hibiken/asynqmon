@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/mux"
@@ -21,7 +22,12 @@ const connContextKey contextKey = 1
 type RedisConnection struct {
 	Name string `json:"name"`
 	Addr string `json:"addr"`
-	// ConnOpt is optional. When nil, Addr is used as asynq.RedisClientOpt{Addr: Addr}.
+	// Password is used when ConnOpt is nil. Never serialized to the API.
+	Password string `json:"-"`
+	// DB is used when ConnOpt is nil.
+	DB int `json:"-"`
+	// ConnOpt is optional. When nil, Addr/Password/DB build asynq.RedisClientOpt
+	// (or Addr is parsed as a redis URI when it looks like one).
 	ConnOpt asynq.RedisConnOpt `json:"-"`
 }
 
@@ -86,17 +92,32 @@ func (r *connectionRegistry) List() []RedisConnection {
 	return out
 }
 
-func (r *connectionRegistry) Add(name, addr string, opt asynq.RedisConnOpt) error {
-	if name == "" {
+func (r *connectionRegistry) Add(c RedisConnection) error {
+	if c.Name == "" {
 		return fmt.Errorf("connection name is required")
 	}
-	if addr == "" && opt == nil {
-		return fmt.Errorf("connection addr is required")
-	}
+
+	opt := c.ConnOpt
+	addr := c.Addr
 	if opt == nil {
-		opt = asynq.RedisClientOpt{Addr: addr}
-	}
-	if addr == "" {
+		if addr == "" {
+			return fmt.Errorf("connection addr is required")
+		}
+		if isRedisURL(addr) {
+			parsed, err := asynq.ParseRedisURI(addr)
+			if err != nil {
+				return fmt.Errorf("parse redis uri: %w", err)
+			}
+			opt = parsed
+			addr = addrFromConnOpt(opt)
+		} else {
+			opt = asynq.RedisClientOpt{
+				Addr:     addr,
+				Password: c.Password,
+				DB:       c.DB,
+			}
+		}
+	} else if addr == "" {
 		addr = addrFromConnOpt(opt)
 	}
 
@@ -105,7 +126,7 @@ func (r *connectionRegistry) Add(name, addr string, opt asynq.RedisConnOpt) erro
 		return fmt.Errorf("unsupported RedisConnOpt type %T", opt)
 	}
 	bundle := &connBundle{
-		name:      name,
+		name:      c.Name,
 		addr:      addr,
 		inspector: asynq.NewInspector(opt),
 		client:    asynq.NewClient(opt),
@@ -114,16 +135,22 @@ func (r *connectionRegistry) Add(name, addr string, opt asynq.RedisConnOpt) erro
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if _, exists := r.conns[name]; exists {
+	if _, exists := r.conns[c.Name]; exists {
 		bundle.close()
-		return fmt.Errorf("connection %q already exists", name)
+		return fmt.Errorf("connection %q already exists", c.Name)
 	}
-	r.conns[name] = bundle
-	r.order = append(r.order, name)
+	r.conns[c.Name] = bundle
+	r.order = append(r.order, c.Name)
 	if r.defaultName == "" {
-		r.defaultName = name
+		r.defaultName = c.Name
 	}
 	return nil
+}
+
+func isRedisURL(s string) bool {
+	return strings.HasPrefix(s, "redis://") ||
+		strings.HasPrefix(s, "rediss://") ||
+		strings.HasPrefix(s, "redis-sentinel://")
 }
 
 func (r *connectionRegistry) Remove(name string) error {

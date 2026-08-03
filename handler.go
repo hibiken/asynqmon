@@ -71,14 +71,13 @@ func New(opts Options) *HTTPHandler {
 	reg := newConnectionRegistry()
 
 	for _, c := range opts.RedisConnections {
-		opt := c.ConnOpt
-		if err := reg.Add(c.Name, c.Addr, opt); err != nil {
+		if err := reg.Add(c); err != nil {
 			panic(fmt.Sprintf("asynqmon.New: add connection %q: %v", c.Name, err))
 		}
 	}
 
 	if reg.Len() == 0 && opts.RedisConnOpt != nil {
-		if err := reg.Add("default", addrFromConnOpt(opts.RedisConnOpt), opts.RedisConnOpt); err != nil {
+		if err := reg.Add(RedisConnection{Name: "default", ConnOpt: opts.RedisConnOpt}); err != nil {
 			panic(fmt.Sprintf("asynqmon.New: add default connection: %v", err))
 		}
 	}
