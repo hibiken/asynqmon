@@ -15,6 +15,7 @@ import { useQuery } from "../hooks";
 function mapStateToProps(state: AppState) {
   return {
     queues: state.queues.data.map((q) => q.name),
+    selectedConnection: state.connections.selected,
   };
 }
 
@@ -54,11 +55,11 @@ function TasksView(props: ConnectedProps<typeof connector>) {
   if (!selected || !validStatus.includes(selected)) {
     selected = defaultStatus;
   }
-  const { listQueuesAsync } = props;
+  const { listQueuesAsync, selectedConnection } = props;
 
   useEffect(() => {
     listQueuesAsync();
-  }, [listQueuesAsync]);
+  }, [listQueuesAsync, selectedConnection]);
 
   return (
     <Container maxWidth="lg">

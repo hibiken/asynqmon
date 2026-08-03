@@ -1,0 +1,21 @@
+services:
+  redis-a:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  redis-b:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+
+  asynqmon:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    command: ["--config=/data/asynqmon.yaml", "--port=8080"]
+    depends_on:
+      - redis-a
+      - redis-b

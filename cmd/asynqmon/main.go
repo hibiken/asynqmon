@@ -25,6 +25,9 @@ type Config struct {
 	// Server port
 	Port int
 
+	// Path to YAML file that persists named redis connections.
+	ConfigPath string
+
 	// Redis connection options
 	RedisAddr         string
 	RedisDB           int
@@ -60,6 +63,7 @@ func parseFlags(progname string, args []string) (cfg *Config, output string, err
 
 	var conf Config
 	flags.IntVar(&conf.Port, "port", getEnvOrDefaultInt("PORT", 8080), "port number to use for web ui server")
+	flags.StringVar(&conf.ConfigPath, "config", getEnvDefaultString("ASYNQMON_CONFIG", ""), "path to YAML file that stores named redis connections")
 	flags.StringVar(&conf.RedisAddr, "redis-addr", getEnvDefaultString("REDIS_ADDR", "127.0.0.1:6379"), "address of redis server to connect to")
 	flags.IntVar(&conf.RedisDB, "redis-db", getEnvOrDefaultInt("REDIS_DB", 0), "redis database number")
 	flags.StringVar(&conf.RedisPassword, "redis-password", getEnvDefaultString("REDIS_PASSWORD", ""), "password to use when connecting to redis server")
@@ -149,6 +153,7 @@ func main() {
 
 	h := asynqmon.New(asynqmon.Options{
 		RedisConnOpt:      redisConnOpt,
+		ConfigPath:        cfg.ConfigPath,
 		PayloadFormatter:  asynqmon.PayloadFormatterFunc(payloadFormatterFunc(cfg)),
 		ResultFormatter:   asynqmon.ResultFormatterFunc(resultFormatterFunc(cfg)),
 		PrometheusAddress: cfg.PrometheusServerAddr,
@@ -158,6 +163,7 @@ func main() {
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "DELETE"},
+		AllowedHeaders: []string{"Content-Type", "X-Asynqmon-Connection"},
 	})
 	mux := http.NewServeMux()
 	mux.Handle("/", c.Handler(h))

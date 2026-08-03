@@ -9,6 +9,34 @@ const getBaseUrl = () =>
     ? `${window.ROOT_PATH}/api`
     : `http://localhost:8080${window.ROOT_PATH}/api`;
 
+const CONNECTION_HEADER = "X-Asynqmon-Connection";
+
+let selectedConnectionName = "";
+
+export function setSelectedConnectionName(name: string) {
+  selectedConnectionName = name;
+}
+
+axios.interceptors.request.use((config) => {
+  if (selectedConnectionName) {
+    config.headers = {
+      ...config.headers,
+      [CONNECTION_HEADER]: selectedConnectionName,
+    };
+  }
+  return config;
+});
+
+export interface RedisConnection {
+  name: string;
+  addr: string;
+}
+
+export interface ListConnectionsResponse {
+  connections: RedisConnection[];
+  default: string;
+}
+
 export interface ListQueuesResponse {
   queues: Queue[];
 }
@@ -1085,6 +1113,33 @@ export async function getRedisInfo(): Promise<RedisInfoResponse> {
     url: `${getBaseUrl()}/redis_info`,
   });
   return resp.data;
+}
+
+export async function listConnections(): Promise<ListConnectionsResponse> {
+  const resp = await axios({
+    method: "get",
+    url: `${getBaseUrl()}/connections`,
+  });
+  return resp.data;
+}
+
+export async function createConnection(
+  name: string,
+  addr: string
+): Promise<RedisConnection> {
+  const resp = await axios({
+    method: "post",
+    url: `${getBaseUrl()}/connections`,
+    data: { name, addr },
+  });
+  return resp.data;
+}
+
+export async function deleteConnection(name: string): Promise<void> {
+  await axios({
+    method: "delete",
+    url: `${getBaseUrl()}/connections/${encodeURIComponent(name)}`,
+  });
 }
 
 interface MetricsEndpointParams {

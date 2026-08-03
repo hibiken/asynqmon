@@ -8,6 +8,10 @@ import {
   LIST_QUEUE_STATS_SUCCESS,
   QueueStatsActionTypes,
 } from "../actions/queueStatsActions";
+import {
+  CONNECTION_SWITCHED,
+  ConnectionsActionTypes,
+} from "../actions/connectionsActions";
 import { DailyStat } from "../api";
 
 interface QueueStatsState {
@@ -22,9 +26,12 @@ const initialState: QueueStatsState = {
 
 export default function queueStatsReducer(
   state = initialState,
-  action: QueueStatsActionTypes | QueuesActionTypes
+  action: QueueStatsActionTypes | QueuesActionTypes | ConnectionsActionTypes
 ): QueueStatsState {
   switch (action.type) {
+    case CONNECTION_SWITCHED:
+      return { ...initialState, loading: true };
+
     case LIST_QUEUE_STATS_BEGIN:
       return {
         ...state,
