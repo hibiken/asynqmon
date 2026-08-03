@@ -15,6 +15,7 @@ import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import CancelIcon from "@material-ui/icons/Cancel";
+import GetAppIcon from "@material-ui/icons/GetApp";
 import Alert from "@material-ui/lab/Alert";
 import AlertTitle from "@material-ui/lab/AlertTitle";
 import TablePaginationActions, {
@@ -24,8 +25,9 @@ import TableActions from "./TableActions";
 import { usePolling } from "../hooks";
 import { TaskInfoExtended } from "../reducers/tasksReducer";
 import { TableColumn } from "../types/table";
-import { PaginationOptions } from "../api";
+import { exportAllTasksCSV, PaginationOptions } from "../api";
 import { TaskState } from "../types/taskState";
+import { downloadTasksCSV } from "../utils/csv";
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -76,11 +78,12 @@ interface Props {
 }
 
 export default function TasksTable(props: Props) {
-  const { pollInterval, listTasks, queue, pageSize } = props;
+  const { pollInterval, listTasks, queue, pageSize, taskState } = props;
   const classes = useStyles();
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string>("");
+  const [exportAllPending, setExportAllPending] = useState(false);
 
   const handlePageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -122,7 +125,31 @@ export default function TasksTable(props: Props) {
     return () => action(queue, taskId);
   }
 
+  const handleDownloadSelected = () => {
+    const selected = props.tasks.filter((t) => selectedIds.includes(t.id));
+    downloadTasksCSV(queue, taskState, selected);
+  };
+
+  const handleDownloadAll = async () => {
+    if (taskState === "aggregating") {
+      return;
+    }
+    setExportAllPending(true);
+    try {
+      await exportAllTasksCSV(queue, taskState);
+    } finally {
+      setExportAllPending(false);
+    }
+  };
+
   let allActions = [];
+  if (taskState !== "aggregating") {
+    allActions.push({
+      label: "Download All",
+      onClick: handleDownloadAll,
+      disabled: exportAllPending,
+    });
+  }
   if (props.deleteAllTasks) {
     allActions.push({
       label: "Delete All",
@@ -152,7 +179,14 @@ export default function TasksTable(props: Props) {
     });
   }
 
-  let batchActions = [];
+  let batchActions = [
+    {
+      tooltip: "Download CSV",
+      icon: <GetAppIcon />,
+      disabled: false,
+      onClick: handleDownloadSelected,
+    },
+  ];
   if (props.batchDeleteTasks) {
     batchActions.push({
       tooltip: "Delete",
@@ -216,15 +250,22 @@ export default function TasksTable(props: Props) {
 
   const rowCount = props.tasks.length;
   const numSelected = selectedIds.length;
+  const readOnly = window.READ_ONLY;
   return (
     <div>
-      {!window.READ_ONLY && (
-        <TableActions
-          showIconButtons={numSelected > 0}
-          iconButtonActions={batchActions}
-          menuItemActions={allActions}
-        />
-      )}
+      <TableActions
+        showIconButtons={numSelected > 0}
+        iconButtonActions={
+          readOnly
+            ? batchActions.filter((a) => a.tooltip === "Download CSV")
+            : batchActions
+        }
+        menuItemActions={
+          readOnly
+            ? allActions.filter((a) => a.label === "Download All")
+            : allActions
+        }
+      />
       <TableContainer component={Paper}>
         <Table
           stickyHeader={true}
@@ -234,27 +275,25 @@ export default function TasksTable(props: Props) {
         >
           <TableHead>
             <TableRow>
-              {!window.READ_ONLY && (
-                <TableCell
-                  padding="checkbox"
-                  classes={{ stickyHeader: classes.stickyHeaderCell }}
-                >
-                  <IconButton>
-                    <Checkbox
-                      indeterminate={numSelected > 0 && numSelected < rowCount}
-                      checked={rowCount > 0 && numSelected === rowCount}
-                      onChange={handleSelectAllClick}
-                      inputProps={{
-                        "aria-label": "select all tasks shown in the table",
-                      }}
-                    />
-                  </IconButton>
-                </TableCell>
-              )}
+              <TableCell
+                padding="checkbox"
+                classes={{ stickyHeader: classes.stickyHeaderCell }}
+              >
+                <IconButton>
+                  <Checkbox
+                    indeterminate={numSelected > 0 && numSelected < rowCount}
+                    checked={rowCount > 0 && numSelected === rowCount}
+                    onChange={handleSelectAllClick}
+                    inputProps={{
+                      "aria-label": "select all tasks shown in the table",
+                    }}
+                  />
+                </IconButton>
+              </TableCell>
               {props.columns
                 .filter((col) => {
                   // Filter out actions column in readonly mode.
-                  return !window.READ_ONLY || col.key !== "actions";
+                  return !readOnly || col.key !== "actions";
                 })
                 .map((col) => (
                   <TableCell
