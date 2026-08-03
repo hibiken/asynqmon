@@ -8,7 +8,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/hibiken/asynq"
-	"github.com/redis/go-redis/v9"
 )
 
 // Options are used to configure HTTPHandler.
@@ -21,8 +20,13 @@ type Options struct {
 
 	// RedisConnOpt specifies the connection to a redis-server or redis-cluster.
 	//
-	// This field is required.
+	// Required when RedisConnections is empty.
 	RedisConnOpt asynq.RedisConnOpt
+
+	// RedisConnections is an optional list of named Redis endpoints.
+	// When set, these are loaded into the connection registry at startup.
+	// Typical source: ASYNQMON_REDIS_CONNECTIONS env var / --redis-connections flag.
+	RedisConnections []RedisConnection
 
 	// PayloadFormatter is used to convert payload bytes to string shown in the UI.
 	//
@@ -47,7 +51,7 @@ type Options struct {
 // HTTPHandler is a http.Handler for asynqmon application.
 type HTTPHandler struct {
 	router   *mux.Router
-	closers  []func() error
+	registry *connectionRegistry
 	rootPath string // the value should not have the trailing slash
 }
 
@@ -57,37 +61,41 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // New creates a HTTPHandler with the given options.
 func New(opts Options) *HTTPHandler {
-	if opts.RedisConnOpt == nil {
-		panic("asynqmon.New: RedisConnOpt field is required")
-	}
-	rc, ok := opts.RedisConnOpt.MakeRedisClient().(redis.UniversalClient)
-	if !ok {
-		panic(fmt.Sprintf("asnyqmon.New: unsupported RedisConnOpt type %T", opts.RedisConnOpt))
-	}
-	i := asynq.NewInspector(opts.RedisConnOpt)
-
 	// Make sure that RootPath starts with a slash if provided.
 	if opts.RootPath != "" && !strings.HasPrefix(opts.RootPath, "/") {
-		panic(fmt.Sprintf("asynqmon.New: RootPath must start with a slash"))
+		panic("asynqmon.New: RootPath must start with a slash")
 	}
-	// Remove tailing slash from RootPath.
+	// Remove trailing slash from RootPath.
 	opts.RootPath = strings.TrimSuffix(opts.RootPath, "/")
 
+	reg := newConnectionRegistry()
+
+	for _, c := range opts.RedisConnections {
+		if err := reg.Add(c); err != nil {
+			panic(fmt.Sprintf("asynqmon.New: add connection %q: %v", c.Name, err))
+		}
+	}
+
+	if reg.Len() == 0 && opts.RedisConnOpt != nil {
+		if err := reg.Add(RedisConnection{Name: "default", ConnOpt: opts.RedisConnOpt}); err != nil {
+			panic(fmt.Sprintf("asynqmon.New: add default connection: %v", err))
+		}
+	}
+
+	if reg.Len() == 0 {
+		panic("asynqmon.New: RedisConnOpt or RedisConnections is required")
+	}
+
 	return &HTTPHandler{
-		router:   muxRouter(opts, rc, i),
-		closers:  []func() error{rc.Close, i.Close},
+		router:   muxRouter(opts, reg),
+		registry: reg,
 		rootPath: opts.RootPath,
 	}
 }
 
 // Close closes connections to redis.
 func (h *HTTPHandler) Close() error {
-	for _, f := range h.closers {
-		if err := f(); err != nil {
-			return err
-		}
-	}
-	return nil
+	return h.registry.Close()
 }
 
 // RootPath returns the root URL path used for asynqmon application.
@@ -99,7 +107,7 @@ func (h *HTTPHandler) RootPath() string {
 //go:embed ui/build/*
 var staticContents embed.FS
 
-func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspector) *mux.Router {
+func muxRouter(opts Options, reg *connectionRegistry) *mux.Router {
 	router := mux.NewRouter().PathPrefix(opts.RootPath).Subrouter()
 
 	var payloadFmt PayloadFormatter = DefaultPayloadFormatter
@@ -113,96 +121,98 @@ func muxRouter(opts Options, rc redis.UniversalClient, inspector *asynq.Inspecto
 	}
 
 	api := router.PathPrefix("/api").Subrouter()
+	api.Use(connectionMiddleware(reg))
+
+	// Connection listing (no selected-connection header required).
+	api.HandleFunc("/connections", newListConnectionsHandlerFunc(reg)).Methods("GET")
 
 	// Queue endpoints.
-	api.HandleFunc("/queues", newListQueuesHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/queues/{qname}", newGetQueueHandlerFunc(inspector)).Methods("GET")
-	api.HandleFunc("/queues/{qname}", newDeleteQueueHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}:pause", newPauseQueueHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}:resume", newResumeQueueHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues", adaptInspector(newListQueuesHandlerFunc)).Methods("GET")
+	api.HandleFunc("/queues/{qname}", adaptInspector(newGetQueueHandlerFunc)).Methods("GET")
+	api.HandleFunc("/queues/{qname}", adaptInspector(newDeleteQueueHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}:pause", adaptInspector(newPauseQueueHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}:resume", adaptInspector(newResumeQueueHandlerFunc)).Methods("POST")
 
 	// Queue Historical Stats endpoint.
-	api.HandleFunc("/queue_stats", newListQueueStatsHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queue_stats", adaptInspector(newListQueueStatsHandlerFunc)).Methods("GET")
 
 	// Task endpoints.
-	api.HandleFunc("/queues/{qname}/active_tasks", newListActiveTasksHandlerFunc(inspector, payloadFmt)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/active_tasks/{task_id}:cancel", newCancelActiveTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/active_tasks:cancel_all", newCancelAllActiveTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/active_tasks:batch_cancel", newBatchCancelActiveTasksHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/active_tasks", adaptInspectorPayload(newListActiveTasksHandlerFunc, payloadFmt)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/active_tasks/{task_id}:cancel", adaptInspector(newCancelActiveTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/active_tasks:cancel_all", adaptInspector(newCancelAllActiveTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/active_tasks:batch_cancel", adaptInspector(newBatchCancelActiveTasksHandlerFunc)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/pending_tasks", newListPendingTasksHandlerFunc(inspector, payloadFmt)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/pending_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/pending_tasks:delete_all", newDeleteAllPendingTasksHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/pending_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/pending_tasks/{task_id}:archive", newArchiveTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/pending_tasks:archive_all", newArchiveAllPendingTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/pending_tasks:batch_archive", newBatchArchiveTasksHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/pending_tasks", adaptInspectorPayload(newListPendingTasksHandlerFunc, payloadFmt)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/pending_tasks/{task_id}", adaptInspector(newDeleteTaskHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/pending_tasks:delete_all", adaptInspector(newDeleteAllPendingTasksHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/pending_tasks:batch_delete", adaptInspector(newBatchDeleteTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/pending_tasks/{task_id}:archive", adaptInspector(newArchiveTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/pending_tasks:archive_all", adaptInspector(newArchiveAllPendingTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/pending_tasks:batch_archive", adaptInspector(newBatchArchiveTasksHandlerFunc)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/scheduled_tasks", newListScheduledTasksHandlerFunc(inspector, payloadFmt)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks:delete_all", newDeleteAllScheduledTasksHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks/{task_id}:run", newRunTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks:run_all", newRunAllScheduledTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks:batch_run", newBatchRunTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks/{task_id}:archive", newArchiveTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks:archive_all", newArchiveAllScheduledTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/scheduled_tasks:batch_archive", newBatchArchiveTasksHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks", adaptInspectorPayload(newListScheduledTasksHandlerFunc, payloadFmt)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks/{task_id}", adaptInspector(newDeleteTaskHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks:delete_all", adaptInspector(newDeleteAllScheduledTasksHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks:batch_delete", adaptInspector(newBatchDeleteTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks/{task_id}:run", adaptInspector(newRunTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks:run_all", adaptInspector(newRunAllScheduledTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks:batch_run", adaptInspector(newBatchRunTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks/{task_id}:archive", adaptInspector(newArchiveTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks:archive_all", adaptInspector(newArchiveAllScheduledTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/scheduled_tasks:batch_archive", adaptInspector(newBatchArchiveTasksHandlerFunc)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/retry_tasks", newListRetryTasksHandlerFunc(inspector, payloadFmt)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/retry_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/retry_tasks:delete_all", newDeleteAllRetryTasksHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/retry_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/retry_tasks/{task_id}:run", newRunTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/retry_tasks:run_all", newRunAllRetryTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/retry_tasks:batch_run", newBatchRunTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/retry_tasks/{task_id}:archive", newArchiveTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/retry_tasks:archive_all", newArchiveAllRetryTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/retry_tasks:batch_archive", newBatchArchiveTasksHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/retry_tasks", adaptInspectorPayload(newListRetryTasksHandlerFunc, payloadFmt)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/retry_tasks/{task_id}", adaptInspector(newDeleteTaskHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/retry_tasks:delete_all", adaptInspector(newDeleteAllRetryTasksHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/retry_tasks:batch_delete", adaptInspector(newBatchDeleteTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/retry_tasks/{task_id}:run", adaptInspector(newRunTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/retry_tasks:run_all", adaptInspector(newRunAllRetryTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/retry_tasks:batch_run", adaptInspector(newBatchRunTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/retry_tasks/{task_id}:archive", adaptInspector(newArchiveTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/retry_tasks:archive_all", adaptInspector(newArchiveAllRetryTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/retry_tasks:batch_archive", adaptInspector(newBatchArchiveTasksHandlerFunc)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/archived_tasks", newListArchivedTasksHandlerFunc(inspector, payloadFmt)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/archived_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/archived_tasks:delete_all", newDeleteAllArchivedTasksHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/archived_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/archived_tasks/{task_id}:run", newRunTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/archived_tasks:run_all", newRunAllArchivedTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/archived_tasks:batch_run", newBatchRunTasksHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/archived_tasks", adaptInspectorPayload(newListArchivedTasksHandlerFunc, payloadFmt)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/archived_tasks/{task_id}", adaptInspector(newDeleteTaskHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/archived_tasks:delete_all", adaptInspector(newDeleteAllArchivedTasksHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/archived_tasks:batch_delete", adaptInspector(newBatchDeleteTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/archived_tasks/{task_id}:run", adaptInspector(newRunTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/archived_tasks:run_all", adaptInspector(newRunAllArchivedTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/archived_tasks:batch_run", adaptInspector(newBatchRunTasksHandlerFunc)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/completed_tasks", newListCompletedTasksHandlerFunc(inspector, payloadFmt, resultFmt)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/completed_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/completed_tasks:delete_all", newDeleteAllCompletedTasksHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/completed_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/completed_tasks", adaptInspectorPayloadResult(newListCompletedTasksHandlerFunc, payloadFmt, resultFmt)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/completed_tasks/{task_id}", adaptInspector(newDeleteTaskHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/completed_tasks:delete_all", adaptInspector(newDeleteAllCompletedTasksHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/completed_tasks:batch_delete", adaptInspector(newBatchDeleteTasksHandlerFunc)).Methods("POST")
 
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks", newListAggregatingTasksHandlerFunc(inspector, payloadFmt)).Methods("GET")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks/{task_id}", newDeleteTaskHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:delete_all", newDeleteAllAggregatingTasksHandlerFunc(inspector)).Methods("DELETE")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:batch_delete", newBatchDeleteTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks/{task_id}:run", newRunTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:run_all", newRunAllAggregatingTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:batch_run", newBatchRunTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks/{task_id}:archive", newArchiveTaskHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:archive_all", newArchiveAllAggregatingTasksHandlerFunc(inspector)).Methods("POST")
-	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:batch_archive", newBatchArchiveTasksHandlerFunc(inspector)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/tasks:export", adaptInspectorPayloadResult(newExportTasksHandlerFunc, payloadFmt, resultFmt)).Methods("GET")
 
-	api.HandleFunc("/queues/{qname}/tasks/{task_id}", newGetTaskHandlerFunc(inspector, payloadFmt, resultFmt)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks", adaptInspectorPayload(newListAggregatingTasksHandlerFunc, payloadFmt)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks/{task_id}", adaptInspector(newDeleteTaskHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:delete_all", adaptInspector(newDeleteAllAggregatingTasksHandlerFunc)).Methods("DELETE")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:batch_delete", adaptInspector(newBatchDeleteTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks/{task_id}:run", adaptInspector(newRunTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:run_all", adaptInspector(newRunAllAggregatingTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:batch_run", adaptInspector(newBatchRunTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks/{task_id}:archive", adaptInspector(newArchiveTaskHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:archive_all", adaptInspector(newArchiveAllAggregatingTasksHandlerFunc)).Methods("POST")
+	api.HandleFunc("/queues/{qname}/groups/{gname}/aggregating_tasks:batch_archive", adaptInspector(newBatchArchiveTasksHandlerFunc)).Methods("POST")
 
-	// Groups endponts
-	api.HandleFunc("/queues/{qname}/groups", newListGroupsHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/queues/{qname}/tasks/{task_id}", adaptInspectorPayloadResult(newGetTaskHandlerFunc, payloadFmt, resultFmt)).Methods("GET")
+
+	// Groups endpoints
+	api.HandleFunc("/queues/{qname}/groups", adaptInspector(newListGroupsHandlerFunc)).Methods("GET")
 
 	// Servers endpoints.
-	api.HandleFunc("/servers", newListServersHandlerFunc(inspector, payloadFmt)).Methods("GET")
+	api.HandleFunc("/servers", adaptInspectorPayload(newListServersHandlerFunc, payloadFmt)).Methods("GET")
 
 	// Scheduler Entry endpoints.
-	api.HandleFunc("/scheduler_entries", newListSchedulerEntriesHandlerFunc(inspector, payloadFmt)).Methods("GET")
-	api.HandleFunc("/scheduler_entries/{entry_id}/enqueue_events", newListSchedulerEnqueueEventsHandlerFunc(inspector)).Methods("GET")
+	api.HandleFunc("/scheduler_entries", adaptInspectorPayload(newListSchedulerEntriesHandlerFunc, payloadFmt)).Methods("GET")
+	api.HandleFunc("/scheduler_entries/{entry_id}/enqueue_events", adaptInspector(newListSchedulerEnqueueEventsHandlerFunc)).Methods("GET")
+	api.HandleFunc("/scheduler_entries/{entry_id}:run", adaptInspectorClient(newRunSchedulerEntryHandlerFunc)).Methods("POST")
 
 	// Redis info endpoint.
-	switch c := rc.(type) {
-	case *redis.ClusterClient:
-		api.HandleFunc("/redis_info", newRedisClusterInfoHandlerFunc(c, inspector)).Methods("GET")
-	case *redis.Client:
-		api.HandleFunc("/redis_info", newRedisInfoHandlerFunc(c)).Methods("GET")
-	}
+	api.HandleFunc("/redis_info", newRedisInfoFromConnHandlerFunc()).Methods("GET")
 
 	// Time series metrics endpoints.
 	api.HandleFunc("/metrics", newGetMetricsHandlerFunc(http.DefaultClient, opts.PrometheusAddress)).Methods("GET")

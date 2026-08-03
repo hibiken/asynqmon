@@ -8,6 +8,10 @@ import {
   LIST_AGGREGATING_TASKS_SUCCESS,
   TasksActionTypes,
 } from "../actions/tasksActions";
+import {
+  CONNECTION_SWITCHED,
+  ConnectionsActionTypes,
+} from "../actions/connectionsActions";
 import { GroupInfo } from "../api";
 
 interface GroupsState {
@@ -24,9 +28,12 @@ const initialState: GroupsState = {
 
 function groupsReducer(
   state = initialState,
-  action: GroupsActionTypes | TasksActionTypes
+  action: GroupsActionTypes | TasksActionTypes | ConnectionsActionTypes
 ): GroupsState {
   switch (action.type) {
+    case CONNECTION_SWITCHED:
+      return { ...initialState, loading: true };
+
     case LIST_GROUPS_BEGIN:
       return { ...state, loading: true };
 

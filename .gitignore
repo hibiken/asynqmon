@@ -20,6 +20,9 @@ package.json
 yarn.lock
 package-json.lock
 
+# Local env (keep secrets out of git)
+.env
+
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 

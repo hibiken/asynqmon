@@ -23,6 +23,7 @@ func TestParseFlags(t *testing.T) {
 
 				// Default values
 				Port:                  8080,
+				RedisConnections:      "",
 				RedisPassword:         "",
 				RedisTLS:              "",
 				RedisURL:              "",
@@ -106,7 +107,7 @@ func TestMakeRedisConnOpt(t *testing.T) {
 				MasterName: "mymaster",
 				SentinelAddrs: []string{
 					"localhost:5000", "localhost:5001", "localhost:5002"},
-				Password: "secretpassword", // FIXME: Shouldn't this be SentinelPassword instead?
+				SentinelPassword: "secretpassword",
 			},
 		},
 		{

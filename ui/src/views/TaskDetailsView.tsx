@@ -27,6 +27,7 @@ function mapStateToProps(state: AppState) {
     taskInfo: state.tasks.taskInfo.data,
     pollInterval: state.settings.pollInterval,
     queues: state.queues.data.map((q) => q.name), // FIXME: This data may not be available
+    selectedConnection: state.connections.selected,
   };
 }
 
@@ -72,7 +73,13 @@ type Props = ConnectedProps<typeof connector>;
 function TaskDetailsView(props: Props) {
   const classes = useStyles();
   const { qname, taskId } = useParams<TaskDetailsRouteParams>();
-  const { getTaskInfoAsync, pollInterval, listQueuesAsync, taskInfo } = props;
+  const {
+    getTaskInfoAsync,
+    pollInterval,
+    listQueuesAsync,
+    taskInfo,
+    selectedConnection,
+  } = props;
   const history = useHistory();
 
   const fetchTaskInfo = useMemo(() => {
@@ -86,7 +93,7 @@ function TaskDetailsView(props: Props) {
   // Fetch queues data to populate props.queues
   useEffect(() => {
     listQueuesAsync();
-  }, [listQueuesAsync]);
+  }, [listQueuesAsync, selectedConnection]);
 
   return (
     <Container maxWidth="lg" className={classes.container}>

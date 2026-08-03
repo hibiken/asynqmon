@@ -4,6 +4,7 @@ import {
   ListSchedulerEnqueueEventsResponse,
   listSchedulerEntries,
   ListSchedulerEntriesResponse,
+  runSchedulerEntry,
 } from "../api";
 import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 
@@ -17,6 +18,8 @@ export const LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS =
   "LIST_SCHEDULER_ENQUEUE_EVENTS_SUCCESS";
 export const LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR =
   "LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR";
+export const RUN_SCHEDULER_ENTRY_SUCCESS = "RUN_SCHEDULER_ENTRY_SUCCESS";
+export const RUN_SCHEDULER_ENTRY_ERROR = "RUN_SCHEDULER_ENTRY_ERROR";
 
 interface ListSchedulerEntriesBeginAction {
   type: typeof LIST_SCHEDULER_ENTRIES_BEGIN;
@@ -49,6 +52,15 @@ interface ListSchedulerEnqueueEventErrorAction {
   error: string;
 }
 
+interface RunSchedulerEntrySuccessAction {
+  type: typeof RUN_SCHEDULER_ENTRY_SUCCESS;
+}
+
+interface RunSchedulerEntryErrorAction {
+  type: typeof RUN_SCHEDULER_ENTRY_ERROR;
+  error: string;
+}
+
 // Union of all scheduler-entry related actions.
 export type SchedulerEntriesActionTypes =
   | ListSchedulerEntriesBeginAction
@@ -56,7 +68,9 @@ export type SchedulerEntriesActionTypes =
   | ListSchedulerEntriesErrorAction
   | ListSchedulerEnqueueEventBeginAction
   | ListSchedulerEnqueueEventSuccessAction
-  | ListSchedulerEnqueueEventErrorAction;
+  | ListSchedulerEnqueueEventErrorAction
+  | RunSchedulerEntrySuccessAction
+  | RunSchedulerEntryErrorAction;
 
 export function listSchedulerEntriesAsync() {
   return async (dispatch: Dispatch<SchedulerEntriesActionTypes>) => {
@@ -98,6 +112,24 @@ export function listSchedulerEnqueueEventsAsync(entryId: string) {
         type: LIST_SCHEDULER_ENQUEUE_EVENTS_ERROR,
         error: toErrorString(error),
         entryId,
+      });
+    }
+  };
+}
+
+export function runSchedulerEntryAsync(entryId: string) {
+  return async (dispatch: Dispatch<SchedulerEntriesActionTypes>): Promise<void> => {
+    try {
+      await runSchedulerEntry(entryId);
+      dispatch({ type: RUN_SCHEDULER_ENTRY_SUCCESS });
+    } catch (error) {
+      console.error(
+        "runSchedulerEntryAsync: ",
+        toErrorStringWithHttpStatus(error)
+      );
+      dispatch({
+        type: RUN_SCHEDULER_ENTRY_ERROR,
+        error: toErrorString(error),
       });
     }
   };

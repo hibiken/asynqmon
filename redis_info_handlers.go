@@ -3,6 +3,7 @@ package asynqmon
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -49,6 +50,20 @@ func newRedisInfoHandlerFunc(client *redis.Client) http.HandlerFunc {
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+	}
+}
+
+func newRedisInfoFromConnHandlerFunc() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c := getConn(r)
+		switch client := c.redis.(type) {
+		case *redis.ClusterClient:
+			newRedisClusterInfoHandlerFunc(client, c.inspector)(w, r)
+		case *redis.Client:
+			newRedisInfoHandlerFunc(client)(w, r)
+		default:
+			http.Error(w, fmt.Sprintf("unsupported redis client type %T", c.redis), http.StatusInternalServerError)
 		}
 	}
 }
