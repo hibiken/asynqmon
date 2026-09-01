@@ -322,6 +322,12 @@ export interface TaskInfo {
   is_orphaned: boolean; // Only applies to task.state == 'active'
 }
 
+export interface EnqueueTaskResponse {
+  id: string;
+  queue: string;
+  type: string;
+}
+
 export interface ServerInfo {
   id: string;
   host: string;
@@ -417,6 +423,19 @@ export async function getTaskInfo(
   const resp = await axios({
     method: "get",
     url,
+  });
+  return resp.data;
+}
+
+export async function enqueueTask(
+  qname: string,
+  type: string,
+  payload: string
+): Promise<EnqueueTaskResponse> {
+  const resp = await axios({
+    method: "post",
+    url: `${getBaseUrl()}/queues/${encodeURIComponent(qname)}/tasks`,
+    data: { type, payload },
   });
   return resp.data;
 }

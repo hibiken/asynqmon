@@ -1,14 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import TasksTableContainer from "../components/TasksTableContainer";
+import EnqueueTaskDialog from "../components/EnqueueTaskDialog";
 import QueueInfoBanner from "../components/QueueInfoBanner";
 import QueueBreadCrumb from "../components/QueueBreadcrumb";
 import { useParams } from "react-router-dom";
 import { listQueuesAsync } from "../actions/queuesActions";
+import { showSnackbar } from "../actions/snackbarActions";
 import { AppState } from "../store";
+import { enqueueTask } from "../api";
+import { toErrorString, toErrorStringWithHttpStatus } from "../utils";
 import { QueueDetailsRouteParams } from "../paths";
 import { useQuery } from "../hooks";
 
@@ -18,7 +22,7 @@ function mapStateToProps(state: AppState) {
   };
 }
 
-const connector = connect(mapStateToProps, { listQueuesAsync });
+const connector = connect(mapStateToProps, { listQueuesAsync, showSnackbar });
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -55,10 +59,40 @@ function TasksView(props: ConnectedProps<typeof connector>) {
     selected = defaultStatus;
   }
   const { listQueuesAsync } = props;
+  const [enqueueDialogOpen, setEnqueueDialogOpen] = useState(false);
+  const [enqueuePending, setEnqueuePending] = useState(false);
+  const [enqueueError, setEnqueueError] = useState("");
 
   useEffect(() => {
     listQueuesAsync();
   }, [listQueuesAsync]);
+
+  const openEnqueueDialog = () => {
+    setEnqueueError("");
+    setEnqueueDialogOpen(true);
+  };
+
+  const closeEnqueueDialog = () => {
+    if (!enqueuePending) {
+      setEnqueueDialogOpen(false);
+      setEnqueueError("");
+    }
+  };
+
+  const handleEnqueue = async (type: string, payload: string) => {
+    setEnqueuePending(true);
+    setEnqueueError("");
+    try {
+      const task = await enqueueTask(qname, type, payload);
+      setEnqueueDialogOpen(false);
+      props.showSnackbar(`Task ${task.id} enqueued to ${task.queue}`);
+    } catch (error) {
+      console.error("enqueueTask: ", toErrorStringWithHttpStatus(error));
+      setEnqueueError(toErrorString(error));
+    } finally {
+      setEnqueuePending(false);
+    }
+  };
 
   return (
     <Container maxWidth="lg">
@@ -70,9 +104,21 @@ function TasksView(props: ConnectedProps<typeof connector>) {
           <QueueInfoBanner qname={qname} />
         </Grid>
         <Grid item xs={12} className={classes.tasksTable}>
-          <TasksTableContainer queue={qname} selected={selected} />
+          <TasksTableContainer
+            queue={qname}
+            selected={selected}
+            onEnqueueTask={!window.READ_ONLY ? openEnqueueDialog : undefined}
+          />
         </Grid>
       </Grid>
+      <EnqueueTaskDialog
+        open={enqueueDialogOpen}
+        queue={qname}
+        loading={enqueuePending}
+        error={enqueueError}
+        onClose={closeEnqueueDialog}
+        onEnqueue={handleEnqueue}
+      />
     </Container>
   );
 }

@@ -1,5 +1,6 @@
 import {
   CLOSE_SNACKBAR,
+  SHOW_SNACKBAR,
   SnackbarActionTypes,
 } from "../actions/snackbarActions";
 import {
@@ -65,6 +66,12 @@ function snackbarReducer(
   action: TasksActionTypes | SnackbarActionTypes
 ): SnackbarState {
   switch (action.type) {
+    case SHOW_SNACKBAR:
+      return {
+        isOpen: true,
+        message: action.message,
+      };
+
     case CLOSE_SNACKBAR:
       return {
         // Note: We keep the message state unchanged for
