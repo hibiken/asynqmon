@@ -5,7 +5,9 @@ import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import Chip from "@material-ui/core/Chip";
 import InputBase from "@material-ui/core/InputBase";
+import Button from "@material-ui/core/Button";
 import SearchIcon from "@material-ui/icons/Search";
+import AddIcon from "@material-ui/icons/Add";
 import ActiveTasksTable from "./ActiveTasksTable";
 import PendingTasksTable from "./PendingTasksTable";
 import ScheduledTasksTable from "./ScheduledTasksTable";
@@ -75,6 +77,7 @@ type ReduxProps = ConnectedProps<typeof connector>;
 interface Props {
   queue: string;
   selected: string;
+  onEnqueueTask?: () => void;
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -113,6 +116,10 @@ const useStyles = makeStyles((theme) => ({
     paddingRight: theme.spacing(1),
     marginRight: theme.spacing(1),
     flex: 1,
+  },
+  enqueueButton: {
+    marginRight: theme.spacing(2),
+    whiteSpace: "nowrap",
   },
   search: {
     position: "relative",
@@ -215,6 +222,18 @@ function TasksTableContainer(props: Props & ReduxProps) {
             />
           </div>
         </div>
+        {props.onEnqueueTask && (
+          <Button
+            className={classes.enqueueButton}
+            color="primary"
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={props.onEnqueueTask}
+          >
+            Enqueue task
+          </Button>
+        )}
       </div>
       <TabPanel value="active" selected={props.selected}>
         <ActiveTasksTable
